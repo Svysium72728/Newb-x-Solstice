@@ -189,6 +189,7 @@
 #define NL_SKY_AURORA_BRIGHTNESS 1.5     // 0.5 dim ~ 3.0 bright
 #define NL_SKY_AURORA_COLOR vec3(0.1, 0.95, 0.85)    // Primary color (Cyan/Teal)
 #define NL_SKY_AURORA_COLOR2 vec3(0.85, 0.2, 0.95)   // Secondary color (Purple)
+#define NL_SKY_AURORA_BASE 0.15
 
 /* Shooting star */
 #define NL_SHOOTING_STAR 1.0        // [toggle] 0.2 dim ~ 1.0 bright
