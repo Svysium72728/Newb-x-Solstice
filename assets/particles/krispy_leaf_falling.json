@@ -57,12 +57,9 @@
       },
       "minecraft:particle_appearance_tinting": {
         "color": {
-          "gradient": [
-            { "0.0": "#FF7CB342" },
-            { "1.0": "#FFC7862E" }
-          ],
-          "interpolant": "variable.emitter_random_1"
-        }
+        "gradient": ["#FF7CB342", "#FFC7862E"],
+        "interpolant": "variable.emitter_random_1"
+  }
       }
     },
     "events": {
