@@ -114,6 +114,15 @@ vec3 renderOverworldSky(nl_skycolor skyCol, nl_environment env, vec3 viewDir, bo
     return sky;
 }
 
+float renderBeam(float a, float elevation, float azimuth) {
+    float beamAngle = a - azimuth;
+    beamAngle -= 6.28318*floor(beamAngle/6.28318+0.5);
+    float core = exp(-NL_ENDGLOW_WIDTH*beamAngle*beamAngle);
+    core = pow(core, NL_ENDGLOW_SHARPNESS);
+    float vertical = pow(clamp(1.0-NL_ENDGLOW_FADE_TOP*(elevation+1.0), 0.0, 1.0), 0.6);
+    return core*vertical;
+}
+
 vec3 renderEndSky(vec3 horizonCol, vec3 zenithCol, vec3 viewDir, float t) {
     t *= 0.1;
     float a = atan2(viewDir.x, viewDir.z);
@@ -126,11 +135,11 @@ vec3 renderEndSky(vec3 horizonCol, vec3 zenithCol, vec3 viewDir, float t) {
     float f = 0.3*streaks+0.7*smoothstep(1.0, -0.5, viewDir.y);
     vec3 sky = mix(zenithCol, horizonCol, f*f);
 
-    float beamAngle = a - NL_ENDGLOW_AZIMUTH;
-    beamAngle -= 6.28318*floor(beamAngle/6.28318+0.5);
-    float beamCore = exp(-NL_ENDGLOW_WIDTH*beamAngle*beamAngle);
-    float beamVertical = pow(clamp(1.0-0.5*(viewDir.y+1.0), 0.0, 1.0), 1.5);
-    sky += beamCore*beamVertical*NL_ENDGLOW_COLOR*NL_ENDGLOW_STRENGTH;
+    float beamSum = renderBeam(a, viewDir.y, NL_ENDGLOW_AZIMUTH_1)
+                   + renderBeam(a, viewDir.y, NL_ENDGLOW_AZIMUTH_2)
+                   + renderBeam(a, viewDir.y, NL_ENDGLOW_AZIMUTH_3)
+                   + renderBeam(a, viewDir.y, NL_ENDGLOW_AZIMUTH_4);
+    sky += beamSum*NL_ENDGLOW_COLOR*NL_ENDGLOW_STRENGTH;
 
     sky += 0.25*streaks*spectrum(sin(2.0*viewDir.x*viewDir.y+t));
     return sky;
