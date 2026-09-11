@@ -221,6 +221,8 @@
 #define NL_BLACKHOLE
 #define NL_BH_SPEED 0.05
 #define NL_BH_DIST 1.0
+#define NL_BH_AZIMUTH 2.4
+#define NL_BH_HEIGHT 0.5
 #define NL_BH_COL_LOW  vec3(0.3,0.05,0.6)
 #define NL_BH_COL_HIGH vec3(1.0,0.6,0.2)
 
