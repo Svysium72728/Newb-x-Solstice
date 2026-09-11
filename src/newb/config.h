@@ -229,8 +229,8 @@
 #define NL_BH_DIST 1.0
 #define NL_BH_AZIMUTH 2.4
 #define NL_BH_HEIGHT 0.5
-#define NL_BH_COL_LOW  vec3(0.710,0.318,0.988)
-#define NL_BH_COL_HIGH vec3(0.710,0.318,0.988)
+#define NL_BH_COL_LOW  vec3(0.949,0.682,0.941)
+#define NL_BH_COL_HIGH vec3(0.949,0.682,0.941)
 
 /* Sky reflection */
 //#define NL_GROUND_REFL 0.4       // [toggle] 0.2 slightly reflective ~ 1.0 fully reflect sky
