@@ -44,6 +44,11 @@
 //#define NL_BLINKING_TORCH  // [toggle] flickering light
 //#define NL_CLOUD_SHADOW      // [toggle] cloud shadow (simple clouds only)
 
+#define NL_ENDGLOW_AZIMUTH 1.2
+#define NL_ENDGLOW_WIDTH 6.0
+#define NL_ENDGLOW_COLOR vec3(1.0,1.0,1.0)
+#define NL_ENDGLOW_STRENGTH 1.2
+
 /* Ambient light for nether/end */
 #define NL_NETHER_AMBIENT vec3(0.102,0.0,0.0)
 #define NL_END_AMBIENT    vec3(1.98,1.25,2.3)
@@ -83,8 +88,8 @@
 #define NL_RAIN_ZENITH_COL   vec3(0.47,0.51,0.56)
 #define NL_RAIN_HORIZON_COL  vec3(0.6,0.6,0.6)
 
-#define NL_END_ZENITH_COL    vec3(0.08,0.001,0.1)
-#define NL_END_HORIZON_COL   vec3(0.6,0.02,0.6)
+#define NL_END_ZENITH_COL    vec3(0.267,0.0,0.290)
+#define NL_END_HORIZON_COL   vec3(0.212,0.004,0.212)
 
 
 /* Rainbow */
