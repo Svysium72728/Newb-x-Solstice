@@ -100,7 +100,7 @@ vec3 renderOverworldSky(nl_skycolor skyCol, nl_environment env, vec3 viewDir, bo
         float source = max(0.0, (mg8-0.22)/0.78);
         source *= source;
         source *= source;
-        sky *= 1.0+5.0*source*(1.0-env.rainFactor);
+        sky *= 1.0+0.0*source*(1.0-env.rainFactor);
     }
 #ifdef NL_RAINBOW
     if (!env.underwater) {
@@ -124,13 +124,17 @@ vec3 renderEndSky(vec3 horizonCol, vec3 zenithCol, vec3 viewDir, float t) {
     float streaks = waves*(1.0-grad*grad*grad);
     streaks += (1.0-streaks)*smoothstep(1.0-waves, -1.0, viewDir.y);
     float f = 0.3*streaks+0.7*smoothstep(1.0, -0.5, viewDir.y);
-    float h = streaks*streaks;
-    float g = h*h;
-    g *= g;
     vec3 sky = mix(zenithCol, horizonCol, f*f);
-    sky += (0.1*streaks+2.0*g*g*g+h*h*h)*vec3(2.0,0.5,0.0);
+
+    float beamAngle = a - NL_ENDGLOW_AZIMUTH;
+    beamAngle -= 6.28318*floor(beamAngle/6.28318+0.5);
+    float beamCore = exp(-NL_ENDGLOW_WIDTH*beamAngle*beamAngle);
+    float beamVertical = pow(clamp(1.0-0.5*(viewDir.y+1.0), 0.0, 1.0), 1.5);
+    sky += beamCore*beamVertical*NL_ENDGLOW_COLOR*NL_ENDGLOW_STRENGTH;
+
     sky += 0.25*streaks*spectrum(sin(2.0*viewDir.x*viewDir.y+t));
     return sky;
+}
 }
 
 vec3 nlRenderSky(nl_skycolor skycol, nl_environment env, vec3 viewDir, float t, bool isSkyPlane) {
