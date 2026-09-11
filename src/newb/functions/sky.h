@@ -216,20 +216,17 @@ vec3 nlRenderAurora(vec3 viewDir, float t, float dayFactor) {
     float azimuth = atan2(viewDir.x, viewDir.z);
     float elevation = viewDir.y;
 
-    // layered curtain rays - naturally converge toward zenith via azimuth
     float ray1 = sin(azimuth*8.0 + t);
     float ray2 = sin(azimuth*15.0 - t*1.4 + ray1*1.6);
     float ray3 = sin(azimuth*27.0 + t*0.8 - ray2*0.9);
     float curtain = ray1*0.5 + ray2*0.32 + ray3*0.18;
     curtain = curtain*0.5+0.5;
 
-    // jagged, spiky lower boundary
     float edge1 = sin(azimuth*9.0 - t*0.4);
     float edge2 = sin(azimuth*21.0 + t*0.6);
     float jagged = edge1*0.6 + edge2*0.4;
     float baseHeight = NL_SKY_AURORA_BASE + 0.10*jagged;
 
-    // sharp rise off the jagged base, soft fade up near zenith
     float bandLow = smoothstep(baseHeight, baseHeight+0.05+0.10*curtain, elevation);
     float bandHigh = 1.0 - smoothstep(0.55, 1.0, elevation);
     float band = bandLow*bandHigh;
@@ -238,18 +235,13 @@ vec3 nlRenderAurora(vec3 viewDir, float t, float dayFactor) {
     float intensity = band*rays;
     intensity *= intensity;
 
-    // soft wide glow behind the sharp rays
     float glowBand = smoothstep(baseHeight-0.15, baseHeight+0.35, elevation)*bandHigh;
     float glow = glowBand*0.25*(0.4+0.6*curtain);
 
-    // vertical color gradient: teal near the base, violet higher up
     float heightFactor = clamp((elevation-baseHeight)/0.5, 0.0, 1.0);
     vec3 col = mix(NL_SKY_AURORA_COLOR, NL_SKY_AURORA_COLOR2, heightFactor);
 
     return col*(intensity+glow)*nightFactor*NL_SKY_AURORA_BRIGHTNESS;
-}
-
-#endif
 }
 
 #endif
