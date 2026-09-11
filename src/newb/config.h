@@ -44,9 +44,15 @@
 //#define NL_BLINKING_TORCH  // [toggle] flickering light
 //#define NL_CLOUD_SHADOW      // [toggle] cloud shadow (simple clouds only)
 
-#define NL_ENDGLOW_AZIMUTH 1.2
-#define NL_ENDGLOW_WIDTH 6.0
-#define NL_ENDGLOW_COLOR vec3(1.0,1.0,1.0)
+/* End glowing beam ig */
+#define NL_ENDGLOW_AZIMUTH_1 0.0
+#define NL_ENDGLOW_AZIMUTH_2 1.5708
+#define NL_ENDGLOW_AZIMUTH_3 3.1416
+#define NL_ENDGLOW_AZIMUTH_4 4.7124
+#define NL_ENDGLOW_WIDTH 40.0
+#define NL_ENDGLOW_SHARPNESS 1.8
+#define NL_ENDGLOW_FADE_TOP 0.35
+#define NL_ENDGLOW_COLOR vec3(1.0,0.75,0.35)
 #define NL_ENDGLOW_STRENGTH 1.2
 
 /* Ambient light for nether/end */
