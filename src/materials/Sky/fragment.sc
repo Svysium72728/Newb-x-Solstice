@@ -84,7 +84,7 @@ void main() {
 
     #ifdef NL_SKY_AURORA
     if (!env.underwater && !env.end && !env.nether) {
-      float dither = texture2D(s_BlueNoise, mod(gl_FragCoord.xy, 256.0)/256.0).r;
+      float dither = texture2D(s_NoiseTex, mod(gl_FragCoord.xy, 256.0)/256.0).r;
       vec3 aurora = GetAurora(viewDir, v_underwaterRainTimeDay.z, dither, env.dayFactor);
     }
     #endif
