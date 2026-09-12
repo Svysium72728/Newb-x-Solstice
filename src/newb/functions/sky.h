@@ -235,36 +235,4 @@ float auroraCloudFBM(vec2 p, float t) {
     return sum*0.5+0.5;
 }
 
-vec3 nlRenderAurora(vec3 viewDir, float t, float dayFactor) {
-    float nightFactor = smoothstep(0.1, -0.15, dayFactor);
-    if (nightFactor < 0.01 || viewDir.y < -0.1) return vec3_splat(0.0);
-
-    t *= NL_SKY_AURORA_SPEED;
-
-    float azimuth = atan2(viewDir.x, viewDir.z);
-    float elevation = viewDir.y;
-
-    vec2 p = vec2(azimuth*3.0, elevation*6.0);
-    p.x += t*0.6;
-
-    float shape = auroraCloudFBM(p, t);
-    shape += 0.4*auroraCloudFBM(p*2.3 + vec2(3.1,1.7), t*1.4);
-    shape = clamp(shape, 0.0, 1.0);
-
-    float coverage = smoothstep(NL_SKY_AURORA_COVERAGE, 1.0, shape);
-
-    float bandLow = smoothstep(NL_SKY_AURORA_BASE-0.05, NL_SKY_AURORA_BASE+0.25, elevation);
-    float bandHigh = 1.0 - smoothstep(0.55, 1.0, elevation);
-    float band = bandLow*bandHigh;
-
-    float intensity = coverage*band;
-
-    float heightFactor = clamp((elevation-NL_SKY_AURORA_BASE)/0.5, 0.0, 1.0);
-    vec3 col = mix(NL_SKY_AURORA_COLOR, NL_SKY_AURORA_COLOR2, heightFactor);
-
-    return col*intensity*nightFactor*NL_SKY_AURORA_BRIGHTNESS;
-}
-
-#endif
-
 #endif // SKY_H
