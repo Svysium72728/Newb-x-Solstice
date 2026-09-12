@@ -53,6 +53,13 @@ vec3 nlLighting(
     lum = luminance(light);
     light += skycol.horizon/(1.0+lum);
 
+    #ifdef NL_BLACKHOLE
+    if (env.end) {
+      float bhFace = clamp(0.5*((wPos.x*cos(NL_BH_AZIMUTH)+wPos.y*sin(NL_BH_AZIMUTH))/renderdistance + 1.0), 0.0, 1.0);
+      light += NL_BH_COL_HIGH*bhFace*bhFace*NL_BH_REFLECT_STRENGTH;
+    }
+    #endif
+
   } else {
     // overworld lighting
     float nightFactor = step(env.dayFactor, 0.0);
@@ -137,6 +144,8 @@ vec3 nlEntityLighting(nl_skycolor skycol, nl_environment env, vec3 pos, vec4 nor
   float tl = tileLightCol.r;
   float lum;
   vec3 light;
+  vec3 N = normalize(mul(world, normal)).xyz;
+
   if (env.nether || env.end) {
     tl = max(tl-0.6, 0.0);
     tl *= 21.0*tl;
@@ -147,6 +156,15 @@ vec3 nlEntityLighting(nl_skycolor skycol, nl_environment env, vec3 pos, vec4 nor
 
     lum = luminance(light);
     light += skycol.horizon/(1.0+lum);
+
+    #ifdef NL_BLACKHOLE
+    if (env.end) {
+      vec3 bhDir = normalize(vec3(cos(NL_BH_AZIMUTH), NL_BH_HEIGHT, sin(NL_BH_AZIMUTH)));
+      float bhFace = max(dot(N, bhDir), 0.0);
+      light += NL_BH_COL_HIGH*bhFace*bhFace*NL_BH_REFLECT_STRENGTH;
+    }
+    #endif
+
   } else {
     tl = max(tl-0.08, 0.0);
     tl *= 4.0*tl;
@@ -164,7 +182,6 @@ vec3 nlEntityLighting(nl_skycolor skycol, nl_environment env, vec3 pos, vec4 nor
 
     // direct light from top
     light = (NL_SUNLIGHT_INTENSITY*l*sunLightAttenuation)*sunLightTint(env.dayFactor, env.rainFactor);
-    vec3 N = normalize(mul(world, normal)).xyz;
     light *= 0.9 + max(N.y, 0.0);
 
     // sky ambient
