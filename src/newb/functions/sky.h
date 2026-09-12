@@ -217,4 +217,6 @@ vec3 nlRenderGalaxy(vec3 vdir, vec3 fogColor, nl_environment env, float t) {
     return stars*(1.0-env.rainFactor);
 }
 
+}
+
 #endif // SKY_H
