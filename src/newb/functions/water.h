@@ -48,9 +48,13 @@ vec4 nlWater(
     }
   #endif
 
-  // torch light reflection
-  float tc = 0.5+0.5*sin(16.0*viewDir.x)*sin(16.0*viewDir.z);
-  waterRefl += torchColor*NL_TORCHLIGHT_INTENSITY*lit.x*tc*tc;
+  // torch light reflection - elongated streak
+  float streak1 = sin(40.0*viewDir.x + 6.0*t)*sin(3.0*viewDir.z);
+  streak1 = pow(max(streak1, 0.0), 4.0);
+  float streak2 = sin(70.0*viewDir.x - 4.0*t)*sin(5.0*viewDir.z + 1.0);
+  streak2 = pow(max(streak2, 0.0), 6.0);
+  float glint = streak1*0.6 + streak2*0.4;
+  waterRefl += torchColor*NL_TORCHLIGHT_INTENSITY*lit.x*lit.x*glint*NL_WATER_LIGHT_STREAK_STRENGTH;
 
   // mask sky reflection under shade
   if (!env.end) {
