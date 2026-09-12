@@ -4,6 +4,10 @@ min_supported_mc_version = [1, 26, 40]
 description = '''
 §c%w
 §7- An enchanced vanilla shader for Minecraft!
+this shader is a modification version of the popular shader newb!
+this shader is heavily inspired by
+1.complementary shaders reimagined
+2.super duper vanilla shader
 %v
 §3https://newb-shader.devendrn.com/
 ''' # %w = patch warning, %v = version
