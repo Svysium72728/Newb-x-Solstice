@@ -8,7 +8,7 @@ uniform vec4 CameraPosition;
 
 #define saturate(x) clamp(x, 0.0, 1.0)
 
-// --- EXPERT 2.5D GRID CLOUD FUNCTIONS ---
+// cloud type 4
 highp float hash(highp vec2 p) {
     return fract(cos(p.x + p.y * 332.0) * 335.552);
 }
@@ -108,19 +108,17 @@ void main() {
     color.rgb = colorCorrection(color.rgb);
 
   #elif NL_CLOUD_TYPE == 4
-    // === EXPERT 2.5D PIXELATED/GRID CLOUDS ===
+    // 2.5d cloud
     vec3 worldPos = v_color0.xyz; 
     float fadeFactor = v_color0.w; 
     float timeVal = v_color2.w;
 
-    // Rule 5: World space conversion (NO gl_FragCoord!)
     vec2 cp = worldPos.xz * 0.005; 
 
     vec3 cloudNoise = pixelatedCloud(cp, timeVal);
 
     float cloudAlpha = clamp(length(cloudNoise.r), 0.0, 1.0);
     
-    // Rule 6: Dynamic environment lighting
     vec3 baseHorizon = v_color2.rgb;
     vec3 cloudcol = baseHorizon / max(v_dayFactor, 0.01);
     cloudcol = clamp(cloudcol * 1.5, 0.0, 1.5);
