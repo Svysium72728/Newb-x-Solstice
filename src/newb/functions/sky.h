@@ -217,22 +217,4 @@ vec3 nlRenderGalaxy(vec3 vdir, vec3 fogColor, nl_environment env, float t) {
     return stars*(1.0-env.rainFactor);
 }
 
-#ifdef NL_SKY_AURORA
-
-float auroraCloudFBM(vec2 p, float t) {
-    float amp = 0.5;
-    float sum = 0.0;
-
-    sum += amp*sin(p.x*2.0+t)*sin(p.y*2.3-t*0.7);
-    p = mul(mat2(0.8,0.6,-0.6,0.8), p)*1.8;
-    amp *= 0.55;
-
-    sum += amp*sin(p.x*2.0+t*1.3)*sin(p.y*2.3-t*0.5);
-    p = mul(mat2(0.8,0.6,-0.6,0.8), p)*1.8;
-    amp *= 0.55;
-
-    sum += amp*sin(p.x*2.0-t*0.6)*sin(p.y*2.3+t*0.9);
-    return sum*0.5+0.5;
-}
-
 #endif // SKY_H
