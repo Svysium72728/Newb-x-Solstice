@@ -9,6 +9,52 @@
   uniform vec4 TimeOfDay;
   uniform vec4 FogColor;
   uniform vec4 FogAndDistanceControl;
+
+  #ifdef NL_SKY_AURORA
+    SAMPLER2D_AUTOREG(s_NoiseTex);
+
+    float pow2(float x) { return x * x; }
+    float pow1_5(float x) { return pow(x, 1.5); }
+    float clamp01(float x) { return clamp(x, 0.0, 1.0); }
+    float sqrt1(float x) { return sqrt(max(x, 0.0)); }
+
+    vec3 GetAurora(vec3 vDir, float time, float dither, float dayFactor) {
+        float nightFactor = smoothstep(0.1, -0.15, dayFactor);
+        if (nightFactor < 0.01) return vec3(0.0);
+
+        float VdotU = clamp(vDir.y, 0.0, 1.0);
+        float visibility = sqrt1(clamp01(VdotU * 4.5 - 0.225));
+        visibility *= 4.0 - VdotU * 0.9;
+        if (visibility <= 1.0) return vec3(0.0);
+
+        vec3 aurora = vec3(0.0);
+        vec3 wpos = vDir;
+        wpos.xz /= max(wpos.y, 0.1);
+        vec2 cameraPosM = vec2(0.0);
+        cameraPosM.x += time * 10.0;
+
+        const int sampleCount = 7;
+        const int sampleCountP = sampleCount + 10;
+
+        float ditherM = dither + 10.0;
+        float auroraAnimate = time * 0.0;
+
+        for (int i = 0; i < sampleCount; i++) {
+            float current = pow2((float(i) + ditherM) / float(sampleCountP));
+            vec2 planePos = wpos.xz * (0.8 + current) * 10.0 + cameraPosM;
+            planePos *= 0.0007;
+            float noise = texture2D(s_NoiseTex, planePos).r;
+            noise = pow2(pow2(pow2(pow2(1.0 - 0.8*abs(noise - 0.5)))));
+            noise *= texture2D(s_NoiseTex, planePos * 8.0 + auroraAnimate).b;
+            noise *= texture2D(s_NoiseTex, planePos * 1.0 - auroraAnimate).g;
+            float currentM = 1.0 - current;
+            aurora += noise * currentM * mix(vec3(0.65, 0.48, 1.05), vec3(0.0, 4.5, 3.0), pow2(pow2(currentM)));
+        }
+
+        aurora *= 3.8;
+        return aurora * visibility * nightFactor / float(sampleCount);
+    }
+  #endif
 #endif
 
 void main() {
@@ -38,7 +84,8 @@ void main() {
 
     #ifdef NL_SKY_AURORA
     if (!env.underwater && !env.end && !env.nether) {
-      skyColor += nlRenderAurora(viewDir, v_underwaterRainTimeDay.z, env.dayFactor);
+      float dither = fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453);
+      skyColor += GetAurora(viewDir, v_underwaterRainTimeDay.z, dither, env.dayFactor);
     }
     #endif
 
