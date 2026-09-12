@@ -119,7 +119,7 @@ float renderBeam(float a, float elevation, float azimuth) {
     beamAngle -= 6.28318*floor(beamAngle/6.28318+0.5);
     float core = exp(-NL_ENDGLOW_WIDTH*beamAngle*beamAngle);
     core = pow(core, NL_ENDGLOW_SHARPNESS);
-    float vertical = pow(clamp(1.0-NL_ENDGLOW_FADE_TOP*(elevation+1.0), 0.0, 1.0), 0.6);
+    float vertical = smoothstep(NL_ENDGLOW_HEIGHT, -0.3, elevation);
     return core*vertical;
 }
 
@@ -219,6 +219,22 @@ vec3 nlRenderGalaxy(vec3 vdir, vec3 fogColor, nl_environment env, float t) {
 
 #ifdef NL_SKY_AURORA
 
+float auroraCloudFBM(vec2 p, float t) {
+    float amp = 0.5;
+    float sum = 0.0;
+
+    sum += amp*sin(p.x*2.0+t)*sin(p.y*2.3-t*0.7);
+    p = mul(mat2(0.8,0.6,-0.6,0.8), p)*1.8;
+    amp *= 0.55;
+
+    sum += amp*sin(p.x*2.0+t*1.3)*sin(p.y*2.3-t*0.5);
+    p = mul(mat2(0.8,0.6,-0.6,0.8), p)*1.8;
+    amp *= 0.55;
+
+    sum += amp*sin(p.x*2.0-t*0.6)*sin(p.y*2.3+t*0.9);
+    return sum*0.5+0.5;
+}
+
 vec3 nlRenderAurora(vec3 viewDir, float t, float dayFactor) {
     float nightFactor = smoothstep(0.1, -0.15, dayFactor);
     if (nightFactor < 0.01 || viewDir.y < -0.1) return vec3_splat(0.0);
@@ -228,32 +244,25 @@ vec3 nlRenderAurora(vec3 viewDir, float t, float dayFactor) {
     float azimuth = atan2(viewDir.x, viewDir.z);
     float elevation = viewDir.y;
 
-    float ray1 = sin(azimuth*8.0 + t);
-    float ray2 = sin(azimuth*15.0 - t*1.4 + ray1*1.6);
-    float ray3 = sin(azimuth*27.0 + t*0.8 - ray2*0.9);
-    float curtain = ray1*0.5 + ray2*0.32 + ray3*0.18;
-    curtain = curtain*0.5+0.5;
+    vec2 p = vec2(azimuth*3.0, elevation*6.0);
+    p.x += t*0.6;
 
-    float edge1 = sin(azimuth*9.0 - t*0.4);
-    float edge2 = sin(azimuth*21.0 + t*0.6);
-    float jagged = edge1*0.6 + edge2*0.4;
-    float baseHeight = NL_SKY_AURORA_BASE + 0.10*jagged;
+    float shape = auroraCloudFBM(p, t);
+    shape += 0.4*auroraCloudFBM(p*2.3 + vec2(3.1,1.7), t*1.4);
+    shape = clamp(shape, 0.0, 1.0);
 
-    float bandLow = smoothstep(baseHeight, baseHeight+0.05+0.10*curtain, elevation);
+    float coverage = smoothstep(NL_SKY_AURORA_COVERAGE, 1.0, shape);
+
+    float bandLow = smoothstep(NL_SKY_AURORA_BASE-0.05, NL_SKY_AURORA_BASE+0.25, elevation);
     float bandHigh = 1.0 - smoothstep(0.55, 1.0, elevation);
     float band = bandLow*bandHigh;
 
-    float rays = 0.35+0.65*curtain;
-    float intensity = band*rays;
-    intensity *= intensity;
+    float intensity = coverage*band;
 
-    float glowBand = smoothstep(baseHeight-0.15, baseHeight+0.35, elevation)*bandHigh;
-    float glow = glowBand*0.25*(0.4+0.6*curtain);
-
-    float heightFactor = clamp((elevation-baseHeight)/0.5, 0.0, 1.0);
+    float heightFactor = clamp((elevation-NL_SKY_AURORA_BASE)/0.5, 0.0, 1.0);
     vec3 col = mix(NL_SKY_AURORA_COLOR, NL_SKY_AURORA_COLOR2, heightFactor);
 
-    return col*(intensity+glow)*nightFactor*NL_SKY_AURORA_BRIGHTNESS;
+    return col*intensity*nightFactor*NL_SKY_AURORA_BRIGHTNESS;
 }
 
 #endif
