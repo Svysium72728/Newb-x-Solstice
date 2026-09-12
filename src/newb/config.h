@@ -52,8 +52,8 @@
 #define NL_ENDGLOW_WIDTH 40.0
 #define NL_ENDGLOW_SHARPNESS 1.8
 #define NL_ENDGLOW_FADE_TOP 0.35
-#define NL_ENDGLOW_COLOR vec3(1.0,0.75,0.35)
-#define NL_ENDGLOW_STRENGTH 1.2
+#define NL_ENDGLOW_COLOR vec3(0.980,0.694,0.941)
+#define NL_ENDGLOW_STRENGTH 1.5
 
 /* Ambient light for nether/end */
 #define NL_NETHER_AMBIENT vec3(0.102,0.0,0.0)
@@ -110,7 +110,7 @@
 //#define NL_GLOW_LEAK 0.6        // [toggle] 0.08 subtle ~ 1.0 100% brightness of NL_GLOW_TEX
 
 /* Torch bloom */
-#define NL_TORCH_BLOOM_STRENGTH 0.98  // 0.0 no bloom ~ 1.0 strong bloom
+#define NL_TORCH_BLOOM_STRENGTH 1.0  // 0.0 no bloom ~ 1.0 strong bloom
 #define NL_TORCH_BLOOM_THRESHOLD 0.25 // 0.0 all blocks ~ 1.0 only brightest
 #define NL_TORCH_BLOOM_COLOR vec3(1.0, 0.6, 0.25) // Warm yellow-orange glow
 
@@ -235,7 +235,7 @@
 #define NL_BH_DIST 1.0
 #define NL_BH_AZIMUTH 2.4
 #define NL_BH_HEIGHT 0.5
-#define NL_BH_COL_LOW  vec3(0.949,0.682,0.941)
+#define NL_BH_COL_LOW  vec3(0.784,0.580,0.969)
 #define NL_BH_COL_HIGH vec3(0.949,0.682,0.941)
 
 /* Sky reflection */
