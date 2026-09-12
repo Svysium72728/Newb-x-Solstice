@@ -45,8 +45,8 @@
             planePos *= 0.0007;
             float noise = texture2D(s_NoiseTex, planePos).r;
             noise = pow2(pow2(pow2(pow2(1.0 - 0.8*abs(noise - 0.5)))));
-            noise *= texture2D(s_NoiseTex, planePos * 8.0 + auroraAnimate).b;
-            noise *= texture2D(s_NoiseTex, planePos * 1.0 - auroraAnimate).g;
+            noise *= texture2D(s_NoiseTex, planePos * 8.0 + auroraAnimate).g;
+            noise *= texture2D(s_NoiseTex, planePos * 1.0 - auroraAnimate).r;
             float currentM = 1.0 - current;
             aurora += noise * currentM * mix(vec3(0.65, 0.48, 1.05), vec3(0.0, 4.5, 3.0), pow2(pow2(currentM)));
         }
@@ -86,6 +86,7 @@ void main() {
     if (!env.underwater && !env.end && !env.nether) {
       float dither = texture2D(s_NoiseTex, mod(gl_FragCoord.xy, 256.0)/256.0).r;
       vec3 aurora = GetAurora(viewDir, v_underwaterRainTimeDay.z, dither, env.dayFactor);
+      skyColor += aurora;
     }
     #endif
 
