@@ -10,6 +10,9 @@
   "unordered_access": false,
   "always_one": 1,
   "texture_path": "textures/newb/noise",
-  "sampler_state": { "wrapping": "Repeat" },
+  "sampler_state": {
+    "filter": "Bilinear",
+    "wrapping": "Repeat"
+  },
   "custom_type_info": {}
 }
