@@ -181,11 +181,11 @@
 /* Lightweight Clouds */
 #define NL_CLOUD4_SCALE vec2(0.050, 0.050) // 0.005 large ~ 0.1 tiny
 #define NL_CLOUD4_SHAPE vec2(0.5, 0.4)     // 0.0 round ~ 1.0 box (ADDED THIS LINE)
-#define NL_CLOUD4_SPEED 0.05               // 0.0 static ~ 0.1 fast moving
+#define NL_CLOUD4_SPEED 0.8               // 0.0 static ~ 0.1 fast moving
 #define NL_CLOUD4_SHADOW 1.0               // 0.1 subtle ~ 1.0 dark shadow
 #define NL_CLOUD4_SHADOW_OFFSET 0.2        // 0.05 minimal ~ 1.0 large
 #define NL_CLOUD4_LAYER2
-#define NL_CLOUD4_LAYER2_OFFSET 300.0
+#define NL_CLOUD4_LAYER2_OFFSET 400.0
 #define NL_CLOUD4_LAYER2_OPACITY 0.6
 #define NL_CLOUD4_LAYER2_SPEED 0.7
 
