@@ -51,7 +51,7 @@
 #define NL_ENDGLOW_AZIMUTH_4 4.7124
 #define NL_ENDGLOW_WIDTH 40.0
 #define NL_ENDGLOW_SHARPNESS 1.8
-#define NL_ENDGLOW_FADE_TOP 0.35
+#define NL_ENDGLOW_HEIGHT 0.3
 #define NL_ENDGLOW_COLOR vec3(0.980,0.694,0.941)
 #define NL_ENDGLOW_STRENGTH 1.5
 
@@ -201,6 +201,7 @@
 #define NL_SKY_AURORA_COLOR vec3(0.1, 0.95, 0.85)    // Primary color (Cyan/Teal)
 #define NL_SKY_AURORA_COLOR2 vec3(0.439,0.0,0.424)   // Secondary color (Purple)
 #define NL_SKY_AURORA_BASE 0.15
+#define NL_SKY_AURORA_COVERAGE 0.55
 
 /* Shooting star */
 #define NL_SHOOTING_STAR 1.0        // [toggle] 0.2 dim ~ 1.0 bright
