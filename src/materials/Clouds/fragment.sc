@@ -112,7 +112,6 @@ void main() {
     vec3 worldPos = v_color0.xyz; 
     float fadeFactor = v_color0.w; 
     float timeVal = v_color2.w;
-    vec3 vDir4 = normalize(worldPos);
 
     vec2 cp = worldPos.xz * 0.005; 
 
@@ -125,17 +124,9 @@ void main() {
     cloudcol = clamp(cloudcol * 1.5, 0.0, 1.5);
 
     color = vec4(cloudcol, cloudAlpha * fadeFactor);
-
-    #ifdef NL_CLOUD4_LAYER2
-        vec2 parallax4 = vDir4.xz / max(abs(vDir4.y), 0.05) * NL_CLOUD4_LAYER2_OFFSET;
-        vec2 cp2 = (worldPos.xz + parallax4) * 0.005;
-        vec3 cloudNoise2 = pixelatedCloud(cp2, timeVal * NL_CLOUD4_LAYER2_SPEED);
-        float cloudAlpha2 = clamp(length(cloudNoise2.r), 0.0, 1.0) * fadeFactor * NL_CLOUD4_LAYER2_OPACITY;
-        vec4 color2 = vec4(cloudcol, cloudAlpha2);
-        color = mix(color2, color, 0.2 + 0.8*color.a);
-    #endif
     
     #ifdef NL_AURORA
+        vec3 vDir4 = normalize(v_color0.xyz);
         color.rgb += renderAuroraComplementary(vDir4, v_color0.xz, timeVal, v_dayFactor).rgb * (1.0 - color.a);
     #endif
 
