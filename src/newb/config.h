@@ -201,7 +201,7 @@
 
 /* Maybe a complementary styled Aurora  */
 #define NL_SKY_AURORA                    // [toggle] enable 3D aurora curtains
-#define NL_SKY_AURORA_SPEED 0.09         // 0.01 slow ~ 0.2 fast movement
+#define NL_SKY_AURORA_SPEED 2.0          // aurora speed
 #define NL_SKY_AURORA_BRIGHTNESS 1.2     // 0.5 dim ~ 3.0 bright
 #define NL_SKY_AURORA_COLOR vec3(0.1, 0.95, 0.85)    // Primary color (Cyan/Teal)
 #define NL_SKY_AURORA_COLOR2 vec3(0.439,0.0,0.424)   // Secondary color (Purple)
