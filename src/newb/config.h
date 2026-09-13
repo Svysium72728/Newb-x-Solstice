@@ -184,7 +184,7 @@
 #define NL_CLOUD4_SPEED 0.8               // 0.0 static ~ 0.1 fast moving
 #define NL_CLOUD4_SHADOW 1.0               // 0.1 subtle ~ 1.0 dark shadow
 #define NL_CLOUD4_SHADOW_OFFSET 0.2        // 0.05 minimal ~ 1.0 large
-#define NL_CLOUD_AURORA_REFLECTION         //[toggle] it doesnt really reflect aurora but it reflect type 4  
+//#define NL_CLOUD_AURORA_REFLECTION         //[toggle] it doesnt really reflect aurora but it reflect type 4  
 
 /* Aurora settings */
 //#define NL_AURORA 1.2           // [toggle] 0.4 dim ~ 4.0 very bright
