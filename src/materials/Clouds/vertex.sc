@@ -96,22 +96,6 @@ void main() {
     v_color1 = vec4(skycol.zenith, rain);
     v_color2 = vec4(skycol.horizonEdge, t);
 
-    bool isL2 = a_color0.g > 0.5 * a_color0.b;
-
-    #ifdef NL_CLOUD_4_MULTILAYER
-      if (isL2) {
-        worldPos.xyz = mul(model, vec4(pos, 1.0)).xyz;
-        worldPos.y += NL_CLOUD_4_MULTILAYER_HEIGHT;
-      } else {
-        worldPos.xyz = mul(model, vec4(pos, 1.0)).xyz;
-      }
-    #else
-      if (isL2) {
-        worldPos = vec3(0.0,0.0,0.0);
-        fade = 0.0;
-      }
-    #endif
-
     v_color0 = vec4(worldPos, fade);
     gl_Position = mul(u_viewProj, vec4(worldPos, 1.0));
 
