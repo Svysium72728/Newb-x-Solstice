@@ -31,9 +31,9 @@
         vec3 wpos = vDir;
         wpos.xz /= max(wpos.y, 0.1);
         vec2 cameraPosM = vec2(0.0);
-        cameraPosM.x += time * 10.0;
+        cameraPosM.x += time * NL_SKY_AURORA_SPEED;
 
-        const int sampleCount = 7;
+        const int sampleCount = 13;
         const int sampleCountP = sampleCount + 10;
 
         float ditherM = dither + 10.0;
