@@ -12,7 +12,6 @@ void main() {
   vec4 color = v_color0; 
 
   #if NL_CLOUD_TYPE == 2
-    // Original Newb-X Rounded Clouds (Raymarching)
     vec3 vDir = normalize(v_color0.xyz);
     vec3 cloudPos = v_color0.xyz;
     cloudPos.xz += CameraPosition.xz;
