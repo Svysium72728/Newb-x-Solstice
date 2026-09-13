@@ -161,6 +161,60 @@ vec4 renderAurora(vec3 p, float t, float rain, float dayFactor) {
 }
 #endif
 
+// cloud type 4 shape functions (shared with Clouds/fragment.sc)
+highp float hash(highp vec2 p) {
+    return fract(cos(p.x + p.y * 332.0) * 335.552);
+}
+
+vec2 smoothBlend(vec2 x) {
+    vec2 v = x * x * (3.0 - 2.0 * x);
+    return smoothstep(0.3, 0.95, v);
+}
+
+float gridSDF(vec2 uv) {
+    vec2 f = fract(uv);
+    vec2 i = floor(uv);
+
+    float bl = step(0.85, hash(i + vec2(0.0, 0.0)));
+    float br = step(0.85, hash(i + vec2(1.0, 0.0)));
+    float tl = step(0.85, hash(i + vec2(0.0, 1.0)));
+    float tr = step(0.85, hash(i + vec2(1.0, 1.0)));
+
+    vec2 fade = smoothBlend(f);
+
+    float mixBottom = mix(bl, br, fade.x);
+    float mixTop    = mix(tl, tr, fade.x);
+    float totalGrid = mix(mixBottom, mixTop, fade.y);
+
+    return totalGrid;
+}
+
+vec3 pixelatedCloud(vec2 uv, float timeVal) {
+    float a = 0.0;
+    float b = 0.0;
+    float isTime = -timeVal * 0.02;
+
+    vec2 shadeDirection = vec2(0.05, 0.03);
+
+    uv *= 6.5;
+    uv.y *= 1.5;
+
+    for (int i = 0; i < 4; i++) {
+        uv /= 1.015;
+        float r = gridSDF(uv + isTime);
+        a = max(a, r);
+    }
+
+    vec2 shadeSampleUv = uv + isTime - shadeDirection;
+    float shadeShape = gridSDF(shadeSampleUv);
+
+    b = smoothstep(0.05, 0.9, shadeShape);
+    a = smoothstep(0.1, 0.15, a);
+
+    a -= b * a * 0.15;
+    return vec3(clamp(a, 0.0, 1.0));
+}
+
 vec4 nlCloudAuroraReflection(nl_skycolor skycol, nl_environment env, vec3 viewDir, vec3 wPos, vec3 CAMERA_POS, highp float t) {
   vec2 cloudPos = wPos.xz;
   cloudPos += (187.0-(wPos.y+CAMERA_POS.y))*viewDir.xz/viewDir.y;
@@ -179,6 +233,20 @@ vec4 nlCloudAuroraReflection(nl_skycolor skycol, nl_environment env, vec3 viewDi
     vec4 clouds = renderCloudsSimple(skycol, cloudPos.xyy, t, env.rainFactor);
     clouds.a *= fade;
     refl = vec4(mix(refl.rgb, clouds.rgb, clouds.a), min(refl.a + clouds.a, 1.0));
+  #elif NL_CLOUD_TYPE == 2
+    vec3 reflViewDir = viewDir;
+    reflViewDir.y = -reflViewDir.y;
+    vec3 cloudWorldPos = vec3(cloudPos.x, 0.0, cloudPos.y);
+    #define NL_CLOUD2_REFL_PARAMS(x) NL_CLOUD2##x##STEPS, NL_CLOUD2##x##THICKNESS, NL_CLOUD2##x##RAIN_THICKNESS, NL_CLOUD2##x##VELOCITY, NL_CLOUD2##x##SCALE, NL_CLOUD2##x##DENSITY, NL_CLOUD2##x##SHAPE
+    vec4 clouds = renderCloudsRounded(reflViewDir, cloudWorldPos, env.rainFactor, t, skycol.horizon, skycol.zenith, NL_CLOUD2_REFL_PARAMS(_));
+    clouds.a *= fade;
+    refl = vec4(mix(refl.rgb, clouds.rgb, clouds.a), min(refl.a + clouds.a, 1.0));
+  #elif NL_CLOUD_TYPE == 4
+    vec3 cloudNoise = pixelatedCloud(cloudPos*0.005, t);
+    float cloudAlpha = clamp(length(cloudNoise.r), 0.0, 1.0) * fade;
+    vec3 cloudcol = skycol.horizonEdge / max(env.dayFactor, 0.01);
+    cloudcol = clamp(cloudcol*1.5, 0.0, 1.5);
+    refl = vec4(mix(refl.rgb, cloudcol, cloudAlpha), min(refl.a + cloudAlpha, 1.0));
   #endif
 
   return refl;
