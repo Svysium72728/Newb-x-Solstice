@@ -1,14 +1,14 @@
-# Newb X Legacy
+# Newb X Krispy
 
-**Newb X Legacy** is a RenderDragon successor to the legacy GLSL shader, [Newb Shader](https://github.com/devendrn/newb-shader-mcbe). It is an enhanced vanilla shader that focuses on being lightweight and having soft aesthetics. It supports Minecraft Bedrock 1.26+ (Windows/Android/iOS).
+**Newb X Krispy** is a modification version of the popular renderdragon shader, newb shader. this shader add stuff like blackhole in the end,Aurora (heavy subpack only). because of limitation this shader only support android
 
 <br>
 
-![Screenshots](docs/screenshots.jpg "Newb X Legacy 15.47, MCBE 1.21.0")
+![Screenshots](docs/newb_main.jpg "Newb X Krispy, MCBE 26.45")
 
 ## Downloads
 
-You can download the shader pack from [release page](https://github.com/devendrn/newb-x-mcbe/releases/latest).
+Not out yet
 
 ## Installation
 
