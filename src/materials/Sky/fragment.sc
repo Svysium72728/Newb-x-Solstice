@@ -1,5 +1,5 @@
 #ifndef INSTANCING
-  $input v_worldPos, v_underwaterRainTimeDay
+  $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
 #endif
 
 #include <bgfx_shader.sh>
@@ -9,50 +9,60 @@
   uniform vec4 TimeOfDay;
   uniform vec4 FogColor;
   uniform vec4 FogAndDistanceControl;
+  uniform vec4 ViewPositionAndTime;
 
   #ifdef NL_SKY_AURORA
-    SAMPLER2D_AUTOREG(s_NoiseTex);
+    SAMPLER2D_AUTOREG(s_noisevoxels);
 
-    float pow2(float x) { return x * x; }
-    float pow1_5(float x) { return pow(x, 1.5); }
-    float clamp01(float x) { return clamp(x, 0.0, 1.0); }
-    float sqrt1(float x) { return sqrt(max(x, 0.0)); }
+    float pow2(float x){return x*x;}
+    float pow1_5(float x){return pow(x,1.5);}
+    float clamp01(float x){return clamp(x,0.0,1.0);}
+    float sqrt1(float x){return sqrt(max(x,0.0));}
 
-    vec3 GetAurora(vec3 vDir, float time, float dither, float dayFactor) {
-        float nightFactor = smoothstep(0.1, -0.15, dayFactor);
-        if (nightFactor < 0.01) return vec3(0.0);
+    float cubicFollowNoise(vec2 p){
+    vec2 quantized = floor(p * 128.0) / 128.0 + 2.0 / 128.0;
+    return texture2D(s_noisevoxels, quantized).r;
+    }
 
-        float VdotU = clamp(vDir.y, 0.0, 1.0);
-        float visibility = sqrt1(clamp01(VdotU * 4.5 - 0.225));
-        visibility *= 4.0 - VdotU * 0.9;
+    vec3 GetAurora(vec3 viewDir, vec4 ViewPositionAndTime, float dither) {
+        float VdotU = clamp(viewDir.y, 0.0, 1.0);
+        float visibility = sqrt1(clamp01(VdotU * 4.5 - 0.25));
+        visibility *= 8.0 - VdotU * 0.9;
         if (visibility <= 1.0) return vec3(0.0);
 
-        vec3 aurora = vec3(0.0);
-        vec3 wpos = vDir;
+        vec3 aurora = vec3(0.0,0.0,0.0);
+        vec3 wpos = viewDir;
         wpos.xz /= max(wpos.y, 0.1);
-        vec2 cameraPosM = vec2(0.0);
-        cameraPosM.x += time * NL_SKY_AURORA_SPEED;
 
-        const int sampleCount = 13;
+        vec2 cameraPosM = vec2(ViewPositionAndTime.w * NL_SKY_AURORA_SPEED, 0.0);
+
+        const int sampleCount = 15;
         const int sampleCountP = sampleCount + 10;
 
         float ditherM = dither + 10.0;
-        float auroraAnimate = time * 0.0;
 
         for (int i = 0; i < sampleCount; i++) {
             float current = pow2((float(i) + ditherM) / float(sampleCountP));
-            vec2 planePos = wpos.xz * (0.8 + current) * 10.0 + cameraPosM;
-            planePos *= 0.0007;
-            float noise = texture2D(s_NoiseTex, planePos).r;
-            noise = pow2(pow2(pow2(pow2(1.0 - 0.8*abs(noise - 0.5)))));
-            noise *= texture2D(s_NoiseTex, planePos * 8.0 + auroraAnimate).g;
-            noise *= texture2D(s_NoiseTex, planePos * 1.0 - auroraAnimate).r;
             float currentM = 1.0 - current;
-            aurora += noise * currentM * mix(vec3(0.65, 0.48, 1.05), vec3(0.0, 4.5, 3.0), pow2(pow2(currentM)));
+
+            vec2 planePos = wpos.xz * (0.9 + current) * 10.0 + cameraPosM;
+            planePos *= 0.003;
+
+            float noise = cubicFollowNoise(planePos);
+            noise = pow2(pow2(pow2(1.0 - 1.0 * abs(noise - 0.4))));
+
+            float anim1 = cubicFollowNoise(planePos * 0.5 + ViewPositionAndTime.w * 0.00);
+            float anim2 = cubicFollowNoise(planePos * 0.8 - ViewPositionAndTime.w * 0.00);
+            noise *= mix(anim1, anim2, 0.5);
+
+            aurora += noise * currentM *
+                mix(vec3(0.65, 0.48, 1.35),
+                    vec3(0.0, 5.55, 1.85),
+                    pow2(pow2(currentM)));
         }
 
-        aurora *= 3.8;
-        return aurora * visibility * nightFactor / float(sampleCount);
+        aurora *= 0.8;
+        return aurora * visibility / float(sampleCount);
     }
   #endif
 #endif
@@ -71,6 +81,8 @@ void main() {
     env = calculateSunParams(env, TimeOfDay.x);
 
     nl_skycolor skycol = nlOverworldSkyColors(env);
+    
+    float mask = (1.0-1.0*env.rainFactor)*max(1.0 - 3.0*max(v_fogColor.b, v_fogColor.g), 0.0);
 
     vec3 skyColor = nlRenderSky(skycol, env, -viewDir, v_underwaterRainTimeDay.z, true);
 
@@ -84,8 +96,8 @@ void main() {
 
     #ifdef NL_SKY_AURORA
     if (!env.underwater && !env.end && !env.nether) {
-      float dither = texture2D(s_NoiseTex, mod(gl_FragCoord.xy, 256.0)/256.0).r;
-      vec3 aurora = GetAurora(viewDir, v_underwaterRainTimeDay.z, dither, env.dayFactor);
+      float dither = fract(sin(dot(viewDir.xy, vec2(12.9898,78.233))) * 43758.5453);
+      vec3 aurora = GetAurora(viewDir, ViewPositionAndTime, dither) * mask;
       skyColor += aurora;
     }
     #endif
