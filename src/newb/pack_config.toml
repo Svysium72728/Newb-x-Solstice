@@ -27,70 +27,29 @@ You can compile the shader from source and distribute the result under your own 
 
 Contact (Discord Server): https://discord.gg/newb-community-844591537430069279
 ''' # %a = authors
-credits = '''minmin, devendrn, michaellynx
+credits = '''minmin, devendrn, michaellynx, jesus miguel gamer,goboyy
 '''
 
 # subpacks are arranged in left to right order
-# right-most subpack is enabled by default
+# right-most subpack is enabled by default'
+
 [[subpack]]
-define = "REALISTIC_CLOUDS"
-materials = ["Clouds", "RenderChunk"]
+define = "NL_EFFECTS_LOW"
+materials = ["Sky", "EndSky", "RenderChunk", "Actor"]
 description = '''
-Realistic clouds
+Low - no aurora, no black hole
 '''
 
 [[subpack]]
-define = "ROUNDED_CLOUDS"
-materials = ["Clouds"]
+define = "NL_EFFECTS_HEAVY"
+materials = ["Sky", "EndSky", "RenderChunk", "Actor"]
 description = '''
-Rounded Clouds
+Heavy - detailed aurora + black hole
 '''
 
 [[subpack]]
-define = "BOX_CLOUDS"
-materials = ["Clouds", "RenderChunk"]
+define = "NL_EFFECTS_MEDIUM"
+materials = ["Sky", "EndSky", "RenderChunk", "Actor"]
 description = '''
-Box Clouds
-'''
-
-[[subpack]]
-define = "CHUNK_ANIM"
-materials = ["RenderChunk"]
-description = '''
-Chunk loading animation
-'''
-
-[[subpack]]
-define = "NO_WAVE_NO_FOG"
-materials = ["RenderChunk"]
-description = '''
-No fog and wave effects
-'''
-
-[[subpack]]
-define = "NO_FOG"
-materials = ["RenderChunk"]
-description = '''
-No fog effect
-'''
-
-[[subpack]]
-define = "NO_WAVE"
-materials = ["RenderChunk"]
-description = '''
-No wave effects
-'''
-
-#[[subpack]]
-#define = "LITE"
-#materials = ["Sky", "RenderChunk", "Actor", "ActorGlint", "EndSky", "Clouds", "SunMoon", "Weather", "ItemInHandTextured", "ItemInHandColor", "ItemInHandColorGlint", "Stars"]
-#description = '''
-#Many effects disabled. A bit lighter!
-#'''
-
-[[subpack]]
-define = "DEFAULT"
-materials = []
-description = '''
-Default
+Medium - aurora + black hole
 '''
