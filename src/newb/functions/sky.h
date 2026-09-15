@@ -111,6 +111,19 @@ vec3 renderOverworldSky(nl_skycolor skyCol, nl_environment env, vec3 viewDir, bo
         sky += spectrum(24.2*(0.85-g.x))*rainbowFade*skyCol.horizon;
     }
 #endif
+#ifdef NL_SUN_BLOOM_SQUARE
+    vec3 sunUp = abs(env.sunDir.y) < 0.99 ? vec3(0.0,1.0,0.0) : vec3(1.0,0.0,0.0);
+    vec3 sunTangent = normalize(cross(sunUp, env.sunDir));
+    vec3 sunBitangent = cross(env.sunDir, sunTangent);
+    float sunForward = dot(viewDir, env.sunDir);
+    if (sunForward > 0.0) {
+        float su = dot(viewDir, sunTangent) / sunForward;
+        float sv = dot(viewDir, sunBitangent) / sunForward;
+        float squareDist = max(abs(su), abs(sv));
+        float squareBloom = 1.0 - smoothstep(NL_SUN_BLOOM_SIZE, NL_SUN_BLOOM_SIZE + NL_SUN_BLOOM_SOFTNESS, squareDist);
+        sky += squareBloom * NL_SUN_BLOOM_COLOR * NL_SUN_BLOOM_STRENGTH * max(env.dayFactor, 0.0);
+    }
+#endif
     return sky;
 }
 
@@ -215,7 +228,6 @@ vec3 nlRenderGalaxy(vec3 vdir, vec3 fogColor, nl_environment env, float t) {
     stars += (0.4*gf+0.012)*mix(vec3(0.5, 0.5, 0.5), gfcol*gfcol, NL_GALAXY_VIBRANCE);
     stars *= mix(1.0, NL_GALAXY_DAY_VISIBILITY, env.dayFactor);
     return stars*(1.0-env.rainFactor);
-
 }
 
 #endif // SKY_H
