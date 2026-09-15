@@ -184,9 +184,8 @@
 #define NL_CLOUD4_SPEED 0.8               // 0.0 static ~ 0.1 fast moving
 #define NL_CLOUD4_SHADOW 1.0               // 0.1 subtle ~ 1.0 dark shadow
 #define NL_CLOUD4_SHADOW_OFFSET 0.2        // 0.05 minimal ~ 1.0 large
-//#define NL_CLOUD_AURORA_REFLECTION         //[toggle] it doesnt really reflect aurora but it reflect type 4  
 
-/* Aurora settings */
+/* Aurora settings (old sine-based, unused, kept for reference) */
 //#define NL_AURORA 1.2           // [toggle] 0.4 dim ~ 4.0 very bright
 #define NL_AURORA_VELOCITY 0.03 // 0.0 static ~ 0.3 very fast
 #define NL_AURORA_SCALE 0.04    // 0.002 large ~ 0.4 tiny
@@ -194,16 +193,7 @@
 #define NL_AURORA_COL1 vec3(0.1,1.0,0.0)
 #define NL_AURORA_COL2 vec3(0.1,0.0,1.0)
 
-#define NL_CLOUD_AURORA_REFLECTION // [toggle] simple clouds/aurora reflection
-
-/* Maybe a complementary styled Aurora  */
-#define NL_SKY_AURORA                    // [toggle] enable 3D aurora curtains
-#define NL_SKY_AURORA_SPEED 2.0          // aurora speed
-#define NL_SKY_AURORA_BRIGHTNESS 1.2     // 0.5 dim ~ 3.0 bright
-#define NL_SKY_AURORA_COLOR vec3(0.1, 0.95, 0.85)    // Primary color (Cyan/Teal)
-#define NL_SKY_AURORA_COLOR2 vec3(0.439,0.0,0.424)   // Secondary color (Purple)
-#define NL_SKY_AURORA_BASE 0.15
-#define NL_SKY_AURORA_COVERAGE 0.55
+#define NL_CLOUD_AURORA_REFLECTION // [toggle] simple clouds/aurora reflection (reflects type 4 clouds on water)
 
 /* Shooting star */
 #define NL_SHOOTING_STAR 1.0        // [toggle] 0.2 dim ~ 1.0 bright
@@ -232,8 +222,7 @@
 /* Fake godrays during sunrise/sunset */
 #define NL_GODRAY 0.8 // [toggle] 0.1 subtle ~ 0.8 strong
 
-/* Black hole (End sky) */
-#define NL_BLACKHOLE
+/* Black hole value tuning (feature itself toggled per subpack tier below) */
 #define NL_BH_SPEED 0.05
 #define NL_BH_DIST 1.0
 #define NL_BH_AZIMUTH 2.4
@@ -273,24 +262,6 @@
   Build tool will enable corresponding flags when compiling.
 */
 
-#ifdef LITE
-  #define NO_WAVE
-  #undef NL_GLOW_SHIMMER
-  #undef NL_LAVA_NOISE
-  #undef NL_WEATHER_SPECK
-  #undef NL_SHOOTING_STAR
-  #undef NL_CLOUD_AURORA_REFLECTION
-  #undef NL_UNDERWATER_STREAKS
-  #undef NL_RAIN_MIST_OPACITY
-  #undef NL_CLOUDY_FOG
-  #undef NL_ENTITY_EDGE_HIGHLIGHT
-#endif
-
-#ifdef NO_WAVE_NO_FOG
-  #define NO_WAVE
-  #define NO_FOG
-#endif
-
 #ifdef NO_FOG
   #undef NL_FOG
 #endif
@@ -303,26 +274,21 @@
   #undef NL_RAIN_MIST_OPACITY
 #endif
 
-#ifdef CHUNK_ANIM
-  #define NL_CHUNK_LOAD_ANIM 100.0
+/* Effects tiers - aurora & black hole */
+#ifdef NL_EFFECTS_MEDIUM
+  #define NL_SKY_AURORA
+  #define NL_SKY_AURORA_MEDIUM
+  #define NL_SKY_AURORA_SPEED 4.0
+  #define NL_SKY_AURORA_SHARPNESS 1.6
+  #define NL_SKY_AURORA_FALLOFF 2.5
+  #define NL_BLACKHOLE
 #endif
 
-#ifdef ROUNDED_CLOUDS
-  #undef NL_CLOUD_TYPE
-  #define NL_CLOUD_TYPE 2
-  #undef NL_CLOUD_SHADOW // TODO: Cloud shadow for rounded, realistic clouds
-#endif
-
-#ifdef BOX_CLOUDS
-  #undef NL_CLOUD_TYPE
-  #define NL_CLOUD_TYPE 0
-  #undef NL_CLOUD_SHADOW
-#endif
-
-#ifdef REALISTIC_CLOUDS
-  #undef NL_CLOUD_TYPE
-  #define NL_CLOUD_TYPE 3
-  #undef NL_CLOUD_SHADOW
+#ifdef NL_EFFECTS_HEAVY
+  #define NL_SKY_AURORA
+  #define NL_SKY_AURORA_HEAVY
+  #define NL_SKY_AURORA_SPEED 4.0
+  #define NL_BLACKHOLE
 #endif
 
 #endif
