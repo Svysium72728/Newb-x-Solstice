@@ -64,8 +64,8 @@ void main() {
     float cloudAlpha = clamp(length(cloudNoise.r), 0.0, 1.0);
     
     vec3 baseHorizon = v_color2.rgb;
-    vec3 cloudcol = baseHorizon / max(v_dayFactor, 0.01);
-    cloudcol = clamp(cloudcol * 1.5, 0.0, 1.5);
+    float dayBright = clamp(v_dayFactor*0.5+0.5, 0.0, 1.0);
+vec3 cloudcol = baseHorizon * mix(NL_CLOUD4_NIGHT_DARKEN, 1.5, dayBright);
 
     color = vec4(cloudcol, cloudAlpha * fadeFactor);
     
