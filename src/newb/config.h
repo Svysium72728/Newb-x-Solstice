@@ -229,7 +229,7 @@
 #define NL_BH_AZIMUTH 2.4
 #define NL_BH_HEIGHT 0.5
 #define NL_BH_COL_LOW  vec3(0.784,0.580,0.969)
-#define NL_BH_COL_HIGH vec3(0.949,0.682,0.941)
+#define NL_BH_COL_HIGH vec3(0.592,0.439,0.980)
 #define NL_BH_REFLECT_STRENGTH 6.0
 
 /* Sky reflection */
