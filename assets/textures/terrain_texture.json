@@ -10,6 +10,11 @@
         // deepslate_diamond_ore
         "deepslate_diamond_ore": {
             "textures": "textures/blocks/deepslate/deepslate_diamond_ore"
+
+        // [ textures/blocks/liquids ]
+        // water_still
+        "water_still": {
+            "textures": "textures/blocks/liquids/water_still"
         },
         // deepslate_emerald_ore
         "deepslate_emerald_ore": {
