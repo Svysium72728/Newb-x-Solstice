@@ -82,9 +82,9 @@
 #define NL_SKY_RAIN_MIX_FACTOR 0.9
 
 /* Sky colors - zenith=top, horizon=bottom */
-#define NL_DAWN_ZENITH_COL   vec3(0.70,0.50,0.40)
-#define NL_DAWN_HORIZON_COL  vec3(0.98,0.75,0.50)
-#define NL_DAWN_EDGE_COL     vec3(0.80,0.35,0.35)
+#define NL_DAWN_ZENITH_COL   vec3(0.571,0.419,0.484)
+#define NL_DAWN_HORIZON_COL  vec3(0.793,0.550,0.562)
+#define NL_DAWN_EDGE_COL     vec3(1.267,0.856,0.762)
 #define NL_DAY_ZENITH_COL    vec3(0.3,0.9,2.0)
 #define NL_DAY_HORIZON_COL   vec3(1.0,1.6,1.8)
 #define NL_DAY_EDGE_COL      vec3(1.44,1.56,1.62)
@@ -236,6 +236,8 @@
 //#define NL_GROUND_REFL 0.4       // [toggle] 0.2 slightly reflective ~ 1.0 fully reflect sky
 #define NL_GROUND_RAIN_WETNESS 1.0 // 0.0 no wetness ~ 1.0 fully wet blocks when raining
 #define NL_GROUND_RAIN_PUDDLES 0.7 // 0.0 no puddles ~ 1.0 puddles
+#define NL_END_GROUND_REFL
+#define NL_END_GROUND_REFL_STRENGTH 0.7 // 0.1 subtle ~ 1.0 strongly reflective
 
 /* Entity (Actor, ItemInHand) */
 #define NL_ENTITY_BRIGHTNESS     0.50 // 0.1 dark ~ 1.6 bright
