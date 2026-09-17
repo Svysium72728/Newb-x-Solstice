@@ -122,9 +122,9 @@
 #define NL_WAVE_RANGE 13.0     // 6.0 upto 6 blocks ~ 32.0 upto 32 blocks away (slower)
 
 /* Water */
-#define NL_WATER_TRANSPARENCY 0.9 // 0.0 transparent ~ 1.0 normal
-#define NL_WATER_BUMP 0.09        // 0.001 plain ~ 0.2 bumpy water
-#define NL_WATER_WAVE_SPEED  0.8  // 0.2 calm ~ 2.0 turbulent
+#define NL_WATER_TRANSPARENCY 1.0 // 0.0 transparent ~ 1.0 normal
+#define NL_WATER_BUMP 0.15        // 0.001 plain ~ 0.2 bumpy water
+#define NL_WATER_WAVE_SPEED  1.2  // 0.2 calm ~ 2.0 turbulent
 #define NL_WATER_TEX_OPACITY 1.0  // 0.0 plain water ~ 1.0 vanilla water texture
 #define NL_WATER_WAVE             // [toggle] wave effect
 #define NL_WATER_REFL_MASK      // [toggle] fake water reflection mask
@@ -184,7 +184,7 @@
 #define NL_CLOUD4_SPEED 0.8               // 0.0 static ~ 0.1 fast moving
 #define NL_CLOUD4_SHADOW 1.0               // 0.1 subtle ~ 1.0 dark shadow
 #define NL_CLOUD4_SHADOW_OFFSET 0.2        // 0.05 minimal ~ 1.0 large
-#define NL_CLOUD4_NIGHT_DARKEN 0.45       // 0.1 very dark ~ 1.0 same as day
+#define NL_CLOUD4_NIGHT_DARKEN 0.29       // 0.1 very dark ~ 1.0 same as day
 
 /* Aurora settings (old sine-based, unused, kept for reference) */
 //#define NL_AURORA 1.2           // [toggle] 0.4 dim ~ 4.0 very bright
