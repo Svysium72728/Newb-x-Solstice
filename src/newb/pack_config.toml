@@ -3,11 +3,11 @@ version = [0, 1, 0]
 min_supported_mc_version = [1, 26, 40]
 description = '''
 §c%w
-§7Newb x Krispy §8— an enhanced vanilla shader for Minecraft Bedrock
+§7Newb x Krispy, an enhanced vanilla shader for Minecraft Bedrock
 
-§7A modified fork of the original Newb shader, inspired by:
-§7  • Complementary Shaders Reimagined
-§7  • Super Duper Vanilla Shader
+A modified fork of the original Newb shader, inspired by:
+• §sComplementary Shaders §dReimagined
+• §uSuper Duper Vanilla Shader
 
 %v
 §3https://newb-shader.devendrn.com/
@@ -27,7 +27,7 @@ You can compile the shader from source and distribute the result under your own 
 
 Contact (Discord Server): https://discord.gg/newb-community-844591537430069279
 ''' # %a = authors
-credits = '''minmin, devendrn, michaellynx, jesus miguel gamer,goboyy
+credits = '''minmin, devendrn, Michaellynx, Jesus miguel gamer,Goboyy, Bedrocktweaks, Vanillatweaks
 '''
 
 # subpacks are arranged in left to right order
