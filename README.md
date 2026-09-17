@@ -1,6 +1,6 @@
 # Newb X Krispy
 
-**Newb X Krispy** is a modification version of the popular renderdragon shader, [newb classic](github.com/newb-x-mcbe) (previouly newb x legacy). this shader add stuff like a giant blackhole in the end,and An Aurora at the night (heavy and medium subpack only). because of limitation this shader only support the android platform
+**Newb X Krispy** is a modification version of the popular renderdragon shader, [newb classic](github.com/newb-x-mcbe) (previouly newb x legacy). this shader add stuff like a giant blackhole in the end,and An Aurora at the night (heavy and medium subpack only). because of limitation this shader only support the android platform.
 
 <br>
 
