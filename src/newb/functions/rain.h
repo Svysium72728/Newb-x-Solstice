@@ -20,6 +20,23 @@ vec4 nlRefl(
 ) {
   vec4 wetRefl = vec4(0.0,0.0,0.0,0.0);
 
+  #ifdef NL_END_GROUND_REFL
+  if (env.end) {
+    float endDist = renderDist*0.6;
+    if (camDist < endDist && wPos.y < 0.0) {
+      float cosR = max(viewDir.y, 0.0);
+      viewDir.y = -viewDir.y;
+
+      wetRefl.rgb = nlRenderSky(skycol, env, viewDir, t, false);
+      wetRefl.rgb += torchColor*lit.x*NL_TORCHLIGHT_INTENSITY;
+
+      wetRefl.a = calculateFresnel(cosR, 0.03)*NL_END_GROUND_REFL_STRENGTH;
+      wetRefl.a *= clamp(2.0-2.0*camDist/endDist, 0.0, 1.0);
+    }
+    return wetRefl;
+  }
+  #endif
+
   #ifndef NL_GROUND_REFL
   if (env.rainFactor > 0.0) {
   #endif
