@@ -136,7 +136,7 @@ float renderBeamShape(float a, float elevation, float azimuth, float height) {
     beamAngle -= 6.28318*floor(beamAngle/6.28318+0.5);
     float core = exp(-NL_ENDGLOW_WIDTH*beamAngle*beamAngle);
     core = pow(core, NL_ENDGLOW_SHARPNESS);
-    float vertical = smoothstep(height, -0.3, elevation);
+    float vertical = 1.0 - smoothstep(-0.3, height, elevation);
     return core*vertical;
 }
 
