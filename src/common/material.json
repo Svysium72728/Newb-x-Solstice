@@ -1,5 +1,4 @@
 {
-  "version": 26,
   "uniform_overrides": {
     "WeatherID": "BUILTIN_MinecraftWeatherID",
     "BiomeID": "BUILTIN_MinecraftBiomeID",
