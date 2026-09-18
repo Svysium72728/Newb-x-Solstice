@@ -285,6 +285,8 @@
   #define NL_SKY_AURORA_SHARPNESS 1.6
   #define NL_SKY_AURORA_FALLOFF 2.5
   #define NL_BLACKHOLE
+  #undef NL_ENDGLOW_COUNT
+  #define NL_ENDGLOW_COUNT 13
 #endif
 
 #ifdef NL_EFFECTS_HEAVY
@@ -292,6 +294,8 @@
   #define NL_SKY_AURORA_HEAVY
   #define NL_SKY_AURORA_SPEED 4.0
   #define NL_BLACKHOLE
+  #undef NL_ENDGLOW_COUNT
+  #define NL_ENDGLOE_COUNT 17
 #endif
 
 #endif
