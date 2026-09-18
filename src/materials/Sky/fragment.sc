@@ -36,7 +36,7 @@
           cameraPosM.x += t * NL_SKY_AURORA_SPEED;
 
           const int sampleCount = 5;
-          const int sampleCountP = sampleCount + 10;
+          const int sampleCountP = sampleCount + 8;
 
           float ditherM = dither + 10.0;
           float auroraAnimate = t * 0.0;
