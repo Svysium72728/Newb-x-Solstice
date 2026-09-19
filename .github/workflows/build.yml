@@ -10,7 +10,7 @@ on:
       platform:
         description: 'Target platform to build for'
         required: true
-        default: 'Multi-platform'
+        default: 'Android'
         type: choice
         options:
         - Android
