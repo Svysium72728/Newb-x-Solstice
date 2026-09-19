@@ -127,15 +127,15 @@
 #define NL_WATER_WAVE_SPEED  1.2  // 0.2 calm ~ 2.0 turbulent
 #define NL_WATER_TEX_OPACITY 1.0  // 0.0 plain water ~ 1.0 vanilla water texture
 #define NL_WATER_WAVE             // [toggle] wave effect
-#define NL_WATER_REFL_MASK      // [toggle] fake water reflection mask
-#define NL_WATER_TINT vec3(0.52,0.9,0.45)
+//#define NL_WATER_REFL_MASK      // [toggle] fake water reflection mask
+#define NL_WATER_TINT vec3(0.451,0.467,0.961)
 
 /* Underwater */
 #define NL_UNDERWATER_BRIGHTNESS 1.2         // 0.0 dark ~ 3.0 bright
 #define NL_CAUSTIC_INTENSITY 3.4             // 0.5 weak ~ 5.0 bright
 #define NL_UNDERWATER_WAVE 0.1               // [toggle] 0.02 subtle ~ 0.6 trippy
-#define NL_UNDERWATER_STREAKS 1.0            // [toggle] 0.8 subtle - 2.0 bright streaks from top
-#define NL_UNDERWATER_TINT vec3(0.008,0.165,0.322) // fog tint color when underwater
+#define NL_UNDERWATER_STREAKS 2.0            // [toggle] 0.8 subtle - 2.0 bright streaks from top
+#define NL_UNDERWATER_TINT vec3(0.451,0.467,0.961) // fog tint color when underwater
 #define NL_WATER_LIGHT_STREAK_STRENGTH 3.0
 
 /* Cloud type */
