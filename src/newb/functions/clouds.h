@@ -219,7 +219,7 @@ vec4 nlCloudAuroraReflection(nl_skycolor skycol, nl_environment env, vec3 viewDi
   vec2 cloudPos = wPos.xz;
   float divY = min(viewDir.y, -0.05); // prevent near-zero denominator blowup at grazing angles
   cloudPos += (187.0-(wPos.y+CAMERA_POS.y))*viewDir.xz/divY;
-  float fade = clamp(2.0 - 0.005*length(cloudPos), 0.0, 1.0);
+  float fade = clamp(2.0 - 0.0008*length(cloudPos), 0.0, 1.0);
   cloudPos += CAMERA_POS.xz;
 
   vec4 refl = vec4_splat(0.0);
