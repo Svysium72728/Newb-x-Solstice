@@ -94,8 +94,8 @@
 #define NL_RAIN_ZENITH_COL   vec3(0.47,0.51,0.56)
 #define NL_RAIN_HORIZON_COL  vec3(0.6,0.6,0.6)
 
-#define NL_END_ZENITH_COL    vec3(0.60,0.0,0.969)
-#define NL_END_HORIZON_COL   vec3(0.60,0.0,0.969)
+#define NL_END_ZENITH_COL    vec3(0.310,0.0,0.60)
+#define NL_END_HORIZON_COL   vec3(0.310,0.0,0.60)
 
 
 /* Rainbow */
@@ -118,7 +118,7 @@
 #define NL_PLANTS_WAVE 0.05    // [toggle] 0.02 gentle ~ 0.4 violent
 #define NL_LANTERN_WAVE 0.16   // [toggle] 0.05 subtle ~ 0.4 large swing
 #define NL_WAVE_SPEED 2.8      // 0.5 slow wave ~ 5.0 very fast wave
-//#define NL_EXTRA_PLANTS_WAVE // [toggle] !dont use! wave using texture coords (1.21.0 vanilla 2048x1024)
+#define NL_EXTRA_PLANTS_WAVE // [toggle] !dont use! wave using texture coords (1.21.0 vanilla 2048x1024)
 #define NL_WAVE_RANGE 13.0     // 6.0 upto 6 blocks ~ 32.0 upto 32 blocks away (slower)
 
 /* Water */
@@ -198,8 +198,8 @@
 
 /* Shooting star */
 #define NL_SHOOTING_STAR 1.0        // [toggle] 0.2 dim ~ 1.0 bright
-#define NL_SHOOTING_STAR_PERIOD 6.0 // 0.4 fast ~ 12.0 slow (12 secs)
-#define NL_SHOOTING_STAR_DELAY 12.0 // 0.0 no delay ~ 100.0 long time (100 secs)
+#define NL_SHOOTING_STAR_PERIOD 2.0 // 0.4 fast ~ 12.0 slow (12 secs)
+#define NL_SHOOTING_STAR_DELAY 6.0 // 0.0 no delay ~ 100.0 long time (100 secs)
 
 /* Galaxy */
 //#define NL_GALAXY_STARS 2.0           // [toggle] 0.1 dim - 4.0 bright
@@ -229,7 +229,7 @@
 #define NL_BH_AZIMUTH 2.4
 #define NL_BH_HEIGHT 0.5
 #define NL_BH_COL_LOW  vec3(0.784,0.580,0.969)
-#define NL_BH_COL_HIGH vec3(0.592,0.439,0.980)
+#define NL_BH_COL_HIGH vec3(0.494,0.227,0.741)
 #define NL_BH_REFLECT_STRENGTH 6.0
 
 /* Sky reflection */
@@ -237,7 +237,7 @@
 #define NL_GROUND_RAIN_WETNESS 1.0 // 0.0 no wetness ~ 1.0 fully wet blocks when raining
 #define NL_GROUND_RAIN_PUDDLES 0.7 // 0.0 no puddles ~ 1.0 puddles
 #define NL_END_GROUND_REFL
-#define NL_END_GROUND_REFL_STRENGTH 0.7 // 0.1 subtle ~ 1.0 strongly reflective
+#define NL_END_GROUND_REFL_STRENGTH 1.0 // 0.1 subtle ~ 1.0 strongly reflective
 
 /* Entity (Actor, ItemInHand) */
 #define NL_ENTITY_BRIGHTNESS     0.50 // 0.1 dark ~ 1.6 bright
