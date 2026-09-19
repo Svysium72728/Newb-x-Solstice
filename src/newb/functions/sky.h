@@ -131,15 +131,6 @@ float hash11(float x) {
     return fract(sin(x*127.1)*43758.5453);
 }
 
-float renderBeamShape(float a, float elevation, float azimuth, float height) {
-    float beamAngle = a - azimuth;
-    beamAngle -= 6.28318*floor(beamAngle/6.28318+0.5);
-    float core = exp(-NL_ENDGLOW_WIDTH*beamAngle*beamAngle);
-    core = pow(core, NL_ENDGLOW_SHARPNESS);
-    float vertical = 1.0 - smoothstep(-0.3, height, elevation);
-    return core*vertical;
-}
-
 vec3 renderEndSky(vec3 horizonCol, vec3 zenithCol, vec3 viewDir, float t) {
     t *= 0.1;
     float a = atan2(viewDir.x, viewDir.z);
@@ -151,17 +142,6 @@ vec3 renderEndSky(vec3 horizonCol, vec3 zenithCol, vec3 viewDir, float t) {
     streaks += (1.0-streaks)*smoothstep(1.0-waves, -1.0, viewDir.y);
     float f = 0.3*streaks+0.7*smoothstep(1.0, -0.5, viewDir.y);
     vec3 sky = mix(zenithCol, horizonCol, f*f);
-
-    vec3 beamColorSum = vec3(0.0);
-    for (int i = 0; i < NL_ENDGLOW_COUNT; i++) {
-        float fi = float(i);
-        float azimuth = hash11(fi*12.9898)*6.28318;
-        float height = mix(NL_ENDGLOW_HEIGHT_MIN, NL_ENDGLOW_HEIGHT_MAX, hash11(fi*78.233));
-        vec3 col = mix(NL_ENDGLOW_COLOR, NL_ENDGLOW_COLOR2, hash11(fi*45.164));
-        float shape = renderBeamShape(a, viewDir.y, azimuth, height);
-        beamColorSum += shape*col;
-    }
-    sky += beamColorSum*NL_ENDGLOW_STRENGTH;
 
     sky += 0.25*streaks*spectrum(sin(2.0*viewDir.x*viewDir.y+t));
     return sky;
