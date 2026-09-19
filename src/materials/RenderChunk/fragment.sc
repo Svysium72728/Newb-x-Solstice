@@ -1,4 +1,4 @@
-$input v_color0, v_color1, v_fog, v_refl, v_texcoord0, v_lightmapUV, v_extra
+$input v_color0, v_color1, v_fog, v_refl, v_texcoord0, v_lightmapUV, v_extra, v_causticData
 
 #include <bgfx_shader.sh>
 #include <newb/main.sh>
@@ -6,6 +6,7 @@ $input v_color0, v_color1, v_fog, v_refl, v_texcoord0, v_lightmapUV, v_extra
 SAMPLER2D_AUTOREG(s_MatTexture);
 SAMPLER2D_AUTOREG(s_SeasonsTexture);
 SAMPLER2D_AUTOREG(s_LightMapTexture);
+SAMPLER2D_AUTOREG(s_CausticTex);
 
 void main() {
   #if defined(DEPTH_ONLY_OPAQUE) || defined(DEPTH_ONLY) || defined(INSTANCING)
@@ -62,6 +63,14 @@ void main() {
       diffuse.rgb += v_refl.rgb*mask;
     }
   }
+
+  #if defined(NL_CAUSTIC_INTENSITY) && !(defined(RENDER_AS_BILLBOARDS) || defined(SEASONS))
+    if (v_causticData.z > 0.5 && v_extra.b < 0.9) {
+      vec2 causticUV = v_causticData.xy * 0.05;
+      float caustic = texture2D(s_CausticTex, causticUV).r;
+      diffuse.rgb += caustic * NL_CAUSTIC_INTENSITY * 0.3;
+    }
+  #endif
 
   diffuse.rgb = mix(diffuse.rgb, v_fog.rgb, v_fog.a);
 
