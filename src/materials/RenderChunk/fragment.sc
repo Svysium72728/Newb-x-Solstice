@@ -1,4 +1,8 @@
-$input v_color0, v_color1, v_fog, v_refl, v_texcoord0, v_lightmapUV, v_extra, v_causticData
+#ifdef NL_EFFECTS_HEAVY
+  $input v_color0, v_color1, v_fog, v_refl, v_texcoord0, v_lightmapUV, v_extra, v_causticData, v_viewDir
+#else
+  $input v_color0, v_color1, v_fog, v_refl, v_texcoord0, v_lightmapUV, v_extra, v_causticData
+#endif
 
 #include <bgfx_shader.sh>
 #include <newb/main.sh>
@@ -8,13 +12,27 @@ SAMPLER2D_AUTOREG(s_SeasonsTexture);
 SAMPLER2D_AUTOREG(s_LightMapTexture);
 SAMPLER2D_AUTOREG(s_CausticTex);
 
+#ifdef NL_EFFECTS_HEAVY
+vec2 nlHeightmapOffset(vec2 uv, vec3 viewDir, sampler2D tex, float strength) {
+  float height = texture2D(tex, uv).r;
+  vec2 offset = viewDir.xy * (height - 0.5) * strength;
+  return uv + offset;
+}
+#endif
+
 void main() {
   #if defined(DEPTH_ONLY_OPAQUE) || defined(DEPTH_ONLY) || defined(INSTANCING)
     gl_FragColor = vec4(1.0,1.0,1.0,1.0);
     return;
   #endif
 
-  vec4 diffuse = texture2D(s_MatTexture, v_texcoord0);
+  #ifdef NL_EFFECTS_HEAVY
+    vec2 parallaxUV = nlHeightmapOffset(v_texcoord0, v_viewDir, s_MatTexture, 0.02);
+    vec4 diffuse = texture2D(s_MatTexture, parallaxUV);
+  #else
+    vec4 diffuse = texture2D(s_MatTexture, v_texcoord0);
+  #endif
+
   vec4 color = v_color0;
 
   #ifdef ALPHA_TEST
