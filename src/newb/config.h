@@ -45,8 +45,8 @@
 //#define NL_CLOUD_SHADOW      // [toggle] cloud shadow (simple clouds only)
 
 /* End glowing beam ig */
-#define NL_ENDGLOW_COLOR2 vec3(0.741,0.431,0.961)
-#define NL_ENDGLOW_COLOR vec3(0.914,0.565,0.988)
+#define NL_ENDGLOW_COLOR2     vec3(0.741,0.431,0.961) //test
+#define NL_ENDGLOW_COLOR      vec3(0.914,0.565,0.988) //test
 #define NL_ENDGLOW_STRENGTH 1.5
 
 /* Ambient light for nether/end */
