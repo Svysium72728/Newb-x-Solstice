@@ -57,7 +57,7 @@
 
 /* Ambient light for nether/end */
 #define NL_NETHER_AMBIENT vec3(0.102,0.0,0.0)
-#define NL_END_AMBIENT    vec3(0.765,0.494,0.969)
+#define NL_END_AMBIENT    vec3(0.141,0.008,0.329)
 
 /* Sun/moon light color */
 #define NL_DAWN_SUNLIGHT_COL   vec3(1.0,0.4,0.1)
@@ -94,8 +94,8 @@
 #define NL_RAIN_ZENITH_COL   vec3(0.47,0.51,0.56)
 #define NL_RAIN_HORIZON_COL  vec3(0.6,0.6,0.6)
 
-#define NL_END_ZENITH_COL    vec3(0.310,0.0,0.60)
-#define NL_END_HORIZON_COL   vec3(0.310,0.0,0.60)
+#define NL_END_ZENITH_COL    vec3(0.224,0.004,0.529)
+#define NL_END_HORIZON_COL   vec3(0.224,0.004,0.529)
 
 
 /* Rainbow */
@@ -229,7 +229,7 @@
 #define NL_BH_AZIMUTH 2.4
 #define NL_BH_HEIGHT 0.5
 #define NL_BH_COL_LOW  vec3(0.784,0.580,0.969)
-#define NL_BH_COL_HIGH vec3(0.494,0.227,0.741)
+#define NL_BH_COL_HIGH vec3(0.318,0.161,0.541)
 #define NL_BH_REFLECT_STRENGTH 6.0
 
 /* Sky reflection */
