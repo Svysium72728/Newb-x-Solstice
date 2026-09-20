@@ -2,7 +2,11 @@ $input a_color0, a_position, a_texcoord0, a_texcoord1
 #ifdef INSTANCING
   $input i_data0, i_data1, i_data2, i_data3
 #endif
-$output v_color0, v_color1, v_fog, v_refl, v_texcoord0, v_lightmapUV, v_extra, v_causticData
+#ifdef NL_EFFECTS_HEAVY
+  $output v_color0, v_color1, v_fog, v_refl, v_texcoord0, v_lightmapUV, v_extra, v_causticData, v_viewDir
+#else
+  $output v_color0, v_color1, v_fog, v_refl, v_texcoord0, v_lightmapUV, v_extra, v_causticData
+#endif
 
 #include <bgfx_shader.sh>
 #include <newb/main.sh>
@@ -187,6 +191,9 @@ void main() {
   v_color1 = a_color0;
   v_fog = fogColor;
   v_causticData = vec3(gPos.x, gPos.z, env.underwater ? 1.0 : 0.0);
+  #ifdef NL_EFFECTS_HEAVY
+    v_viewDir = viewDir;
+  #endif
 
   #else
 
