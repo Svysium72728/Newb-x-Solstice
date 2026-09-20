@@ -126,16 +126,16 @@
 #define NL_WATER_BUMP 0.15        // 0.001 plain ~ 0.2 bumpy water
 #define NL_WATER_WAVE_SPEED  1.2  // 0.2 calm ~ 2.0 turbulent
 #define NL_WATER_TEX_OPACITY 1.0  // 0.0 plain water ~ 1.0 vanilla water texture
-#define NL_WATER_WAVE             // [toggle] wave effect
+//#define NL_WATER_WAVE             // [toggle] wave effect
 //#define NL_WATER_REFL_MASK      // [toggle] fake water reflection mask
-#define NL_WATER_TINT vec3(0.451,0.467,0.961)
+#define NL_WATER_TINT vec3(0.694,0.788,0.988)
 
 /* Underwater */
 #define NL_UNDERWATER_BRIGHTNESS 1.2         // 0.0 dark ~ 3.0 bright
 #define NL_CAUSTIC_INTENSITY 3.4             // 0.5 weak ~ 5.0 bright
 #define NL_UNDERWATER_WAVE 0.1               // [toggle] 0.02 subtle ~ 0.6 trippy
-#define NL_UNDERWATER_STREAKS 2.0            // [toggle] 0.8 subtle - 2.0 bright streaks from top
-#define NL_UNDERWATER_TINT vec3(0.451,0.467,0.961) // fog tint color when underwater
+#define NL_UNDERWATER_STREAKS 1.2           // [toggle] 0.8 subtle - 2.0 bright streaks from top
+#define NL_UNDERWATER_TINT vec3(0.694,0.788,0.988) // fog tint color when underwater
 #define NL_WATER_LIGHT_STREAK_STRENGTH 3.0
 
 /* Cloud type */
@@ -179,12 +179,12 @@
 #define NL_CLOUD3_SHADOW_OFFSET 0.3      // 0.05 minimal ~ 1.0 large
 
 /* Lightweight Clouds */
-#define NL_CLOUD4_SCALE vec2(0.050, 0.050) // 0.005 large ~ 0.1 tiny
+#define NL_CLOUD4_SCALE vec2(0.045, 0.045) // 0.005 large ~ 0.1 tiny
 #define NL_CLOUD4_SHAPE vec2(0.5, 0.4)     // 0.0 round ~ 1.0 box (ADDED THIS LINE)
 #define NL_CLOUD4_SPEED 0.8               // 0.0 static ~ 0.1 fast moving
 #define NL_CLOUD4_SHADOW 1.0               // 0.1 subtle ~ 1.0 dark shadow
 #define NL_CLOUD4_SHADOW_OFFSET 0.2        // 0.05 minimal ~ 1.0 large
-#define NL_CLOUD4_NIGHT_DARKEN 0.29       // 0.1 very dark ~ 1.0 same as day
+#define NL_CLOUD4_NIGHT_DARKEN 0.19       // 0.1 very dark ~ 1.0 same as day
 
 /* Aurora settings (old sine-based, unused, kept for reference) */
 //#define NL_AURORA 1.2           // [toggle] 0.4 dim ~ 4.0 very bright
