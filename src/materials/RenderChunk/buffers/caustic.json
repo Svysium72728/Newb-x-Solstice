@@ -12,7 +12,7 @@
   "texture_path": "textures/newb/caustic",
   "unknown": 0,
   "sampler_state": {
-    "filter": "Bilinear",
+    "filter": "Point",
     "wrapping": "Repeat"
   },
   "custom_type_info": {}
