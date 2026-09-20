@@ -122,14 +122,14 @@
 #define NL_WATER_TEX_OPACITY 1.0  // 0.0 plain water ~ 1.0 vanilla water texture
 //#define NL_WATER_WAVE             // [toggle] wave effect
 //#define NL_WATER_REFL_MASK      // [toggle] fake water reflection mask
-#define NL_WATER_TINT vec3(0.694,0.788,0.988)
+#define NL_WATER_TINT vec3(0.718,0.741,0.969)
 
 /* Underwater */
-#define NL_UNDERWATER_BRIGHTNESS 1.2         // 0.0 dark ~ 3.0 bright
+#define NL_UNDERWATER_BRIGHTNESS 1.7         // 0.0 dark ~ 3.0 bright
 #define NL_CAUSTIC_INTENSITY 0.4             // 0.5 weak ~ 5.0 bright
 #define NL_UNDERWATER_WAVE 0.1               // [toggle] 0.02 subtle ~ 0.6 trippy
-#define NL_UNDERWATER_STREAKS 0.7           // [toggle] 0.8 subtle - 2.0 bright streaks from top
-#define NL_UNDERWATER_TINT vec3(0.694,0.788,0.988) // fog tint color when underwater
+#define NL_UNDERWATER_STREAKS 0.4           // [toggle] 0.8 subtle - 2.0 bright streaks from top
+#define NL_UNDERWATER_TINT vec3(0.718,0.741,0.969) // fog tint color when underwater
 #define NL_WATER_LIGHT_STREAK_STRENGTH 0.0
 
 /* Cloud type */
@@ -231,7 +231,7 @@
 #define NL_GROUND_RAIN_WETNESS 1.0 // 0.0 no wetness ~ 1.0 fully wet blocks when raining
 #define NL_GROUND_RAIN_PUDDLES 0.7 // 0.0 no puddles ~ 1.0 puddles
 #define NL_END_GROUND_REFL
-#define NL_END_GROUND_REFL_STRENGTH 1.0 // 0.1 subtle ~ 1.0 strongly reflective
+#define NL_END_GROUND_REFL_STRENGTH 0.6 // 0.1 subtle ~ 1.0 strongly reflective
 
 /* Entity (Actor, ItemInHand) */
 #define NL_ENTITY_BRIGHTNESS     0.50 // 0.1 dark ~ 1.6 bright
