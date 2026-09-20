@@ -66,9 +66,8 @@ void main() {
 
   #if defined(NL_CAUSTIC_INTENSITY) && !(defined(RENDER_AS_BILLBOARDS) || defined(SEASONS))
     if (v_causticData.z > 0.5 && v_extra.b < 0.9) {
-    vec2 blockPos = floor(v_causticData.xy);
-    vec2 causticUV = blockPos; // 1.0 = one full texture tile per block
-    float caustic = texture2D(s_CausticTex, causticUV).r;
+      vec2 causticUV = fract(v_causticData.xy);
+      float caustic = texture2D(s_CausticTex, causticUV).r;
       diffuse.rgb += caustic * NL_CAUSTIC_INTENSITY * 0.3;
     }
   #endif
