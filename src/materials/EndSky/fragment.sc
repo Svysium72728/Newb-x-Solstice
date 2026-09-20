@@ -45,6 +45,22 @@ vec4 renderBlackhole(vec3 vdir, float t) {
 }
 #endif
 
+//end glow curtain (aurora-style, sky-only, not shared with ground reflection)
+
+vec3 renderEndGlowCurtain(vec3 viewDir, float t) {
+  float a = atan2(viewDir.x, viewDir.z);
+  float elevation = viewDir.y;
+
+  float bandPattern = sin(a*14.0) + 0.5*sin(a*23.0 + 1.3*t*0.02) + 0.3*sin(a*37.0 - 0.7*t*0.02);
+  bandPattern = smoothstep(0.7, 1.3, bandPattern);
+
+  float heightFade = smoothstep(-0.3, 0.5, elevation) * (1.0 - smoothstep(0.5, 1.0, elevation));
+
+  vec3 col = mix(NL_ENDGLOW_COLOR, NL_ENDGLOW_COLOR2, 0.5 + 0.5*sin(a*5.0 + t*0.05));
+
+  return col * bandPattern * heightFade * NL_ENDGLOW_STRENGTH;
+}
+
 void main() {
   #ifndef INSTANCING
     vec4 diffuse = texture2D(s_SkyTexture, v_texcoord0);
@@ -59,6 +75,9 @@ void main() {
 
     // Add the native cloud texture overlays over the horizon
     color += 2.8 * diffuse.rgb;
+
+    // Add the endglow curtain (sky-only, not reflected onto ground)
+    color += renderEndGlowCurtain(viewDir, t);
 
     // Blend Blackhole mathematical layer over the base sky box
     #ifdef NL_BLACKHOLE
