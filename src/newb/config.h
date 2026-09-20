@@ -130,7 +130,7 @@
 #define NL_UNDERWATER_WAVE 0.1               // [toggle] 0.02 subtle ~ 0.6 trippy
 #define NL_UNDERWATER_STREAKS 0.7           // [toggle] 0.8 subtle - 2.0 bright streaks from top
 #define NL_UNDERWATER_TINT vec3(0.694,0.788,0.988) // fog tint color when underwater
-//#define NL_WATER_LIGHT_STREAK_STRENGTH 3.0
+#define NL_WATER_LIGHT_STREAK_STRENGTH 0.0
 
 /* Cloud type */
 #define NL_CLOUD_TYPE 4 // 0:vanilla, 1:soft, 2:rounded, 3:realistic, 4:minmin's lightweight cloud
