@@ -13,10 +13,31 @@ SAMPLER2D_AUTOREG(s_LightMapTexture);
 SAMPLER2D_AUTOREG(s_CausticTex);
 
 #ifdef NL_EFFECTS_HEAVY
-vec2 nlHeightmapOffset(vec2 uv, vec3 viewDir, sampler2D tex, float strength) {
-  float height = texture2D(tex, uv).r;
-  vec2 offset = viewDir.xy * (height - 0.5) * strength;
-  return uv + offset;
+float luminance601(vec3 color) {
+    return color.r * 0.299 + color.g * 0.587 + color.b * 0.114;
+}
+
+vec3 getNormal(sampler2D tex, vec2 coord) {
+    vec2 texelSize = 1.0 / vec2(textureSize(tex, 0));
+    vec2 offsets = texelSize;
+
+    float tl = luminance601(texture2D(tex, coord + vec2(-offsets.x, -offsets.y)).rgb);
+    float t  = luminance601(texture2D(tex, coord + vec2(0.0, -offsets.y)).rgb);
+    float tr = luminance601(texture2D(tex, coord + vec2(offsets.x, -offsets.y)).rgb);
+    float l  = luminance601(texture2D(tex, coord + vec2(-offsets.x, 0.0)).rgb);
+    float r  = luminance601(texture2D(tex, coord + vec2(offsets.x, 0.0)).rgb);
+    float bl = luminance601(texture2D(tex, coord + vec2(-offsets.x, offsets.y)).rgb);
+    float b  = luminance601(texture2D(tex, coord + vec2(0.0, offsets.y)).rgb);
+    float br = luminance601(texture2D(tex, coord + vec2(offsets.x, offsets.y)).rgb);
+
+    float dx = (tr + 2.0*r + br) - (tl + 2.0*l + bl);
+    float dy = (bl + 2.0*b + br) - (tl + 2.0*t + tr);
+
+    vec2 gradient = vec2(dx, dy) * 0.75;
+    float lenSq = dot(gradient, gradient);
+    vec3 normal = vec3(gradient, sqrt(max(0.0, 1.0 - lenSq)));
+
+    return normalize(normal);
 }
 #endif
 
@@ -26,13 +47,7 @@ void main() {
     return;
   #endif
 
-  #ifdef NL_EFFECTS_HEAVY
-    vec2 parallaxUV = nlHeightmapOffset(v_texcoord0, v_viewDir, s_MatTexture, 0.02);
-    vec4 diffuse = texture2D(s_MatTexture, parallaxUV);
-  #else
-    vec4 diffuse = texture2D(s_MatTexture, v_texcoord0);
-  #endif
-
+  vec4 diffuse = texture2D(s_MatTexture, v_texcoord0);
   vec4 color = v_color0;
 
   #ifdef ALPHA_TEST
@@ -81,6 +96,13 @@ void main() {
       diffuse.rgb += v_refl.rgb*mask;
     }
   }
+
+  #ifdef NL_EFFECTS_HEAVY
+    vec3 fakeNormal = getNormal(s_MatTexture, v_texcoord0);
+    vec3 fakeLightDir = normalize(vec3(0.4, 0.7, 0.5));
+    float bump = dot(fakeNormal, fakeLightDir);
+    diffuse.rgb *= 0.85 + 0.3*bump;
+  #endif
 
   #if defined(NL_CAUSTIC_INTENSITY) && !(defined(RENDER_AS_BILLBOARDS) || defined(SEASONS))
     if (v_causticData.z > 0.5 && v_extra.b < 0.9) {
