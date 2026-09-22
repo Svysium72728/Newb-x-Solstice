@@ -45,8 +45,8 @@
 //#define NL_CLOUD_SHADOW      // [toggle] cloud shadow (simple clouds only)
 
 /* End glowing beam ig */
-#define NL_ENDGLOW_COLOR2     vec3(0.980,0.824,0.263) //test
-#define NL_ENDGLOW_COLOR      vec3(0.980,0.824,0.263) //test
+#define NL_ENDGLOW_COLOR2     vec3(0.584,0.314,0.702)//test
+#define NL_ENDGLOW_COLOR      vec3(0.933,0.561,1.0) //test
 #define NL_ENDGLOW_STRENGTH 1.5
 
 /* Ambient light for nether/end */
@@ -76,9 +76,9 @@
 #define NL_SKY_RAIN_MIX_FACTOR 0.9
 
 /* Sky colors - zenith=top, horizon=bottom */
-#define NL_DAWN_ZENITH_COL   vec3(0.45,0.38,0.78)
-#define NL_DAWN_HORIZON_COL  vec3(0.95,0.55,0.68) 
-#define NL_DAWN_EDGE_COL     vec3(1.55,0.82,0.48) 
+#define NL_DAWN_ZENITH_COL   vec3(0.333,0.161,0.431)
+#define NL_DAWN_HORIZON_COL  vec3(0.969,0.514,0.949) 
+#define NL_DAWN_EDGE_COL     vec3(1.3,0.535,0.250) 
 #define NL_DAY_ZENITH_COL    vec3(0.3,0.9,2.0)
 #define NL_DAY_HORIZON_COL   vec3(1.0,1.6,1.8)
 #define NL_DAY_EDGE_COL      vec3(1.44,1.56,1.62)
