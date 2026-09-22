@@ -4,6 +4,11 @@
 #include "detection.h"
 #include "noise.h"
 
+#define NL_GODRAY_SPOKE_COUNT 14.0
+#define NL_GODRAY_SPOKE_SHARPNESS 3.0
+#define NL_GODRAY_STRENGTH 0.4
+#define NL_GODRAY_COLOR vec3(1.0, 0.95, 0.8)
+
 struct nl_skycolor {
     vec3 zenith;
     vec3 horizon;
@@ -71,6 +76,34 @@ nl_skycolor nlSkyColors(nl_environment env) {
     return nlOverworldSkyColors(env);
 }
 
+float hash11(float x) {
+    return fract(sin(x*127.1)*43758.5453);
+}
+
+vec3 nlRenderGodrays(vec3 viewDir, nl_environment env, float t) {
+    if (env.underwater || env.end) {
+        return vec3_splat(0.0);
+    }
+    float sunAmount = max(dot(viewDir, env.sunDir), 0.0);
+    if (sunAmount < 0.4) {
+        return vec3_splat(0.0);
+    }
+    vec3 sunUp = abs(env.sunDir.y) < 0.99 ? vec3(0.0,1.0,0.0) : vec3(1.0,0.0,0.0);
+    vec3 sunTangent = normalize(cross(sunUp, env.sunDir));
+    vec3 sunBitangent = cross(env.sunDir, sunTangent);
+    float su = dot(viewDir, sunTangent);
+    float sv = dot(viewDir, sunBitangent);
+    float ang = atan2(sv, su);
+    float spokes = 0.5+0.5*sin(NL_GODRAY_SPOKE_COUNT*ang + 2.0*hash11(floor(ang*3.0)));
+    spokes = pow(spokes, NL_GODRAY_SPOKE_SHARPNESS);
+    float cone = smoothstep(0.4, 1.0, sunAmount);
+    cone *= cone;
+    float dayMask = max(env.dayFactor, 0.0);
+    float rainMask = 1.0-env.rainFactor;
+    float rays = spokes*cone*dayMask*rainMask*NL_GODRAY_STRENGTH;
+    return rays*NL_GODRAY_COLOR;
+}
+
 vec3 renderOverworldSky(nl_skycolor skyCol, nl_environment env, vec3 viewDir, bool isSkyPlane) {
     float avy = abs(viewDir.y);
     float mask = 0.5 + (0.5*viewDir.y/(0.4+avy));
@@ -124,11 +157,10 @@ vec3 renderOverworldSky(nl_skycolor skyCol, nl_environment env, vec3 viewDir, bo
         sky += squareBloom * NL_SUN_BLOOM_COLOR * NL_SUN_BLOOM_STRENGTH * max(env.dayFactor, 0.0);
     }
 #endif
+#ifdef NL_GODRAY
+    sky += nlRenderGodrays(viewDir, env, 0.0);
+#endif
     return sky;
-}
-
-float hash11(float x) {
-    return fract(sin(x*127.1)*43758.5453);
 }
 
 vec3 renderEndSky(vec3 horizonCol, vec3 zenithCol, vec3 viewDir, float t) {
