@@ -6,7 +6,6 @@
 
 #define NL_GODRAY_SPOKE_COUNT 14.0
 #define NL_GODRAY_SPOKE_SHARPNESS 3.0
-#define NL_GODRAY_STRENGTH 0.4
 #define NL_GODRAY_COLOR vec3(1.0, 0.95, 0.8)
 
 struct nl_skycolor {
@@ -100,7 +99,7 @@ vec3 nlRenderGodrays(vec3 viewDir, nl_environment env, float t) {
     cone *= cone;
     float dayMask = max(env.dayFactor, 0.0);
     float rainMask = 1.0-env.rainFactor;
-    float rays = spokes*cone*dayMask*rainMask*NL_GODRAY_STRENGTH;
+    float rays = spokes*cone*dayMask*rainMask*NL_GODRAY;
     return rays*NL_GODRAY_COLOR;
 }
 
