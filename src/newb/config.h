@@ -216,6 +216,10 @@
 
 /* Fake godrays during sunrise/sunset */
 #define NL_GODRAY 0.8 // [toggle] 0.1 subtle ~ 0.8 strong
+#define NL_GODRAY_SPOKE_COUNT 5.0
+#define NL_GODRAY_SPOKE_SHARPNESS 3.0
+#define NL_GODRAY_STRENGTH 0.4
+#define NL_GODRAY_COLOR vec3(1.0, 0.95, 0.8)
 
 /* Black hole value tuning (feature itself toggled per subpack tier below) */
 #define NL_BH_SPEED 0.05
