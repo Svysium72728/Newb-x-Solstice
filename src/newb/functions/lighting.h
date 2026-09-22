@@ -208,7 +208,7 @@ vec3 nlEntityLighting(nl_skycolor skycol, nl_environment env, vec3 pos, vec4 nor
   lum = luminance(light);
   if (!(env.nether || env.end)) {
     lum = luminance(light);
-    light += vec3_splat(min(tileLightCol.r, 0.15)*(NL_MIN_LIGHTING_BOOST/(1.0+lum)));
+    light += vec3_splat(gameBrightness*(NL_MIN_LIGHTING_BOOST*mix(1.0, 0.4, nightIntensity)/(1.0+lum)));
   }
 
   if (env.underwater) {
