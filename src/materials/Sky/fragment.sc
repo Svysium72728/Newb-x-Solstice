@@ -39,23 +39,23 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
           const int sampleCountP = sampleCount + int(0.667 * float(sampleCount));
 
           float ditherM = dither + 10.0;
-          float auroraAnimate = t * 0.02;
+          float auroraAnimate = t * 0.0;
 
           for (int i = 0; i < sampleCount; i++) {
               float current = pow2((float(i) + ditherM) / float(sampleCountP));
-              vec2 planePos = wpos.xz * (0.8 + current) * 11.0 + cameraPosM;
-              planePos = floor(planePos) * 0.0007;
-
-              float noise = texture2D(s_NoiseTex, planePos).b;
-              noise = pow2(pow2(pow2(pow2(1.0 - 2.0 * abs(noise - 0.5)))));
-              noise *= pow1_5(texture2D(s_NoiseTex, planePos * 100.0 + auroraAnimate).b);
-
+              vec2 planePos = wpos.xz * (0.8 + current) * 10.0 + cameraPosM;
+              planePos *= 0.0007;
+              float noise = texture2D(s_NoiseTex, planePos).r;
+              noise = clamp((1.0 - 0.8*abs(noise - 0.5)) * NL_SKY_AURORA_SHARPNESS - (NL_SKY_AURORA_SHARPNESS - 1.0), 0.0, 1.0);
+              noise = pow2(pow2(noise));
+              noise *= texture2D(s_NoiseTex, planePos * 8.0 + auroraAnimate).g;
+              noise *= texture2D(s_NoiseTex, planePos * 1.0 - auroraAnimate).r;
               float currentM = 1.0 - current;
               float layerWeight = pow(currentM, NL_SKY_AURORA_FALLOFF);
               aurora += noise * layerWeight * mix(vec3(0.65, 0.48, 1.05), vec3(0.0, 4.5, 3.0), pow2(pow2(currentM)));
           }
 
-          aurora *= 1.3;
+          aurora *= 3.8;
           return aurora * visibility * nightFactor / float(sampleCount);
       }
     #endif
