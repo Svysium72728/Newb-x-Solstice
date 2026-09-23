@@ -44,36 +44,23 @@ $input v_texcoord0, v_posTime
   }
   #endif
 
-  //end glow curtain (aurora-style, sky-only, not shared with ground reflection)
+  //end ambient glow (soft nebula-style haze, brightest near horizon, sky-only)
 
-  vec3 renderEndGlowCurtain(vec3 viewDir, float t) {
-    float a = atan2(viewDir.x, viewDir.z);
-    float elevation = viewDir.y;
+  vec3 renderEndAmbientGlow(vec3 viewDir, float t) {
+      float elevation = viewDir.y;
 
-    float bandPattern = sin(a*14.0) + 0.5*sin(a*23.0 + 1.3*t*0.02) + 0.3*sin(a*37.0 - 0.7*t*0.02);
-    bandPattern = smoothstep(0.7, 1.3, bandPattern);
+      float heightFade = smoothstep(0.5, -0.4, elevation);
+      heightFade *= heightFade;
 
-    float heightFade = smoothstep(-0.3, 0.5, elevation) * (1.0 - smoothstep(0.5, 1.0, elevation));
+      float a = atan2(viewDir.x, viewDir.z);
+      float n1 = sin(a*3.0 + viewDir.y*4.0 + t*0.01);
+      float n2 = sin(a*7.0 - viewDir.y*2.0 - t*0.015 + n1);
+      float haze = 0.5 + 0.3*n1 + 0.2*n2;
+      haze = 0.6 + 0.4*haze;
 
-    vec3 col = mix(NL_ENDGLOW_COLOR, NL_ENDGLOW_COLOR2, 0.5 + 0.5*sin(a*5.0 + t*0.05));
+      vec3 col = mix(NL_ENDGLOW_COLOR2, NL_ENDGLOW_COLOR, 0.5 + 0.5*sin(a*2.0 + 0.3*viewDir.y));
 
-    return col * bandPattern * heightFade * NL_ENDGLOW_STRENGTH;
-  }
-
-  //end soundwave glow (regular radiating bands converging toward zenith)
-
-  vec3 renderEndSoundwaveGlow(vec3 viewDir, float t) {
-    float a = atan2(viewDir.x, viewDir.z);
-    float elevation = viewDir.y;
-
-    float bands = abs(sin(a * 11.0));
-    bands = pow(bands, 3.0);
-
-    float radialFade = smoothstep(-0.3, 0.9, elevation);
-
-    vec3 col = mix(NL_ENDGLOW_COLOR2, NL_ENDGLOW_COLOR, radialFade);
-
-    return col * bands * radialFade * NL_ENDGLOW_STRENGTH;
+      return col * heightFade * haze * NL_ENDGLOW_STRENGTH;
   }
 
   //end stars (procedural, layered over vanilla texture stars)
@@ -110,8 +97,8 @@ void main() {
     // Add the native cloud texture overlays over the horizon
     color += 2.8 * diffuse.rgb;
 
-    // Add the endglow soundwave bands (sky-only, not reflected onto ground)
-    color += renderEndSoundwaveGlow(viewDir, t);
+    // Add the end ambient glow haze (sky-only, not reflected onto ground)
+    color += renderEndAmbientGlow(viewDir, t);
 
     // Add procedural stars
     color += renderEndStars(viewDir, 0.0015, 1.2);
