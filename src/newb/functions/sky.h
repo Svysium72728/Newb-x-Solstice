@@ -4,9 +4,11 @@
 #include "detection.h"
 #include "noise.h"
 
+#ifndef NL_GODRAY_SPOKE_COUNT
 #define NL_GODRAY_SPOKE_COUNT 14.0
 #define NL_GODRAY_SPOKE_SHARPNESS 3.0
 #define NL_GODRAY_COLOR vec3(1.0, 0.95, 0.8)
+#endif
 
 struct nl_skycolor {
     vec3 zenith;
