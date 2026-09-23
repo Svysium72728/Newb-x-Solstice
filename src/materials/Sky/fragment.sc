@@ -35,7 +35,7 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
           vec2 cameraPosM = vec2(0.0);
           cameraPosM.x += t * NL_SKY_AURORA_SPEED;
 
-          const int sampleCount = 8;
+          const int sampleCount = 13;
           const int sampleCountP = sampleCount + int(0.667 * float(sampleCount));
 
           float ditherM = dither + 10.0;
