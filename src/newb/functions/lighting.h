@@ -43,6 +43,7 @@ vec3 nlLighting(
   vec3 torchLight = torchColor*torchAttenuation;
   float gameBrightness = texelFetch(tex, ivec2(0,0), 0).g;
   float lum = 0.0;
+  float nightIntensity = 0.0;
 
   if (env.nether || env.end) {
     // nether & end lighting
@@ -66,7 +67,7 @@ vec3 nlLighting(
     float dawnFactor = 1.0-env.dayFactor*env.dayFactor;
     dawnFactor *= dawnFactor*dawnFactor;
     dawnFactor *= mix(1.0, dawnFactor*dawnFactor, nightFactor);
-    float nightIntensity = 1.0-(0.5+0.5*env.dayFactor);
+    nightIntensity = 1.0-(0.5+0.5*env.dayFactor);
     nightIntensity *= nightIntensity;
 
     float sunLightAttenuation = clamp(0.5*(((2.0*step(TIME_OF_DAY, 0.5)-1.0)*(wPos.x*cos(NL_SUN_PATH_YAW)+wPos.y*sin(NL_SUN_PATH_YAW))/renderdistance) + 1.0), 0.0, 1.0);
@@ -113,7 +114,7 @@ vec3 nlLighting(
   // game min brightness
   if (!(env.nether || env.end)) {
     lum = luminance(light);
-    light += vec3_splat(gameBrightness*(NL_MIN_LIGHTING_BOOST/(1.0+lum)));
+    light += vec3_splat(gameBrightness*(NL_MIN_LIGHTING_BOOST*mix(1.0, 0.4, nightIntensity)/(1.0+lum)));
   }
 
   // darken at crevices
@@ -208,7 +209,9 @@ vec3 nlEntityLighting(nl_skycolor skycol, nl_environment env, vec3 pos, vec4 nor
   lum = luminance(light);
   if (!(env.nether || env.end)) {
     lum = luminance(light);
-    light += vec3_splat(gameBrightness*(NL_MIN_LIGHTING_BOOST*mix(1.0, 0.4, nightIntensity)/(1.0+lum)));
+    float entityNightIntensity = 1.0-(0.5+0.5*env.dayFactor);
+    entityNightIntensity *= entityNightIntensity;
+    light += vec3_splat(min(tileLightCol.r, 0.15)*(NL_MIN_LIGHTING_BOOST*mix(1.0, 0.4, entityNightIntensity)/(1.0+lum)));
   }
 
   if (env.underwater) {
