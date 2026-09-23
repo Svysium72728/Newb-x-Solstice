@@ -3,16 +3,67 @@ $input v_color0, v_color1, v_fog, v_refl, v_texcoord0, v_lightmapUV, v_extra, v_
 #include <bgfx_shader.sh>
 #include <newb/main.sh>
 
+uniform vec4 ViewPositionAndTime;
+uniform vec4 FogAndDistanceControl;
+uniform vec4 FogColor;
+uniform vec4 TimeOfDay;
+
 SAMPLER2D_AUTOREG(s_MatTexture);
 SAMPLER2D_AUTOREG(s_SeasonsTexture);
 SAMPLER2D_AUTOREG(s_LightMapTexture);
 SAMPLER2D_AUTOREG(s_CausticTex);
+
+#define DROP_NUMBER 3
+
+float stickyRaindrop(vec2 uv, vec2 center, float baseSize, float stretch) {
+    vec2 p = (uv - center);
+    p.y /= baseSize * stretch;
+    p.x /= baseSize;
+
+    float d = length(p * vec2(1.0, 0.6));
+    float y = p.y;
+
+    float shape = smoothstep(0.5, 0.45, d) *
+                  smoothstep(0.0, 1.0, y + 0.5) *
+                  smoothstep(1.0, -0.3, y);
+
+    return shape;
+}
+
+vec3 screenDrops(vec3 baseColor, float time, vec2 uv, bool falling) {
+    vec3 kol = baseColor;
+    const int drops = DROP_NUMBER;
+
+    for (int i = 0; i < drops; i++) {
+        float fi = float(i);
+
+        vec2 dropPos = vec2(
+            fract(sin(fi * 12.9898) * 43758.5453),
+            fract(sin(fi * 78.233) * 12345.678 + (falling ? time * 0.1 : 0.0))
+        );
+
+        float stretch = 1.0;
+        if (falling) {
+            dropPos.y = mod(dropPos.y - time * 0.18, 1.0);
+            stretch = mix(1.0, 2.5, smoothstep(0.1, 0.9, dropPos.y));
+        }
+
+        float baseSize = 0.05 + 0.02 * fract(sin(fi * 5.21) * 1000.0);
+        float dropMask = stickyRaindrop(uv, dropPos, baseSize, stretch);
+
+        vec3 dropColor = vec3(0.5, 0.7, 0.85);
+        kol = mix(kol, dropColor, dropMask * 0.5);
+    }
+    return kol;
+}
 
 void main() {
   #if defined(DEPTH_ONLY_OPAQUE) || defined(DEPTH_ONLY) || defined(INSTANCING)
     gl_FragColor = vec4(1.0,1.0,1.0,1.0);
     return;
   #endif
+
+  nl_environment env = nlDetectEnvironment(TimeOfDay.x, FogColor.rgb, FogAndDistanceControl.xyz);
 
   vec4 diffuse = texture2D(s_MatTexture, v_texcoord0);
   vec4 color = v_color0;
@@ -26,6 +77,9 @@ void main() {
   #if defined(SEASONS) && (defined(OPAQUE) || defined(ALPHA_TEST))
     diffuse.rgb *= mix(vec3(1.0,1.0,1.0), texture2D(s_SeasonsTexture, v_color1.xy).rgb * 2.0, v_color1.z);
   #endif
+
+  float sideshadow = smoothstep(0.64, 0.62, v_color1.g) * max(v_lightmapUV.x, v_lightmapUV.y);
+  diffuse.rgb *= 1.0-0.25*sideshadow;
 
     vec3 glow = nlGlow(s_MatTexture, v_texcoord0, v_extra.a);
 
@@ -73,6 +127,14 @@ void main() {
   #endif
 
   diffuse.rgb = mix(diffuse.rgb, v_fog.rgb, v_fog.a);
+
+  float rain = mix(smoothstep(0.66, 0.3, FogAndDistanceControl.x), 0.0, step(FogAndDistanceControl.x, 0.0));
+  float dropStrength = env.underwater ? 1.0 : rain;
+
+  if (dropStrength > 0.0) {
+    vec2 screenUV = gl_FragCoord.xy / vec2(1280.0, 720.0); // match your actual target res
+    diffuse.rgb = screenDrops(diffuse.rgb, ViewPositionAndTime.w, screenUV, !env.underwater);
+  }
 
   diffuse.rgb = colorCorrection(diffuse.rgb);
 
