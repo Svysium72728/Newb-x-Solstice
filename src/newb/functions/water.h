@@ -48,7 +48,6 @@ vec4 nlWater(
     }
   #endif
 
-  // torch light reflection - elongated streak
   float streak1 = sin(40.0*viewDir.x + 6.0*t)*sin(3.0*viewDir.z);
   streak1 = pow(max(streak1, 0.0), 4.0);
   float streak2 = sin(70.0*viewDir.x - 4.0*t)*sin(5.0*viewDir.z + 1.0);
