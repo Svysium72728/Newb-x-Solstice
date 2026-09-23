@@ -6,7 +6,7 @@
 
 #ifndef NL_GODRAY_SPOKE_COUNT
 #define NL_GODRAY_SPOKE_COUNT 14.0
-#define NL_GODRAY_SPOKE_SHARPNESS 3.0
+#define NL_GODRAY_SPOKE_SHARPNESS 2.0
 #define NL_GODRAY_COLOR vec3(1.0, 0.95, 0.8)
 #endif
 
@@ -97,12 +97,16 @@ vec3 nlRenderGodrays(vec3 viewDir, nl_environment env, float t) {
     float ang = atan2(sv, su);
     float spokes = 0.5+0.5*sin(NL_GODRAY_SPOKE_COUNT*ang + 2.0*hash11(floor(ang*3.0)));
     spokes = pow(spokes, NL_GODRAY_SPOKE_SHARPNESS);
-    float cone = smoothstep(0.4, 1.0, sunAmount);
-    cone *= cone;
+    float cone = smoothstep(0.25, 1.0, sunAmount);
     float dayMask = max(env.dayFactor, 0.0);
     float rainMask = 1.0-env.rainFactor;
+
+    float dawnFactor = 1.0-env.dayFactor*env.dayFactor;
+    dawnFactor *= dawnFactor*dawnFactor;
+    vec3 rayColor = mix(NL_NOON_SUNLIGHT_COL, NL_DAWN_SUNLIGHT_COL, dawnFactor);
+
     float rays = spokes*cone*dayMask*rainMask*NL_GODRAY;
-    return rays*NL_GODRAY_COLOR;
+    return rays*rayColor;
 }
 
 vec3 renderOverworldSky(nl_skycolor skyCol, nl_environment env, vec3 viewDir, bool isSkyPlane) {
