@@ -36,9 +36,7 @@ void main() {
 
   albedo = applyOverlayColor(albedo, OverlayColor);
 
-  if(albedo.a > 0.988 && albedo.a < 0.993) {
-    albedo.rgb *= 8.0;
-  }
+  albedo.rgb += glowDetect(albedo) * NL_GLOW_TEX;
 
   albedo.rgb *= nlEntityEdgeHighlight(v_edgemap);
 
