@@ -13,6 +13,7 @@ Check [newb krispy depedencies](https://github.com/Coolguyhehe2515/Coolguyhehe25
 - Newb x Feathered (bedrock)
 - Complementary shaders reimagined (Java)
 - Super duper vanilla shader (Java)
+- Newb aetheris (bedrock)
 
 ## Downloads
 
