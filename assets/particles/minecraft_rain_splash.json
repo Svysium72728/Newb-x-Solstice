@@ -14,7 +14,7 @@
           {
             "weight": 4,
             "particle_effect": {
-              "effect": "krispygraphics:rain_splash",
+              "effect": "krispy:rain_splash",
               "type": "particle"
             }
           },
