@@ -39,7 +39,7 @@
 /* Lighting */
 #define NL_SUNLIGHT_INTENSITY   3.8  // 1.0 weak ~ 5.0 bright
 #define NL_TORCHLIGHT_INTENSITY 1.5  // 0.5 weak ~ 3.0 bright
-#define NL_SHADOW_INTENSITY     0.7  // 0.0 no shadow ~ 1.0 strong shadow
+#define NL_SHADOW_INTENSITY     0.8  // 0.0 no shadow ~ 1.0 strong shadow
 #define NL_MIN_LIGHTING_BOOST   1.0  // 1.0 minimal lighting boost for dark areas ~ 3.0 brighter dark areas
 //#define NL_BLINKING_TORCH  // [toggle] flickering light
 //#define NL_CLOUD_SHADOW      // [toggle] cloud shadow (simple clouds only)
@@ -88,8 +88,8 @@
 #define NL_RAIN_ZENITH_COL   vec3(0.47,0.51,0.56)
 #define NL_RAIN_HORIZON_COL  vec3(0.6,0.6,0.6)
 
-#define NL_END_ZENITH_COL    vec3(0.224,0.004,0.529)
-#define NL_END_HORIZON_COL   vec3(0.224,0.004,0.529)
+#define NL_END_ZENITH_COL    vec3(0.325,0.004,0.510)
+#define NL_END_HORIZON_COL   vec3(0.325,0.004,0.510)
 
 
 /* Rainbow */
@@ -101,9 +101,10 @@
 #define NL_GLOW_TEX 5.0           // 0.4 weak ~ 8.0 bright
 #define NL_GLOW_SHIMMER 0.8       // [toggle] 0.1 subtle ~ 1.0 100% shimmer
 #define NL_GLOW_SHIMMER_SPEED 0.9 // 0.5 slow - 2.0 fast
-//#define NL_GLOW_LEAK 0.6        // [toggle] 0.08 subtle ~ 1.0 100% brightness of NL_GLOW_TEX
+#define NL_GLOW_LEAK 1.0        // [toggle] 0.08 subtle ~ 1.0 100% brightness of NL_GLOW_TEX
 
 /* Torch bloom */
+#define NL_TORCH_BLOOM // [toggle]
 #define NL_TORCH_BLOOM_STRENGTH 1.0  // 0.0 no bloom ~ 1.0 strong bloom
 #define NL_TORCH_BLOOM_THRESHOLD 0.25 // 0.0 all blocks ~ 1.0 only brightest
 #define NL_TORCH_BLOOM_COLOR vec3(1.0, 0.6, 0.25) // Warm yellow-orange glow
@@ -126,7 +127,7 @@
 
 /* Underwater */
 #define NL_UNDERWATER_BRIGHTNESS 1.7         // 0.0 dark ~ 3.0 bright
-#define NL_CAUSTIC_INTENSITY 0.4             // 0.5 weak ~ 5.0 bright
+#define NL_CAUSTIC_INTENSITY 4.0             // 0.5 weak ~ 5.0 bright
 #define NL_UNDERWATER_WAVE 0.1               // [toggle] 0.02 subtle ~ 0.6 trippy
 #define NL_UNDERWATER_STREAKS 0.4           // [toggle] 0.8 subtle - 2.0 bright streaks from top
 #define NL_UNDERWATER_TINT vec3(0.718,0.741,0.969) // fog tint color when underwater
@@ -213,11 +214,16 @@
 #define NL_MOON_PATH_TILT -28.0 //
 #define NL_SUN_TILT        45.0 // 0.0 no tilt ~ 90.0 tilt of 90 degrees
 #define NL_MOON_TILT       45.0 // 0.0 no tilt ~ 90.0 tilt of 90 degrees
+#define NL_SUN_BLOOM_SQUARE            // [toggle] square-shaped sun bloom
+#define NL_SUN_BLOOM_SIZE 0.15         // 0.05 tight ~ 0.5 large
+#define NL_SUN_BLOOM_SOFTNESS 0.05     // 0.0 hard edge ~ 0.3 very soft
+#define NL_SUN_BLOOM_COLOR vec3(1.0, 0.9, 0.7)
+#define NL_SUN_BLOOM_STRENGTH 1.5      // 0.5 subtle ~ 3.0 strong
 
 /* Fake godrays during sunrise/sunset */
 #define NL_GODRAY 0.8 // [toggle] 0.1 subtle ~ 0.8 strong
 #define NL_GODRAY_SPOKE_COUNT 5.0
-#define NL_GODRAY_SPOKE_SHARPNESS 2.0
+#define NL_GODRAY_SPOKE_SHARPNESS 1.0
 #define NL_GODRAY_COLOR vec3(1.0, 0.95, 0.8)
 
 /* Black hole value tuning (feature itself toggled per subpack tier below) */
