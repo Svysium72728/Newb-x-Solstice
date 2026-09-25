@@ -45,13 +45,13 @@
 //#define NL_CLOUD_SHADOW      // [toggle] cloud shadow (simple clouds only)
 
 /* End glowing beam ig */
-#define NL_ENDGLOW_COLOR2     vec3(0.584,0.314,0.702)//test
-#define NL_ENDGLOW_COLOR      vec3(0.933,0.561,1.0) //test
+#define NL_ENDGLOW_COLOR2     vec3(0.3,0.15,0.5)
+#define NL_ENDGLOW_COLOR      vec3(0.45,0.25,0.65)
 #define NL_ENDGLOW_STRENGTH 1.5
 
 /* Ambient light for nether/end */
 #define NL_NETHER_AMBIENT vec3(0.102,0.0,0.0)
-#define NL_END_AMBIENT    vec3(0.071,0.004,0.141)
+#define NL_END_AMBIENT    vec3(0.04,0.01,0.09)
 
 /* Sun/moon light color */
 #define NL_DAWN_SUNLIGHT_COL   vec3(1.0,0.4,0.1)
@@ -88,9 +88,8 @@
 #define NL_RAIN_ZENITH_COL   vec3(0.47,0.51,0.56)
 #define NL_RAIN_HORIZON_COL  vec3(0.6,0.6,0.6)
 
-#define NL_END_ZENITH_COL    vec3(0.325,0.004,0.510)
-#define NL_END_HORIZON_COL   vec3(0.325,0.004,0.510)
-
+#define NL_END_ZENITH_COL    vec3(0.08,0.02,0.22)
+#define NL_END_HORIZON_COL   vec3(0.15,0.05,0.30)
 
 /* Rainbow */
 #define NL_RAINBOW           // [toggle] enable rainbow in sky
@@ -105,7 +104,7 @@
 
 /* Torch bloom */
 #define NL_TORCH_BLOOM // [toggle]
-#define NL_TORCH_BLOOM_STRENGTH 1.0  // 0.0 no bloom ~ 1.0 strong bloom
+#define NL_TORCH_BLOOM_STRENGTH 0.5  // 0.0 no bloom ~ 1.0 strong bloom
 #define NL_TORCH_BLOOM_THRESHOLD 0.25 // 0.0 all blocks ~ 1.0 only brightest
 #define NL_TORCH_BLOOM_COLOR vec3(1.0, 0.6, 0.25) // Warm yellow-orange glow
 
