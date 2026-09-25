@@ -122,7 +122,7 @@
 #define NL_WATER_TEX_OPACITY 1.0  // 0.0 plain water ~ 1.0 vanilla water texture
 //#define NL_WATER_WAVE             // [toggle] wave effect
 //#define NL_WATER_REFL_MASK      // [toggle] fake water reflection mask
-#define NL_WATER_TINT vec3(0.812,0.882,1.0)
+#define NL_WATER_TINT vec3(0.95, 0.97, 1.0)
 
 /* Underwater */
 #define NL_UNDERWATER_BRIGHTNESS 1.7         // 0.0 dark ~ 3.0 bright
@@ -214,7 +214,7 @@
 #define NL_SUN_TILT        45.0 // 0.0 no tilt ~ 90.0 tilt of 90 degrees
 #define NL_MOON_TILT       45.0 // 0.0 no tilt ~ 90.0 tilt of 90 degrees
 #define NL_SUN_BLOOM_SQUARE            // [toggle] square-shaped sun bloom
-#define NL_SUN_BLOOM_SIZE 0.15         // 0.05 tight ~ 0.5 large
+#define NL_SUN_BLOOM_SIZE 0.10         // 0.05 tight ~ 0.5 large
 #define NL_SUN_BLOOM_SOFTNESS 0.05     // 0.0 hard edge ~ 0.3 very soft
 #define NL_SUN_BLOOM_COLOR vec3(1.0, 0.9, 0.7)
 #define NL_SUN_BLOOM_STRENGTH 1.5      // 0.5 subtle ~ 3.0 strong
