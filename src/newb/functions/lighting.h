@@ -111,6 +111,23 @@ vec3 nlLighting(
   lum = luminance(light);
   light += torchLight/(1.0+lum);
 
+  // night/dark-area desaturation with warm torch-lit tint
+  if (!(env.nether || env.end)) {
+    float sceneDarkness = 1.0 - clamp(l*2.0, 0.0, 1.0);
+    float entityNight = 1.0-(0.5+0.5*env.dayFactor);
+    entityNight *= entityNight;
+    sceneDarkness = max(sceneDarkness, entityNight);
+
+    float nearLight = smoothstep(0.05, 0.4, tl);
+
+    float lum2 = dot(light.rgb, vec3(0.3, 0.59, 0.11));
+    vec3 desatColor = vec3_splat(lum2);
+    vec3 warmColor = light.rgb * vec3(1.15, 0.95, 0.75);
+
+    light.rgb = mix(light.rgb, desatColor, (1.0-nearLight)*sceneDarkness*0.6);
+    light.rgb = mix(light.rgb, warmColor, nearLight*sceneDarkness*0.5);
+  }
+
   // game min brightness
   if (!(env.nether || env.end)) {
     lum = luminance(light);
