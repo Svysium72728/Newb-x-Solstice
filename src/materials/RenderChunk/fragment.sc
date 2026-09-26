@@ -120,10 +120,13 @@ void main() {
 
   #if defined(NL_CAUSTIC_INTENSITY) && !(defined(RENDER_AS_BILLBOARDS) || defined(SEASONS))
     if (v_causticData.z > 0.5 && v_extra.b < 0.9) {
-      vec2 causticUV = fract(v_causticData.xy);
-      float caustic = texture2D(s_CausticTex, causticUV).r;
-      diffuse.rgb += caustic * NL_CAUSTIC_INTENSITY * 0.3;
+    float dy = abs(dFdy(v_extra.g));
+    if (dy < 0.0002) {
+        vec2 causticUV = fract(v_causticData.xy);
+        float caustic = texture2D(s_CausticTex, causticUV).r;
+        diffuse.rgb += caustic * NL_CAUSTIC_INTENSITY * 0.3;
     }
+}
   #endif
 
   diffuse.rgb = mix(diffuse.rgb, v_fog.rgb, v_fog.a);
