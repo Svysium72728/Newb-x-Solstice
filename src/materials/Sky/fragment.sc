@@ -68,10 +68,7 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
         return texture2D(s_noisevoxels, quantized).r;
       }
 
-      vec3 GetAuroraHeavy(vec3 viewDir, vec4 ViewPosTime, float dither, float dayFactor) {
-          float nightFactor = smoothstep(0.1, -0.15, dayFactor);
-          if (nightFactor < 0.01) return vec3(0.0);
-
+      vec3 GetAuroraHeavy(vec3 viewDir, vec4 ViewPosTime, float dither) {
           float VdotU = clamp(viewDir.y, 0.0, 1.0);
           float visibility = sqrt1(clamp01(VdotU * 4.5 - 0.25));
           visibility *= 8.0 - VdotU * 0.9;
@@ -109,7 +106,7 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
           }
 
           aurora *= 0.8;
-          return aurora * visibility * nightFactor / float(sampleCount);
+          return aurora * visibility / float(sampleCount);
       }
     #endif
   #endif
@@ -133,31 +130,4 @@ void main() {
     vec3 skyColor = nlRenderSky(skycol, env, -viewDir, v_underwaterRainTimeDay.z, true);
 
     #ifdef NL_SHOOTING_STAR
-      skyColor += NL_SHOOTING_STAR*nlRenderShootingStar(viewDir, env.fogCol, v_underwaterRainTimeDay.z);
-    #endif
-
-    #ifdef NL_GALAXY_STARS
-      skyColor += NL_GALAXY_STARS*nlRenderGalaxy(viewDir, env.fogCol, env, v_underwaterRainTimeDay.z);
-    #endif
-
-    #ifdef NL_SKY_AURORA
-    if (!env.underwater && !env.end && !env.nether && ViewPositionAndTime.y > 60.0) {
-      #ifdef NL_SKY_AURORA_MEDIUM
-        float dither = texture2D(s_NoiseTex, mod(gl_FragCoord.xy, 256.0)/256.0).r;
-        skyColor += GetAuroraMedium(viewDir, v_underwaterRainTimeDay.z, dither, env.dayFactor);
-      #endif
-      #ifdef NL_SKY_AURORA_HEAVY
-        float dither2 = fract(sin(dot(viewDir.xy, vec2(12.9898,78.233))) * 43758.5453);
-        float mask = (1.0-1.0*env.rainFactor)*max(1.0 - 3.0*max(v_fogColor.b, v_fogColor.g), 0.0);
-        skyColor += GetAuroraHeavy(viewDir, ViewPositionAndTime, dither2, env.dayFactor) * mask;
-      #endif
-    }
-    #endif
-
-    skyColor = colorCorrection(skyColor);
-
-    gl_FragColor = vec4(skyColor, 1.0);
-  #else
-    gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
-  #endif
-}
+      skyColor += NL
