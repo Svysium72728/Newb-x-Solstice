@@ -12,6 +12,16 @@
             "geometry": {
                 "default": "geometry.krispy_torch"
             },
+            "scripts": {
+                "animate": [
+                    { "third_person": "!c.is_first_person" },
+                    { "first_person": "c.is_first_person" }
+                ]
+            },
+            "animations": {
+                "third_person": "animation.rp.krispy.torch_third_person",
+                "first_person": "animation.rp.krispy.torch_first_person"
+            },
             "render_controllers": [
                 "controller.render.item_default"
             ]
