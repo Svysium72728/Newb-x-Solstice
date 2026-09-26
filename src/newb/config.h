@@ -214,15 +214,15 @@
 #define NL_SUN_TILT        45.0 // 0.0 no tilt ~ 90.0 tilt of 90 degrees
 #define NL_MOON_TILT       45.0 // 0.0 no tilt ~ 90.0 tilt of 90 degrees
 #define NL_SUN_BLOOM_SQUARE            // [toggle] square-shaped sun bloom
-#define NL_SUN_BLOOM_SIZE 0.10         // 0.05 tight ~ 0.5 large
+#define NL_SUN_BLOOM_SIZE 0.1         // 0.05 tight ~ 0.5 large
 #define NL_SUN_BLOOM_SOFTNESS 0.2     // 0.0 hard edge ~ 0.3 very soft
 #define NL_SUN_BLOOM_COLOR vec3(1.0, 0.9, 0.7)
 #define NL_SUN_BLOOM_STRENGTH 2.0      // 0.5 subtle ~ 3.0 strong
 
 /* Fake godrays during sunrise/sunset */
 #define NL_GODRAY 0.8 // [toggle] 0.1 subtle ~ 0.8 strong
-#define NL_GODRAY_SPOKE_COUNT 5.0
-#define NL_GODRAY_SPOKE_SHARPNESS 1.0
+#define NL_GODRAY_SPOKE_COUNT 3.0
+#define NL_GODRAY_SPOKE_SHARPNESS 0.
 #define NL_GODRAY_COLOR vec3(1.0, 0.95, 0.8)
 
 /* Black hole value tuning (feature itself toggled per subpack tier below) */
