@@ -130,4 +130,31 @@ void main() {
     vec3 skyColor = nlRenderSky(skycol, env, -viewDir, v_underwaterRainTimeDay.z, true);
 
     #ifdef NL_SHOOTING_STAR
-      skyColor += NL
+      skyColor += NL_SHOOTING_STAR*nlRenderShootingStar(viewDir, env.fogCol, v_underwaterRainTimeDay.z);
+    #endif
+
+    #ifdef NL_GALAXY_STARS
+      skyColor += NL_GALAXY_STARS*nlRenderGalaxy(viewDir, env.fogCol, env, v_underwaterRainTimeDay.z);
+    #endif
+
+    #ifdef NL_SKY_AURORA
+    if (!env.underwater && !env.end && !env.nether) {
+      #ifdef NL_SKY_AURORA_MEDIUM
+        float dither = texture2D(s_NoiseTex, mod(gl_FragCoord.xy, 256.0)/256.0).r;
+        skyColor += GetAuroraMedium(viewDir, v_underwaterRainTimeDay.z, dither, env.dayFactor);
+      #endif
+      #ifdef NL_SKY_AURORA_HEAVY
+        float dither2 = fract(sin(dot(viewDir.xy, vec2(12.9898,78.233))) * 43758.5453);
+        float mask = (1.0-1.0*env.rainFactor)*max(1.0 - 3.0*max(v_fogColor.b, v_fogColor.g), 0.0);
+        skyColor += GetAuroraHeavy(viewDir, ViewPositionAndTime, dither2) * mask;
+      #endif
+    }
+    #endif
+
+    skyColor = colorCorrection(skyColor);
+
+    gl_FragColor = vec4(skyColor, 1.0);
+  #else
+    gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
+  #endif
+}
