@@ -1,0 +1,17 @@
+{
+	"format_version": "1.8.0",
+	"animations": {
+		"animation.rp.krispy.lantern_third_person": {
+			"loop": true,
+			"bones": {
+				"root": { "rotation": [0, 0, 0], "position": [0, 24, 0] }
+			}
+		},
+		"animation.rp.krispy.lantern_first_person": {
+			"loop": true,
+			"bones": {
+				"root": { "rotation": [0, 0, 0], "position": [0, 24, 0] }
+			}
+		}
+	}
+}
