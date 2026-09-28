@@ -7,13 +7,14 @@ uniform vec4 ViewPositionAndTime;
 uniform vec4 FogAndDistanceControl;
 uniform vec4 FogColor;
 uniform vec4 TimeOfDay;
+uniform vec4 CameraPosition;
 
 SAMPLER2D_AUTOREG(s_MatTexture);
 SAMPLER2D_AUTOREG(s_SeasonsTexture);
 SAMPLER2D_AUTOREG(s_LightMapTexture);
 SAMPLER2D_AUTOREG(s_CausticTex);
 
-#define DROP_NUMBER 3
+#define DROP_NUMBER 5
 
 float stickyRaindrop(vec2 uv, vec2 center, float baseSize, float stretch) {
     vec2 p = (uv - center);
@@ -108,6 +109,20 @@ void main() {
 
   if (v_extra.b > 0.9) {
     diffuse.rgb += v_refl.rgb*v_refl.a;
+
+  #ifdef NL_WATER_GLITTER
+      if (abs(dFdy(v_extra.g)) < 0.0002 && !env.underwater) {
+        highp vec3 wp = vec3(v_causticData.x - CameraPosition.x, v_extra.g, v_causticData.y - CameraPosition.z);
+        vec3 toCam = ViewPositionAndTime.xyz - wp;
+        float camDist = length(toCam);
+        vec3 vdir = toCam/camDist;
+        float skyExp = smoothstep(0.7, 0.95, v_lightmapUV.y);
+        vec3 glitter = (nlSunGlitter(env, vdir, v_causticData.xy, ViewPositionAndTime.w, camDist) + nlMoonGlitter(env, vdir, v_causticData.xy, ViewPositionAndTime.w, camDist))*skyExp;
+        diffuse.rgb += glitter;
+        diffuse.a = min(diffuse.a + dot(glitter, vec3_splat(0.33)), 1.0);
+      }
+    #endif
+
   } else if (v_refl.a > 0.0) {
     // reflective effect - only on xz plane
     float dy = abs(dFdy(v_extra.g));
