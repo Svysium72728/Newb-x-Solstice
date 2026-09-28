@@ -12,6 +12,48 @@ float calculateFresnel(float cosR, float r0) {
     return r0 + (1.0 - r0) * pow(1.0 - cosR, 5.0);
 }
 
+float nlGlitterCell(highp vec2 gxz, vec3 skyDir, vec3 lightDir, highp float t) {
+  highp vec2 p = gxz*NL_GLITTER_DENSITY;
+  highp vec2 cell = floor(p);
+  vec2 f = fract(p) - 0.5;
+  float shape = 1.0 - step(0.3, max(abs(f.x), abs(f.y)));
+  float h = fract(sin(dot(cell, vec2(127.1, 311.7)))*43758.5453);
+  highp float ph = t*NL_GLITTER_SPEED + h*17.0;
+  highp float id = floor(ph);
+  float life = sin(fract(ph)*3.14159);
+  highp vec2 seed = cell + id*7.13;
+  vec2 r = vec2(fract(sin(dot(seed, vec2(269.5, 183.3)))*43758.5453), fract(sin(dot(seed, vec2(419.2, 371.9)))*43758.5453));
+  vec2 hd = normalize(skyDir.xz + vec2(0.0001, 0.0001));
+  vec3 d = skyDir;
+  d.y += (r.x*2.0 - 1.0)*NL_GLITTER_SPREAD_ALONG;
+  d.xz += vec2(-hd.y, hd.x)*(r.y*2.0 - 1.0)*NL_GLITTER_SPREAD_ACROSS;
+  d = normalize(d);
+  return smoothstep(NL_GLITTER_EDGE, 1.0, dot(d, lightDir))*life*shape;
+}
+
+vec3 nlSunGlitter(nl_environment env, vec3 viewDir, highp vec2 gxz, highp float t, float camDist) {
+  float vis = smoothstep(0.0, 0.12, env.sunDir.y)*(1.0 - env.rainFactor);
+  if (vis <= 0.0) {
+    return vec3_splat(0.0);
+  }
+  float dawn = 1.0 - env.dayFactor*env.dayFactor;
+  dawn *= dawn*dawn;
+  vec3 col = mix(mix(NL_NOON_SUNLIGHT_COL, vec3_splat(1.0), 0.45), NL_DAWN_SUNLIGHT_COL, dawn);
+  float fade = 1.0 - smoothstep(NL_GLITTER_FADE_START, NL_GLITTER_FADE_END, camDist);
+  return col*(nlGlitterCell(gxz, viewDir, env.sunDir, t)*vis*fade*NL_GLITTER_STRENGTH);
+}
+
+vec3 nlMoonGlitter(nl_environment env, vec3 viewDir, highp vec2 gxz, highp float t, float camDist) {
+  float vis = smoothstep(0.0, 0.12, env.moonDir.y)*smoothstep(0.2, -0.1, env.dayFactor)*(1.0 - env.rainFactor);
+  if (vis <= 0.0) {
+    return vec3_splat(0.0);
+  }
+  vec3 mc = NL_NIGHT_MOONLIGHT_COL/max(max(NL_NIGHT_MOONLIGHT_COL.r, NL_NIGHT_MOONLIGHT_COL.g), NL_NIGHT_MOONLIGHT_COL.b);
+  vec3 col = mix(mc, vec3_splat(1.0), NL_MOON_GLITTER_WHITE);
+  float fade = 1.0 - smoothstep(NL_GLITTER_FADE_START, NL_GLITTER_FADE_END, camDist);
+  return col*(nlGlitterCell(gxz, viewDir, env.moonDir, t)*vis*fade*NL_MOON_GLITTER_STRENGTH);
+}
+
 vec4 nlWater(
     inout vec4 color, inout vec3 wPos, nl_skycolor skycol, nl_environment env, vec4 COLOR, vec3 viewDir,
     vec3 cPos, vec3 tiledCpos, vec3 gPos, vec3 CAMERA_POS, vec3 light, vec3 torchColor, vec2 lit,
@@ -93,22 +135,6 @@ vec4 nlWater(
 
     color.rgb *= 0.22 * NL_WATER_TINT * (1.0 - 0.75 * fresnel);
     color.a = mix(COLOR.a * opacity, 1.0, fresnel);
-
-    if (fractCposY > 0.0 && !env.end) {
-        vec3 lightReflDir = reflect(-normalize(light), nrm);
-        
-        float thickSpec = max(dot(normalize(vec3(lightReflDir.x * 0.12, lightReflDir.y, lightReflDir.z * 0.12)), -normalize(viewDir)), 0.0);
-        float sunSpecular = pow(thickSpec, 24.0);
-        
-        vec3 sunTrailColor = mix(vec3(1.0, 0.35, 0.05), vec3(1.0, 0.95, 0.8), smoothstep(0.05, 0.4, light.y));
-        
-        float glitter = 0.5 + 0.5 * sin(gPos.x * 25.0 + t * 6.0) * cos(gPos.z * 25.0 - t * 5.0);
-        float finalTrail = sunSpecular * mix(0.5, 1.3, glitter) * 6.5;
-        
-        finalTrail *= smoothstep(-0.1, 0.3, viewDir.y);
-        
-        color.rgb += sunTrailColor * finalTrail;
-    }
 
     #ifdef NL_WATER_WAVE
     if (camDist < 14.0) {
