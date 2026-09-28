@@ -1,0 +1,22 @@
+{
+	"format_version": "1.10.0",
+	"minecraft:attachable": {
+		"description": {
+			"identifier": "minecraft:lantern",
+			"materials": { "default": "entity_alphatest" },
+			"textures": { "default": "textures/models/krispy_lantern" },
+			"geometry": { "default": "geometry.krispy_lantern" },
+			"scripts": {
+				"animate": [
+					{ "third_person": "!c.is_first_person" },
+					{ "first_person": "c.is_first_person" }
+				]
+			},
+			"animations": {
+				"third_person": "animation.rp.krispy.lantern_third_person",
+				"first_person": "animation.rp.krispy.lantern_first_person"
+			},
+			"render_controllers": ["controller.render.item_default"]
+		}
+	}
+}
