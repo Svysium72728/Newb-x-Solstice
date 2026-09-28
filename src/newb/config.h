@@ -214,10 +214,21 @@
 #define NL_SUN_TILT        45.0 // 0.0 no tilt ~ 90.0 tilt of 90 degrees
 #define NL_MOON_TILT       45.0 // 0.0 no tilt ~ 90.0 tilt of 90 degrees
 #define NL_SUN_BLOOM_SQUARE            // [toggle] square-shaped sun bloom
-#define NL_SUN_BLOOM_SIZE 0.1         // 0.05 tight ~ 0.5 large
+#define NL_SUN_BLOOM_SIZE 0.03         // 0.05 tight ~ 0.5 large
 #define NL_SUN_BLOOM_SOFTNESS 0.2     // 0.0 hard edge ~ 0.3 very soft
 #define NL_SUN_BLOOM_COLOR vec3(1.0, 0.9, 0.7)
 #define NL_SUN_BLOOM_STRENGTH 2.0      // 0.5 subtle ~ 3.0 strong
+#define NL_WATER_GLITTER
+#define NL_GLITTER_DENSITY 3.0
+#define NL_GLITTER_SPEED 0.6
+#define NL_GLITTER_STRENGTH 3.0
+#define NL_GLITTER_SPREAD_ALONG 0.35
+#define NL_GLITTER_SPREAD_ACROSS 0.1
+#define NL_GLITTER_EDGE 0.997
+#define NL_GLITTER_FADE_START 60.0
+#define NL_GLITTER_FADE_END 180.0
+#define NL_MOON_GLITTER_STRENGTH 1.5
+#define NL_MOON_GLITTER_WHITE 0.5
 
 /* Fake godrays during sunrise/sunset */
 #define NL_GODRAY 0.8 // [toggle] 0.1 subtle ~ 0.8 strong
