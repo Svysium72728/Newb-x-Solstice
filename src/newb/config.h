@@ -218,7 +218,7 @@
 #define NL_SUN_BLOOM_SOFTNESS 0.2     // 0.0 hard edge ~ 0.3 very soft
 #define NL_SUN_BLOOM_COLOR vec3(1.0, 0.9, 0.7)
 #define NL_SUN_BLOOM_STRENGTH 2.0      // 0.5 subtle ~ 3.0 strong
-#define NL_WATER_GLITTER
+//#define NL_WATER_GLITTER
 #define NL_GLITTER_DENSITY 3.0
 #define NL_GLITTER_SPEED 0.6
 #define NL_GLITTER_STRENGTH 3.0
