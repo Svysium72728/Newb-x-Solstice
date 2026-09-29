@@ -58,6 +58,10 @@ vec3 screenDrops(vec3 baseColor, float time, vec2 uv, bool falling) {
     return kol;
 }
 
+ vec3 acesTonemap(vec3 x) {
+  return clamp((x*(2.51*x + 0.03))/(x*(2.43*x + 0.59) + 0.14), 0.0, 1.0);
+}
+
 void main() {
   #if defined(DEPTH_ONLY_OPAQUE) || defined(DEPTH_ONLY) || defined(INSTANCING)
     gl_FragColor = vec4(1.0,1.0,1.0,1.0);
@@ -144,6 +148,16 @@ void main() {
 }
   #endif
 
+  float wcPos = v_extra.g + CameraPosition.y;
+  float sideFace = step(0.0002, abs(dFdy(v_extra.g)));
+  float nearSurface = smoothstep(62.5, 62.85, wcPos) * step(wcPos, 62.89);
+  float notWater = step(v_extra.b, 0.9);
+  float shadeDown = abs(dFdy(v_lightmapUV.y));
+  float shadeSide = abs(dFdx(v_lightmapUV.y));
+  float underwaterShade = step(shadeSide + 0.002, shadeDown);
+  float foam = nearSurface * sideFace * notWater * underwaterShade; 
+  diffuse.rgb = mix(diffuse.rgb, vec3_splat(1.0), foam * 0.5);
+
   diffuse.rgb = mix(diffuse.rgb, v_fog.rgb, v_fog.a);
 
   float rain = mix(smoothstep(0.66, 0.3, FogAndDistanceControl.x), 0.0, step(FogAndDistanceControl.x, 0.0));
@@ -154,7 +168,12 @@ void main() {
     diffuse.rgb = screenDrops(diffuse.rgb, ViewPositionAndTime.w, screenUV, !env.underwater);
   }
 
+  if (v_extra.b > 0.9) {
+  diffuse.rgb = acesTonemap(diffuse.rgb);
+} else {
   diffuse.rgb = colorCorrection(diffuse.rgb);
+}
 
-  gl_FragColor = diffuse;
+gl_FragColor = diffuse;
+
 }
