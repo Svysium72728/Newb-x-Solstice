@@ -4,13 +4,13 @@
 		"animation.rp.krispy.lantern_third_person": {
 			"loop": true,
 			"bones": {
-				"root": { "rotation": [0, 0, 0], "position": [0, 16, 0] }
+				"root": { "rotation": [0, 0, 0], "position": [0, 14, 0] }
 			}
 		},
 		"animation.rp.krispy.lantern_first_person": {
 			"loop": true,
 			"bones": {
-				"root": { "rotation": [8, 0, 0], "position": [0, 16, 0] }
+				"root": { "rotation": [8, 0, 0], "position": [-2, 4, 2], "scale": 0.5 }
 			}
 		}
 	}
