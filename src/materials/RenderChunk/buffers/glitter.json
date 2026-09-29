@@ -1,0 +1,19 @@
+{
+  "name": "Glitter",
+  "register_slot": 13,
+  "binding_slot": 13,
+  "type": "texture2D",
+  "precision": "lowp",
+  "access": "readonly",
+  "texture_format": "",
+  "default_texture": "",
+  "unordered_access": false,
+  "slot_count": 1,
+  "texture_path": "textures/newb/glitter",
+  "unknown": 0,
+  "sampler_state": {
+    "filter": "Point",
+    "wrapping": "Repeat"
+  },
+  "custom_type_info": {}
+}
