@@ -1,0 +1,23 @@
+{
+    "format_version": "1.8.0",
+    "animations": {
+        "animation.rp.krispy.player_hold_lantern": {
+            "loop": true,
+            "bones": {
+                "rightarm": {
+                    "rotation": [-35, 0, 0],
+                    "position": [0, 0, -1]
+                }
+            }
+        },
+        "animation.rp.krispy.player_hold_lantern_fp": {
+            "loop": true,
+            "bones": {
+                "rightarm": {
+                    "rotation": [-15, 0, 0],
+                    "position": [-1, 1, 0]
+                }
+            }
+        }
+    }
+}
