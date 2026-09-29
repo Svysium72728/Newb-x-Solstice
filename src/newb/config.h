@@ -1,6 +1,8 @@
 #ifndef NL_CONFIG_H
 #define NL_CONFIG_H
 
+#define NL_SUN_CIRCLE_BLOOM 0.0
+
 /*
   NEWB SHADER MAIN CONFIG
   This part contains base configuration options for the shader.
