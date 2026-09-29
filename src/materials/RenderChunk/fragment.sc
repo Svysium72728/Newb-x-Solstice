@@ -1,168 +1,209 @@
-#ifndef WATER_H
-#define WATER_H
+$input v_color0, v_color1, v_fog, v_refl, v_texcoord0, v_lightmapUV, v_extra, v_causticData
 
-#include "utils.h"
-#include "detection.h"
-#include "sky.h"
-#include "clouds.h"
-#include "noise.h"
+#include <bgfx_shader.sh>
 
-#ifndef NL_SUN_BOUNCE_SHARPNESS
-  #define NL_SUN_BOUNCE_SHARPNESS 24.0
-#endif
-#ifndef NL_SUN_BOUNCE_STRENGTH
-  #define NL_SUN_BOUNCE_STRENGTH 0.6
-#endif
+#define NL_GLITTER_USE_TEX
+SAMPLER2D_AUTOREG(s_Glitter);
 
-// Swapped to physically accurate Schlick's approximation for water
-float calculateFresnel(float cosR, float r0) {
-    return r0 + (1.0 - r0) * pow(1.0 - cosR, 5.0);
+#include <newb/main.sh>
+
+uniform vec4 ViewPositionAndTime;
+uniform vec4 FogAndDistanceControl;
+uniform vec4 FogColor;
+uniform vec4 TimeOfDay;
+uniform vec4 CameraPosition;
+
+SAMPLER2D_AUTOREG(s_MatTexture);
+SAMPLER2D_AUTOREG(s_SeasonsTexture);
+SAMPLER2D_AUTOREG(s_LightMapTexture);
+SAMPLER2D_AUTOREG(s_CausticTex);
+SAMPLER2D_AUTOREG(s_SunRefl);
+
+#define DROP_NUMBER 5
+
+vec3 acesTonemap(vec3 x) {
+  return clamp((x*(2.51*x + 0.03))/(x*(2.43*x + 0.59) + 0.14), 0.0, 1.0);
 }
 
-float nlGlitterCell(highp vec2 gxz, vec3 rd, vec3 lightDir, highp float t) {
-  highp vec2 p = gxz*NL_GLITTER_DENSITY;
-  highp vec2 cell = floor(p);
-  vec2 f = fract(p) - 0.5;
-  #ifdef NL_GLITTER_USE_TEX
-    float shape = texture2D(s_Glitter, fract(p)).r;
-  #else
-    float shape = 1.0 - step(0.3, max(abs(f.x), abs(f.y)));
+float stickyRaindrop(vec2 uv, vec2 center, float baseSize, float stretch) {
+    vec2 p = (uv - center);
+    p.y /= baseSize * stretch;
+    p.x /= baseSize;
+
+    float d = length(p * vec2(1.0, 0.6));
+    float y = p.y;
+
+    float shape = smoothstep(0.5, 0.45, d) *
+                  smoothstep(0.0, 1.0, y + 0.5) *
+                  smoothstep(1.0, -0.3, y);
+
+    return shape;
+}
+
+vec3 screenDrops(vec3 baseColor, float time, vec2 uv, bool falling) {
+    vec3 kol = baseColor;
+    const int drops = DROP_NUMBER;
+
+    for (int i = 0; i < drops; i++) {
+        float fi = float(i);
+
+        vec2 dropPos = vec2(
+            fract(sin(fi * 12.9898) * 43758.5453),
+            fract(sin(fi * 78.233) * 12345.678 + (falling ? time * 0.1 : 0.0))
+        );
+
+        float stretch = 1.0;
+        if (falling) {
+            dropPos.y = mod(dropPos.y - time * 0.18, 1.0);
+            stretch = mix(1.0, 2.5, smoothstep(0.1, 0.9, dropPos.y));
+        }
+
+        float baseSize = 0.05 + 0.02 * fract(sin(fi * 5.21) * 1000.0);
+        float dropMask = stickyRaindrop(uv, dropPos, baseSize, stretch);
+
+        vec3 dropColor = vec3(0.5, 0.7, 0.85);
+        kol = mix(kol, dropColor, dropMask * 0.5);
+    }
+    return kol;
+}
+
+void main() {
+  #if defined(DEPTH_ONLY_OPAQUE) || defined(DEPTH_ONLY) || defined(INSTANCING)
+    gl_FragColor = vec4(1.0,1.0,1.0,1.0);
+    return;
   #endif
-  float h = fract(sin(dot(cell, vec2(127.1, 311.7)))*43758.5453);
-  highp float ph = t*NL_GLITTER_SPEED + h*17.0;
-  highp float id = floor(ph);
-  float life = sin(fract(ph)*3.14159);
-  highp vec2 seed = cell + id*7.13;
-  vec2 r = vec2(fract(sin(dot(seed, vec2(269.5, 183.3)))*43758.5453), fract(sin(dot(seed, vec2(419.2, 371.9)))*43758.5453));
-  vec2 hd = normalize(rd.xz + vec2(0.0001, 0.0001));
-  vec3 d = rd;
-  d.y += (r.x*2.0 - 1.0)*NL_GLITTER_SPREAD_ALONG;
-  d.xz += vec2(-hd.y, hd.x)*(r.y*2.0 - 1.0)*NL_GLITTER_SPREAD_ACROSS;
-  d = normalize(d);
-  return smoothstep(NL_GLITTER_EDGE, 1.0, dot(d, lightDir))*life*shape;
-}
 
-vec3 nlSunGlitter(nl_environment env, vec3 viewDir, highp vec2 gxz, highp float t, float camDist) {
-  float vis = smoothstep(0.0, 0.12, env.sunDir.y)*(1.0 - env.rainFactor);
-  if (vis <= 0.0) {
-    return vec3_splat(0.0);
+  nl_environment env = nlDetectEnvironment(TimeOfDay.x, FogColor.rgb, FogAndDistanceControl.xyz);
+
+  vec4 diffuse = texture2D(s_MatTexture, v_texcoord0);
+  vec4 color = v_color0;
+
+  #ifdef ALPHA_TEST
+    if (diffuse.a < 0.6) {
+      discard;
+    }
+  #endif
+
+  #if defined(SEASONS) && (defined(OPAQUE) || defined(ALPHA_TEST))
+    diffuse.rgb *= mix(vec3(1.0,1.0,1.0), texture2D(s_SeasonsTexture, v_color1.xy).rgb * 2.0, v_color1.z);
+  #endif
+
+  float sideshadow = smoothstep(0.64, 0.62, v_color1.g) * max(v_lightmapUV.x, v_lightmapUV.y);
+  diffuse.rgb *= 1.0-0.25*sideshadow;
+
+    vec3 glow = nlGlow(s_MatTexture, v_texcoord0, v_extra.a);
+
+  // === FAKE BLOOM EFFECT FOR TORCHES ===
+  #ifdef NL_TORCH_BLOOM
+    float glowAmount = max(glow.r, max(glow.g, glow.b));
+    float bloom = max(0.0, glowAmount - NL_TORCH_BLOOM_THRESHOLD) * 2.0;
+    
+    // Add warm bloom glow to the existing glow
+    glow += NL_TORCH_BLOOM_COLOR * bloom * NL_TORCH_BLOOM_STRENGTH;
+  #endif
+
+  diffuse.rgb *= diffuse.rgb;
+
+  #if defined(TRANSPARENT) && !(defined(SEASONS) || defined(RENDER_AS_BILLBOARDS))
+    if (v_extra.b > 0.9) {
+      float texPattern = 1.0 - NL_WATER_TEX_OPACITY*(1.0 - diffuse.b*1.8);
+      diffuse.rgb = vec3_splat(clamp(texPattern, 0.35, 1.3));
+      diffuse.a = color.a;
+    }
+  #else
+    diffuse.a = 1.0;
+  #endif
+
+  diffuse.rgb *= color.rgb;
+  diffuse.rgb += glow;
+
+  if (v_extra.b > 0.9) {
+    diffuse.rgb += v_refl.rgb*v_refl.a;
+
+  #ifdef NL_CLOUD_AURORA_REFLECTION
+    if (!env.underwater && abs(dFdy(v_extra.g)) < 0.0002) {
+      highp vec3 wpc = vec3(v_causticData.x - CameraPosition.x, v_extra.g, v_causticData.y - CameraPosition.z);
+      vec3 vdc = normalize(ViewPositionAndTime.xyz - wpc);
+      vec3 rc = vec3(-vdc.x, vdc.y, -vdc.z);
+      nl_skycolor skyc = nlSkyColors(env);
+      vec4 cr = nlCloudAuroraReflection(skyc, env, rc, wpc, CameraPosition.xyz, ViewPositionAndTime.w);
+      diffuse.rgb = mix(diffuse.rgb, cr.rgb, cr.a*smoothstep(0.7, 0.95, v_lightmapUV.y));
+    }
+  #endif
+
+  #ifdef NL_WATER_GLITTER
+      if (abs(dFdy(v_extra.g)) < 0.0002 && !env.underwater) {
+        highp vec3 wp = vec3(v_causticData.x - CameraPosition.x, v_extra.g, v_causticData.y - CameraPosition.z);
+        vec3 toCam = ViewPositionAndTime.xyz - wp;
+        float camDist = length(toCam);
+        vec3 vdir = toCam/camDist;
+        float skyExp = smoothstep(0.7, 0.95, v_lightmapUV.y);
+        vec3 glitter = (nlSunGlitter(env, vdir, v_causticData.xy, ViewPositionAndTime.w, camDist) + nlMoonGlitter(env, vdir, v_causticData.xy, ViewPositionAndTime.w, camDist))*skyExp;
+        diffuse.rgb += glitter;
+        diffuse.a = min(diffuse.a + dot(glitter, vec3_splat(0.33)), 1.0);
+
+        vec3 rd = vec3(-vdir.x, vdir.y, -vdir.z);
+        vec3 sd = env.sunDir;
+        vec3 sr = normalize(vec3(0.0, 0.0, 1.0) - sd*sd.z);
+        vec3 su = cross(sd, sr);
+        float facing = dot(rd, sd);
+        vec2 suv = vec2(dot(rd, sr), dot(rd, su))/max(facing, 0.001);
+        suv = suv*NL_SUN_REFL_SCALE + 0.5;
+        float inside = step(0.0, suv.x)*step(suv.x, 1.0)*step(0.0, suv.y)*step(suv.y, 1.0)*step(0.0, facing);
+        float sunVis = smoothstep(0.0, 0.12, sd.y)*(1.0 - env.rainFactor)*skyExp;
+        vec3 sunCol = mix(mix(NL_NOON_SUNLIGHT_COL, vec3_splat(1.0), 0.45), NL_DAWN_SUNLIGHT_COL, pow(1.0 - env.dayFactor*env.dayFactor, 3.0));
+        vec3 sunRefl = texture2D(s_SunRefl, suv).rgb*sunCol*inside*sunVis*NL_SUN_REFL_STRENGTH;
+        diffuse.rgb += sunRefl;
+        diffuse.a = min(diffuse.a + dot(sunRefl, vec3_splat(0.33)), 1.0);
+      }
+    #endif
+
+  } else if (v_refl.a > 0.0) {
+    // reflective effect - only on xz plane
+    float dy = abs(dFdy(v_extra.g));
+    if (dy < 0.0002) {
+      float mask = v_refl.a*(clamp(v_extra.r*10.0,8.2,8.8)-7.8);
+      diffuse.rgb *= 1.0 - 0.6*mask;
+      diffuse.rgb += v_refl.rgb*mask;
+    }
   }
-  float dawn = 1.0 - env.dayFactor*env.dayFactor;
-  dawn *= dawn*dawn;
-  vec3 col = mix(mix(NL_NOON_SUNLIGHT_COL, vec3_splat(1.0), 0.45), NL_DAWN_SUNLIGHT_COL, dawn);
-  float fade = 1.0 - smoothstep(NL_GLITTER_FADE_START, NL_GLITTER_FADE_END, camDist);
 
-  vec3 rd = vec3(-viewDir.x, viewDir.y, -viewDir.z);
-  float facing = max(dot(rd, env.sunDir), 0.0);
-  float core = pow(facing, NL_SUN_BOUNCE_SHARPNESS);
-  float wide = pow(facing, NL_SUN_BOUNCE_SHARPNESS*0.25);
-
-  float sparkle = nlGlitterCell(gxz, rd, env.sunDir, t)*(0.25 + 1.75*wide)*NL_GLITTER_STRENGTH;
-  float bounced = core*NL_SUN_BOUNCE_STRENGTH;
-  return col*((sparkle + bounced)*vis*fade);
+  #if defined(NL_CAUSTIC_INTENSITY) && !(defined(RENDER_AS_BILLBOARDS) || defined(SEASONS))
+    if (v_causticData.z > 0.5 && v_extra.b < 0.9) {
+    float dy = abs(dFdy(v_extra.g));
+    if (dy < 0.0002) {
+        vec2 causticUV = fract(v_causticData.xy);
+        float caustic = texture2D(s_CausticTex, causticUV).r;
+        diffuse.rgb += caustic * NL_CAUSTIC_INTENSITY * 0.3;
+    }
 }
+  #endif
 
-vec3 nlMoonGlitter(nl_environment env, vec3 viewDir, highp vec2 gxz, highp float t, float camDist) {
-  float vis = smoothstep(0.0, 0.12, env.moonDir.y)*smoothstep(0.2, -0.1, env.dayFactor)*(1.0 - env.rainFactor);
-  if (vis <= 0.0) {
-    return vec3_splat(0.0);
+  float wcPos = v_extra.g + CameraPosition.y;
+  float sideFace = step(0.0002, abs(dFdy(v_extra.g)));
+  float nearSurface = smoothstep(62.5, 62.85, wcPos) * step(wcPos, 62.89);
+  float notWater = step(v_extra.b, 0.9);
+  float shadeDown = abs(dFdy(v_lightmapUV.y));
+  float shadeSide = abs(dFdx(v_lightmapUV.y));
+  float underwaterShade = step(shadeSide + 0.002, shadeDown);
+  float foam = nearSurface * sideFace * notWater * underwaterShade;
+  diffuse.rgb = mix(diffuse.rgb, vec3_splat(1.0), foam * 0.5);
+
+  diffuse.rgb = mix(diffuse.rgb, v_fog.rgb, v_fog.a);
+
+  float rain = mix(smoothstep(0.66, 0.3, FogAndDistanceControl.x), 0.0, step(FogAndDistanceControl.x, 0.0));
+  float dropStrength = env.underwater ? 1.0 : rain;
+
+  if (dropStrength > 0.0) {
+    vec2 screenUV = gl_FragCoord.xy / vec2(1280.0, 720.0); // match your actual target res
+    diffuse.rgb = screenDrops(diffuse.rgb, ViewPositionAndTime.w, screenUV, !env.underwater);
   }
-  vec3 mc = NL_NIGHT_MOONLIGHT_COL/max(max(NL_NIGHT_MOONLIGHT_COL.r, NL_NIGHT_MOONLIGHT_COL.g), NL_NIGHT_MOONLIGHT_COL.b);
-  vec3 col = mix(mc, vec3_splat(1.0), NL_MOON_GLITTER_WHITE);
-  float fade = 1.0 - smoothstep(NL_GLITTER_FADE_START, NL_GLITTER_FADE_END, camDist);
-  vec3 rd = vec3(-viewDir.x, viewDir.y, -viewDir.z);
-  return col*(nlGlitterCell(gxz, rd, env.moonDir, t)*vis*fade*NL_MOON_GLITTER_STRENGTH);
+
+  if (v_extra.b > 0.9) {
+    diffuse.rgb = acesTonemap(diffuse.rgb);
+  } else {
+    diffuse.rgb = colorCorrection(diffuse.rgb);
+  }
+
+  gl_FragColor = diffuse;
 }
-
-vec4 nlWater(
-    inout vec4 color, inout vec3 wPos, nl_skycolor skycol, nl_environment env, vec4 COLOR, vec3 viewDir,
-    vec3 cPos, vec3 tiledCpos, vec3 gPos, vec3 CAMERA_POS, vec3 light, vec3 torchColor, vec2 lit,
-    float fractCposY, float camDist, highp float t
-) {
-
-    float waveTime = NL_WATER_WAVE_SPEED * t;
-    
-    vec2 bump;
-    bump.x = movingNoise2D(gPos.xz + gPos.yy, waveTime, 0.6);
-    bump.y = movingNoise2D(gPos.zx + vec2(1.5, 3.2), waveTime * 0.9, 0.6);
-    
-    vec2 detail;
-    detail.x = movingNoise2D(gPos.xz * 2.5 + gPos.yy, waveTime * 1.5, 0.6);
-    detail.y = movingNoise2D(gPos.zx * 2.5 + vec2(0.7, 4.1), waveTime * 1.3, 0.6);
-    
-    vec2 micro;
-    micro.x = movingNoise2D(gPos.xz * 5.0 + gPos.yy, waveTime * 2.0, 0.6);
-    micro.y = movingNoise2D(gPos.zx * 5.0 + vec2(2.1, 0.5), waveTime * 1.8, 0.6);
-    
-    bump = bump * abs(bump);
-    detail = detail * abs(detail);
-    
-    bump = bump * 0.6 + detail * 0.3 + micro * 0.1;
-    
-    bump.x *= 1.2;
-    bump.y *= 0.8;
-
-    vec3 nrm = vec3(0.0, 1.0, 0.0);
-    
-    if (fractCposY > 0.0) {
-        nrm.xz = bump * NL_WATER_BUMP;
-        nrm.y  = 1.0; 
-    } else {
-        bump *= 0.5 + 0.5 * sin(3.0 * waveTime + cPos.y * PI_HALF);
-        nrm.xz = normalize(viewDir.xz) + bump.y * (vec2(1.0) - viewDir.xz * viewDir.xz) * NL_WATER_BUMP;
-        nrm.y  = bump.x * NL_WATER_BUMP;
-    }
-    nrm = normalize(nrm);
-
-    float cosR = dot(nrm, viewDir);
-    vec3 reflDir = reflect(viewDir, nrm);
-
-    vec3 distortedRefl = normalize(reflDir + vec3(nrm.x * 0.15, 0.0, nrm.z * 0.15));
-    
-    float roughness = smoothstep(5.0, 40.0, camDist) * 0.04;
-    distortedRefl.x += sin(gPos.x * 50.0) * roughness;
-    distortedRefl.z += cos(gPos.z * 50.0) * roughness;
-    distortedRefl = normalize(distortedRefl);
-
-    vec3 waterRefl = nlRenderSky(skycol, env, distortedRefl, t, false);
-
-    #if defined(NL_CLOUD_AURORA_REFLECTION)
-    if (distortedRefl.y > 0.0) {
-        vec4 cloudRefl = nlCloudAuroraReflection(skycol, env, distortedRefl, wPos, CAMERA_POS, t);
-        waterRefl = mix(waterRefl, cloudRefl.rgb, cloudRefl.a);
-    }
-    #endif
-
-    // Torchlight
-    float tc = 0.5 + 0.5 * sin(16.0 * distortedRefl.x) * sin(16.0 * distortedRefl.z);
-    waterRefl += torchColor * NL_TORCHLIGHT_INTENSITY * lit.x * (tc * tc);
-
-    if (!env.end) {
-        waterRefl *= 0.1 + lit.y * 0.9;
-    }
-
-    #ifdef NL_WATER_REFL_MASK
-    float mask = 0.05 + 0.05 * sin(distortedRefl.x * 12.0) * sin(distortedRefl.z * 6.0);
-    waterRefl *= smoothstep(mask - 0.2, mask + 0.13, distortedRefl.y * distortedRefl.y);
-    #endif
-
-    cosR = abs(cosR);
-    // 0.02 is the natural baseline reflectivity coefficient of clean water
-    float fresnel = calculateFresnel(cosR, 0.02); 
-    
-    float viewAngleFactor = 1.0 - viewDir.y;
-    float opacity = mix(NL_WATER_TRANSPARENCY, 1.0, pow(viewAngleFactor, 4.0));
-
-    color.rgb *= 0.22 * NL_WATER_TINT * (1.0 - 0.75 * fresnel);
-    color.a = mix(COLOR.a * opacity, 1.0, fresnel);
-
-    #ifdef NL_WATER_WAVE
-    if (camDist < 14.0) {
-        wPos.y -= 0.5 * (bump.x + 0.5) * NL_WATER_BUMP;
-    }
-    #endif
-
-    return vec4(waterRefl, fresnel);
-}
-
-#endif
