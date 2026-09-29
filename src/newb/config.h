@@ -98,7 +98,7 @@
 
 /* Ore glow intensity */
 #define NL_GLOW_TEX 5.0           // 0.4 weak ~ 8.0 bright
-#define NL_GLOW_SHIMMER 0.8       // [toggle] 0.1 subtle ~ 1.0 100% shimmer
+#define NL_GLOW_SHIMMER 0.9       // [toggle] 0.1 subtle ~ 1.0 100% shimmer
 #define NL_GLOW_SHIMMER_SPEED 0.9 // 0.5 slow - 2.0 fast
 //#define NL_GLOW_LEAK 1.0        // [toggle] 0.08 subtle ~ 1.0 100% brightness of NL_GLOW_TEX
 
@@ -113,19 +113,19 @@
 #define NL_LANTERN_WAVE 0.16   // [toggle] 0.05 subtle ~ 0.4 large swing
 #define NL_WAVE_SPEED 2.8      // 0.5 slow wave ~ 5.0 very fast wave
 #define NL_EXTRA_PLANTS_WAVE // [toggle] !dont use! wave using texture coords (1.21.0 vanilla 2048x1024)
-#define NL_WAVE_RANGE 13.0     // 6.0 upto 6 blocks ~ 32.0 upto 32 blocks away (slower)
+#define NL_WAVE_RANGE 12.0     // 6.0 upto 6 blocks ~ 32.0 upto 32 blocks away (slower)
 
 /* Water */
-#define NL_WATER_TRANSPARENCY 0.5 // 0.0 transparent ~ 1.0 normal
+#define NL_WATER_TRANSPARENCY 0.7 // 0.0 transparent ~ 1.0 normal
 #define NL_WATER_BUMP 0.0        // 0.001 plain ~ 0.2 bumpy water
 #define NL_WATER_WAVE_SPEED  1.2  // 0.2 calm ~ 2.0 turbulent
-#define NL_WATER_TEX_OPACITY 3.72  // 0.0 plain water ~ 1.0 vanilla water texture
+#define NL_WATER_TEX_OPACITY 2.20  // 0.0 plain water ~ 1.0 vanilla water texture
 //#define NL_WATER_WAVE             // [toggle] wave effect
 //#define NL_WATER_REFL_MASK      // [toggle] fake water reflection mask
 #define NL_WATER_TINT vec3(0.95, 0.97, 1.0)
 
 /* Underwater */
-#define NL_UNDERWATER_BRIGHTNESS 1.1         // 0.0 dark ~ 3.0 bright
+#define NL_UNDERWATER_BRIGHTNESS 0.5         // 0.0 dark ~ 3.0 bright
 #define NL_CAUSTIC_INTENSITY 4.0             // 0.5 weak ~ 5.0 bright
 #define NL_UNDERWATER_WAVE 0.1               // [toggle] 0.02 subtle ~ 0.6 trippy
 #define NL_UNDERWATER_STREAKS 0.4           // [toggle] 0.8 subtle - 2.0 bright streaks from top
@@ -205,15 +205,15 @@
 //#define NL_CHUNK_LOAD_ANIM 100.0 // [toggle] -600.0 fall from top ~ 600.0 rise from bottom
 
 /* Sun/Moon */
-#define NL_SUN_SIZE  2.0           // 0.3 tiny ~ 4.0 massive
-#define NL_MOON_SIZE 2.0           // 0.3 tiny ~ 4.0 massive
+#define NL_SUN_SIZE  1.0           // 0.3 tiny ~ 4.0 massive
+#define NL_MOON_SIZE 0.9           // 0.3 tiny ~ 4.0 massive
 #define NL_SUN_PATH_YAW    15.0 //
 #define NL_MOON_PATH_YAW   17.0 //
 #define NL_SUN_PATH_TILT   31.0 //
 #define NL_MOON_PATH_TILT -28.0 //
 #define NL_SUN_TILT        45.0 // 0.0 no tilt ~ 90.0 tilt of 90 degrees
 #define NL_MOON_TILT       45.0 // 0.0 no tilt ~ 90.0 tilt of 90 degrees
-#define NL_SUN_BLOOM_SQUARE            // [toggle] square-shaped sun bloom
+//#define NL_SUN_BLOOM_SQUARE            // [toggle] square-shaped sun bloom
 #define NL_SUN_BLOOM_SIZE 0.03         // 0.05 tight ~ 0.5 large
 #define NL_SUN_BLOOM_SOFTNESS 0.2     // 0.0 hard edge ~ 0.3 very soft
 #define NL_SUN_BLOOM_COLOR vec3(1.0, 0.9, 0.7)
