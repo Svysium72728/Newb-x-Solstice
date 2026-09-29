@@ -119,16 +119,16 @@
 #define NL_WATER_TRANSPARENCY 0.7 // 0.0 transparent ~ 1.0 normal
 #define NL_WATER_BUMP 0.0        // 0.001 plain ~ 0.2 bumpy water
 #define NL_WATER_WAVE_SPEED  1.2  // 0.2 calm ~ 2.0 turbulent
-#define NL_WATER_TEX_OPACITY 2.20  // 0.0 plain water ~ 1.0 vanilla water texture
+#define NL_WATER_TEX_OPACITY 1.0  // 0.0 plain water ~ 1.0 vanilla water texture
 //#define NL_WATER_WAVE             // [toggle] wave effect
 //#define NL_WATER_REFL_MASK        // [toggle] fake water reflection mask
 #define NL_WATER_TINT vec3(1.3, 1.1, 0.75)
-#define NL_WATER_SATURATION 0.6
-#define NL_WATER_BRIGHTNESS 0.45
+#define NL_WATER_SATURATION 0.8
+#define NL_WATER_BRIGHTNESS 0.70
 
 /* Underwater */
 #define NL_UNDERWATER_BRIGHTNESS 0.5         // 0.0 dark ~ 3.0 bright
-#define NL_CAUSTIC_INTENSITY 4.0             // 0.5 weak ~ 5.0 bright
+#define NL_CAUSTIC_INTENSITY 3.0             // 0.5 weak ~ 5.0 bright
 #define NL_UNDERWATER_WAVE 0.1               // [toggle] 0.02 subtle ~ 0.6 trippy
 #define NL_UNDERWATER_STREAKS 0.4           // [toggle] 0.8 subtle - 2.0 bright streaks from top
 #define NL_UNDERWATER_TINT vec3(0.718,0.741,0.969) // fog tint color when underwater
@@ -176,7 +176,7 @@
 
 /* Lightweight Clouds */
 #define NL_CLOUD4_SCALE vec2(0.045, 0.045) // 0.005 large ~ 0.1 tiny
-#define NL_CLOUD4_SHAPE vec2(0.5, 0.4)     // 0.0 round ~ 1.0 box (ADDED THIS LINE)
+#define NL_CLOUD4_SHAPE vec2(0.3, 0.3)     // 0.0 round ~ 1.0 box 
 #define NL_CLOUD4_SPEED 0.8               // 0.0 static ~ 0.1 fast moving
 #define NL_CLOUD4_SHADOW 1.0               // 0.1 subtle ~ 1.0 dark shadow
 #define NL_CLOUD4_SHADOW_OFFSET 0.2        // 0.05 minimal ~ 1.0 large
