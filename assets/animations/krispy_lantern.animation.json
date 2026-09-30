@@ -10,7 +10,7 @@
 		"animation.rp.krispy.lantern_first_person": {
 			"loop": true,
 			"bones": {
-				"root": { "rotation": [8, 0, 0], "position": [-2, 4, 2], "scale": 0.5 }
+				"root": { "rotation": [-9, 0, 0], "position": [-2, 4, 2], "scale": 1.5 }
 			}
 		}
 	}
