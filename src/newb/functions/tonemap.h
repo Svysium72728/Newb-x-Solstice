@@ -14,8 +14,10 @@ vec3 colorCorrection(vec3 col) {
 
   // ref - https://64.github.io/tonemapping/
   #if NL_TONEMAP_TYPE == 5
-    col = clamp(hableCurve(col*2.0)/hableCurve(vec3_splat(11.2)), 0.0, 1.0);
-  #elif NL_TONEMAP_TYPE == 3
+  col = clamp(hableCurve(col*2.0)/hableCurve(vec3_splat(11.2)), 0.0, 1.0);
+  float shl = luminance(col);
+  col = mix(vec3_splat(shl), col, mix(NL_SHADOW_SATURATION, 1.0, smoothstep(0.0, 0.3, shl)));
+#elif NL_TONEMAP_TYPE == 3
     // extended reinhard tonemap
     const float whiteScale = 0.063;
     col = col*(1.0+col*whiteScale)/(1.0+col);
