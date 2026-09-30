@@ -50,7 +50,7 @@ vec3 nlSunGlitter(nl_environment env, vec3 viewDir, highp vec2 gxz, highp float 
   vec3 col = mix(mix(NL_NOON_SUNLIGHT_COL, vec3_splat(1.0), 0.45), NL_DAWN_SUNLIGHT_COL, dawn);
   float fade = 1.0 - smoothstep(NL_GLITTER_FADE_START, NL_GLITTER_FADE_END, camDist);
 
-  vec3 rd = vec3(-viewDir.x, viewDir.y, -viewDir.z);
+  vec3 rd = viewDir;
   vec2 pa = nlGlitterPath(rd, env.sunDir);
 
   float sparkle = nlGlitterCell(gxz, rd, env.sunDir, t)*fade*NL_GLITTER_STRENGTH;
