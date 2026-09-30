@@ -216,14 +216,14 @@
 //#define NL_CHUNK_LOAD_ANIM 100.0 // [toggle] -600.0 fall from top ~ 600.0 rise from bottom
 
 /* Sun/Moon */
-#define NL_SUN_SIZE  1.0           // 0.3 tiny ~ 4.0 massive
-#define NL_MOON_SIZE 0.9           // 0.3 tiny ~ 4.0 massive
+#define NL_SUN_SIZE  2.7           // 0.3 tiny ~ 4.0 massive
+#define NL_MOON_SIZE 2.0           // 0.3 tiny ~ 4.0 massive
 #define NL_SUN_PATH_YAW    15.0 //
 #define NL_MOON_PATH_YAW   17.0 //
 #define NL_SUN_PATH_TILT   31.0 //
 #define NL_MOON_PATH_TILT -28.0 //
-#define NL_SUN_TILT        45.0 // 0.0 no tilt ~ 90.0 tilt of 90 degrees
-#define NL_MOON_TILT       45.0 // 0.0 no tilt ~ 90.0 tilt of 90 degrees
+#define NL_SUN_TILT        32.0 // 0.0 no tilt ~ 90.0 tilt of 90 degrees
+#define NL_MOON_TILT       32.0 // 0.0 no tilt ~ 90.0 tilt of 90 degrees
 //#define NL_SUN_BLOOM_SQUARE            // [toggle] square-shaped sun bloom
 #define NL_SUN_BLOOM_SIZE 0.03         // 0.05 tight ~ 0.5 large
 #define NL_SUN_BLOOM_SOFTNESS 0.2     // 0.0 hard edge ~ 0.3 very soft
