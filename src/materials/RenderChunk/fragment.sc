@@ -125,7 +125,7 @@ void main() {
     if (!env.underwater && abs(dFdy(v_extra.g)) < 0.0002) {
       highp vec3 wpc = vec3(v_causticData.x - CameraPosition.x, v_extra.g, v_causticData.y - CameraPosition.z);
       vec3 vdc = normalize(ViewPositionAndTime.xyz - wpc);
-      vec3 rc = vec3(-vdc.x, vdc.y, -vdc.z);
+      vec3 rc = vec3(vdc.x, -vdc.y, vdc.z);
       nl_skycolor skyc = nlSkyColors(env);
       vec4 cr = nlCloudAuroraReflection(skyc, env, rc, wpc, CameraPosition.xyz, ViewPositionAndTime.w);
       diffuse.rgb = mix(diffuse.rgb, cr.rgb, cr.a*smoothstep(0.7, 0.95, v_lightmapUV.y));
