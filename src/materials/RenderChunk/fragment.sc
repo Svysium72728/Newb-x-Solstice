@@ -106,8 +106,9 @@ void main() {
 
   #if defined(TRANSPARENT) && !(defined(SEASONS) || defined(RENDER_AS_BILLBOARDS))
     if (v_extra.b > 0.9) {
-      float texPattern = 1.0 - NL_WATER_TEX_OPACITY*(1.0 - diffuse.b*1.8);
-      diffuse.rgb = vec3_splat(clamp(texPattern, 0.35, 1.3));
+      float texPattern = NL_WATER_TEX_OPACITY*(diffuse.b*1.8 - 1.0);
+      texPattern = texPattern/(1.0 + abs(texPattern));
+      diffuse.rgb = vec3_splat(1.0 + texPattern*0.6);
       diffuse.a = color.a;
     }
   #else
@@ -141,22 +142,24 @@ void main() {
         vec3 glitter = (nlSunGlitter(env, vdir, v_causticData.xy, ViewPositionAndTime.w, camDist) + nlMoonGlitter(env, vdir, v_causticData.xy, ViewPositionAndTime.w, camDist))*skyExp;
         diffuse.rgb += glitter;
         diffuse.a = min(diffuse.a + dot(glitter, vec3_splat(0.33)), 1.0);
-
-        vec3 rd = vec3(-vdir.x, vdir.y, -vdir.z);
-        vec3 sd = env.sunDir;
-        vec3 sr = normalize(vec3(0.0, 0.0, 1.0) - sd*sd.z);
-        vec3 su = cross(sd, sr);
-        float facing = dot(rd, sd);
-        vec2 suv = vec2(dot(rd, sr), dot(rd, su))/max(facing, 0.001);
-        suv = suv*NL_SUN_REFL_SCALE + 0.5;
-        float inside = step(0.0, suv.x)*step(suv.x, 1.0)*step(0.0, suv.y)*step(suv.y, 1.0)*step(0.0, facing);
-        float sunVis = smoothstep(0.0, 0.12, sd.y)*(1.0 - env.rainFactor)*skyExp;
-        vec3 sunCol = mix(mix(NL_NOON_SUNLIGHT_COL, vec3_splat(1.0), 0.45), NL_DAWN_SUNLIGHT_COL, pow(1.0 - env.dayFactor*env.dayFactor, 3.0));
-        vec3 sunRefl = texture2D(s_SunRefl, suv).rgb*sunCol*inside*sunVis*NL_SUN_REFL_STRENGTH;
-        diffuse.rgb += sunRefl;
-        diffuse.a = min(diffuse.a + dot(sunRefl, vec3_splat(0.33)), 1.0);
       }
-    #endif
+  #endif
+
+    if (!env.underwater && abs(dFdy(v_extra.g)) < 0.01) {
+      highp vec3 wps = vec3(v_causticData.x - CameraPosition.x, v_extra.g, v_causticData.y - CameraPosition.z);
+      vec3 vds = normalize(ViewPositionAndTime.xyz - wps);
+      vec3 rds = vec3(mix(vds.x, -vds.x, NL_SUN_REFL_MIRROR), vds.y, mix(vds.z, -vds.z, NL_SUN_REFL_MIRROR));
+      vec3 sd = env.sunDir;
+      vec3 sr = normalize(vec3(0.0, 0.0, 1.0) - sd*sd.z);
+      vec3 su = cross(sd, sr);
+      float facing = dot(rds, sd);
+      vec2 suv = vec2(dot(rds, sr), dot(rds, su))/max(facing, 0.001)*NL_SUN_REFL_SCALE + 0.5;
+      float inside = step(0.0, suv.x)*step(suv.x, 1.0)*step(0.0, suv.y)*step(suv.y, 1.0)*step(0.0, facing);
+      float sunVis = smoothstep(0.0, 0.12, sd.y)*(1.0 - env.rainFactor)*smoothstep(0.7, 0.95, v_lightmapUV.y);
+      vec3 sunCol = mix(mix(NL_NOON_SUNLIGHT_COL, vec3_splat(1.0), 0.45), NL_DAWN_SUNLIGHT_COL, pow(1.0 - env.dayFactor*env.dayFactor, 3.0));
+      vec3 sunRefl = texture2D(s_SunRefl, suv).rgb*sunCol*inside*sunVis*NL_SUN_REFL_STRENGTH;
+      diffuse.rgb += sunRefl;
+    }
 
   } else if (v_refl.a > 0.0) {
     // reflective effect - only on xz plane
@@ -179,15 +182,37 @@ void main() {
 }
   #endif
 
-  float wcPos = v_extra.g + CameraPosition.y;
-  float sideFace = step(0.0002, abs(dFdy(v_extra.g)));
-  float nearSurface = smoothstep(62.5, 62.85, wcPos) * step(wcPos, 62.89);
-  float notWater = step(v_extra.b, 0.9);
-  float shadeDown = abs(dFdy(v_lightmapUV.y));
-  float shadeSide = abs(dFdx(v_lightmapUV.y));
-  float underwaterShade = step(shadeSide + 0.002, shadeDown);
-  float foam = nearSurface * sideFace * notWater * underwaterShade;
-  diffuse.rgb = mix(diffuse.rgb, vec3_splat(1.0), foam * 0.5);
+  highp float wcY = v_extra.g + CameraPosition.y;
+  float dyW = abs(dFdy(v_extra.g));
+  highp vec3 fwp = vec3(v_causticData.x - CameraPosition.x, v_extra.g, v_causticData.y - CameraPosition.z);
+  vec3 fvd = normalize(ViewPositionAndTime.xyz - fwp);
+
+  bool isOneBlockUnderwater = ((wcY <= 62.89 && wcY > 62.0) || (wcY <= -60.11 && wcY > -61.0))
+    && v_extra.b < 0.9
+    && dyW >= 0.0002
+    && fvd.y > 0.02
+    && step(0.85, v_lightmapUV.y) * step(v_lightmapUV.y, 0.927) == 1.0;
+
+  if (isOneBlockUnderwater) {
+    float d = 0.865;
+    float bpy = fract(wcY);
+    vec2 offset = (d - bpy) * fvd.xz / fvd.y;
+    vec2 watpos = v_causticData.xy + offset;
+
+    float fade = 1.0 - clamp((d - bpy) / abs(fvd.y), 0.0, 1.0);
+
+    float ft = 0.3 * ViewPositionAndTime.w;
+    vec2 st = watpos;
+    float n = sin(st.x + 3.0*sin(0.5*st.y) + ft) * sin(st.y + 3.0*sin(0.5*st.x) - ft);
+    n = 0.5 + 0.5 * sin(st.x + 2.0*n + 0.2*ft) * sin(st.y - 4.0*n + 0.1*ft);
+    fade = pow(fade, 1.0 + 4.0 * n);
+
+    float foamTex = fract(238.084 * sin(dot(floor(16.0 * watpos), vec2(1.32, 141.3))));
+    foamTex *= fade;
+    foamTex = mix(foamTex, 1.0, fade * fade * fade);
+
+    diffuse.rgb = mix(diffuse.rgb, vec3(1.0, 1.0, 1.3) * 3.0, foamTex);
+  }
 
   diffuse.rgb = mix(diffuse.rgb, v_fog.rgb, v_fog.a);
 
