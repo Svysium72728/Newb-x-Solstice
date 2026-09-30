@@ -243,13 +243,12 @@
 #define NL_GLITTER_LANE 60.0
 #define NL_GLITTER_LENGTH 0.7
 #define NL_SUN_BOUNCE_STRENGTH 0.6
-#define NL_SUN_REFL_SCALE 1.667
 #define NL_SUN_REFL_STRENGTH 1.5
 
 /* Fake godrays during sunrise/sunset */
 #define NL_GODRAY 0.8 // [toggle] 0.1 subtle ~ 0.8 strong
-#define NL_GODRAY_SPOKE_COUNT 3.0
-#define NL_GODRAY_SPOKE_SHARPNESS 0.
+#define NL_GODRAY_SPOKE_COUNT 6.0
+#define NL_GODRAY_SPOKE_SHARPNESS 0.4
 #define NL_GODRAY_COLOR vec3(1.0, 0.95, 0.8)
 
 /* Black hole value tuning (feature itself toggled per subpack tier below) */
