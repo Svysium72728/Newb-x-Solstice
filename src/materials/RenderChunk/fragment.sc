@@ -213,7 +213,7 @@ void main() {
   diffuse.rgb = mix(diffuse.rgb, v_fog.rgb, v_fog.a);
 
   float rain = mix(smoothstep(0.66, 0.3, FogAndDistanceControl.x), 0.0, step(FogAndDistanceControl.x, 0.0));
-  float dropStrength = env.underwater ? 1.0 : rain;
+  float dropStrength = (env.nether || env.end) ? 0.0 : (env.underwater ? 1.0 : rain);
 
   if (dropStrength > 0.0) {
     vec2 screenUV = gl_FragCoord.xy / vec2(1280.0, 720.0); // match your actual target res
