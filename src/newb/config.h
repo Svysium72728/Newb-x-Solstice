@@ -12,8 +12,8 @@
 #define NL_SUN_REFL_MIRROR 0.0
 #define NL_SHADOW_SATURATION 0.3
 #define NL_MOON_BLOOM_SIZE 0.12
-#define NL_MOON_BLOOM_SOFTNESS 0.1
-#define NL_MOON_BLOOM_STRENGTH 1.2
+#define NL_MOON_BLOOM_SOFTNESS 0.3
+#define NL_MOON_BLOOM_STRENGTH 2.0
 
 /*
   NEWB SHADER MAIN CONFIG
@@ -228,12 +228,12 @@
 #define NL_SUN_PATH_TILT   31.0 //
 #define NL_MOON_PATH_TILT -28.0 //
 #define NL_SUN_TILT        32.0 // 0.0 no tilt ~ 90.0 tilt of 90 degrees
-#define NL_MOON_TILT       32.0 // 0.0 no tilt ~ 90.0 tilt of 90 degrees
+#define NL_MOON_TILT       0.0 // 0.0 no tilt ~ 90.0 tilt of 90 degrees
 //#define NL_SUN_BLOOM_SQUARE            // [toggle] square-shaped sun bloom
 #define NL_SUN_BLOOM_SIZE 0.03         // 0.05 tight ~ 0.5 large
-#define NL_SUN_BLOOM_SOFTNESS 0.2     // 0.0 hard edge ~ 0.3 very soft
+#define NL_SUN_BLOOM_SOFTNESS 0.3     // 0.0 hard edge ~ 0.3 very soft
 #define NL_SUN_BLOOM_COLOR vec3(1.0, 0.9, 0.7)
-#define NL_SUN_BLOOM_STRENGTH 1.2      // 0.5 subtle ~ 3.0 strong
+#define NL_SUN_BLOOM_STRENGTH 2.1      // 0.5 subtle ~ 3.0 strong
 //#define NL_WATER_GLITTER
 #define NL_GLITTER_DENSITY 3.0
 #define NL_GLITTER_SPEED 0.6
