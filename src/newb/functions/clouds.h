@@ -230,12 +230,12 @@ vec3 pixelatedCloudRefl(vec2 uv, float timeVal) {
 
 vec4 nlCloudAuroraReflection(nl_skycolor skycol, nl_environment env, vec3 viewDir, vec3 wPos, vec3 CAMERA_POS, highp float t) {
   highp vec2 cloudPos = wPos.xz;
-  float divY = viewDir.y - 0.05; // shift instead of clamp, avoids hard discontinuity/starburst artifact
+  float divY = viewDir.y - 0.05;
   cloudPos += (187.0-(wPos.y+CAMERA_POS.y))*viewDir.xz/divY;
   float fade = clamp(2.0 - 0.0008*length(cloudPos), 0.0, 1.0);
-  #if NL_CLOUD_TYPE != 4
+#if NL_CLOUD_TYPE != 4
   cloudPos += CAMERA_POS.xz;
-  #endif
+#endif
 
   vec4 refl = vec4_splat(0.0);
 
@@ -258,12 +258,12 @@ vec4 nlCloudAuroraReflection(nl_skycolor skycol, nl_environment env, vec3 viewDi
     clouds.a *= fade;
     refl = vec4(mix(refl.rgb, clouds.rgb, clouds.a), min(refl.a + clouds.a, 1.0));
   #elif NL_CLOUD_TYPE == 4
-    vec3 cloudNoise = pixelatedCloudRefl(cloudPos*0.005, t);
-    float cloudAlpha = clamp(length(cloudNoise.r), 0.0, 1.0) * fade;
-    float dayBright = clamp(env.dayFactor*0.5+0.5, 0.0, 1.0);
-    vec3 cloudcol = skycol.horizon*mix(NL_CLOUD4_NIGHT_DARKEN, 1.5, dayBright);
-    refl = vec4(mix(refl.rgb, cloudcol, cloudAlpha), min(refl.a + cloudAlpha, 1.0));
-  #endif
+   vec3 cloudNoise = pixelatedCloud(cloudPos*0.005, t);
+   float cloudAlpha = clamp(length(cloudNoise.r), 0.0, 1.0) * fade;
+   float dayBright = clamp(env.dayFactor*0.5+0.5, 0.0, 1.0);
+   vec3 cloudcol = skycol.horizonEdge*mix(NL_CLOUD4_NIGHT_DARKEN, 1.5, dayBright);
+   refl = vec4(mix(refl.rgb, cloudcol, cloudAlpha), min(refl.a + cloudAlpha, 1.0));
+#endif
 
   return refl;
 }
