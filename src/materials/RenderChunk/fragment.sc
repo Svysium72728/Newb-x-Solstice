@@ -21,10 +21,6 @@ SAMPLER2D_AUTOREG(s_SunRefl);
 
 #define DROP_NUMBER 5
 
-vec3 acesTonemap(vec3 x) {
-  return clamp((x*(2.51*x + 0.03))/(x*(2.43*x + 0.59) + 0.14), 0.0, 1.0);
-}
-
 float stickyRaindrop(vec2 uv, vec2 center, float baseSize, float stretch) {
     vec2 p = (uv - center);
     p.y /= baseSize * stretch;
@@ -107,8 +103,8 @@ void main() {
   #if defined(TRANSPARENT) && !(defined(SEASONS) || defined(RENDER_AS_BILLBOARDS))
     if (v_extra.b > 0.9) {
       float texPattern = NL_WATER_TEX_OPACITY*(diffuse.b*1.8 - 1.0);
-      texPattern = texPattern/(1.0 + abs(texPattern));
-      diffuse.rgb = vec3_splat(1.0 + texPattern*0.6);
+      texPattern = texPattern/(1.0 + abs(texPattern)/(texPattern < 0.0 ? 0.75 : 1.5));
+      diffuse.rgb = vec3_splat(1.0 + texPattern);
       diffuse.a = color.a;
     }
   #else
@@ -125,7 +121,7 @@ void main() {
     if (!env.underwater && abs(dFdy(v_extra.g)) < 0.0002) {
       highp vec3 wpc = vec3(v_causticData.x - CameraPosition.x, v_extra.g, v_causticData.y - CameraPosition.z);
       vec3 vdc = normalize(ViewPositionAndTime.xyz - wpc);
-      vec3 rc = vec3(vdc.x, -vdc.y, vdc.z);
+      vec3 rc = vec3(-vdc.x, vdc.y, -vdc.z);
       nl_skycolor skyc = nlSkyColors(env);
       vec4 cr = nlCloudAuroraReflection(skyc, env, rc, wpc, CameraPosition.xyz, ViewPositionAndTime.w);
       diffuse.rgb = mix(diffuse.rgb, cr.rgb, cr.a*smoothstep(0.7, 0.95, v_lightmapUV.y));
@@ -224,11 +220,7 @@ void main() {
     diffuse.rgb = screenDrops(diffuse.rgb, ViewPositionAndTime.w, screenUV, !env.underwater);
   }
 
-  if (v_extra.b > 0.9) {
-    diffuse.rgb = acesTonemap(diffuse.rgb);
-  } else {
-    diffuse.rgb = colorCorrection(diffuse.rgb);
-  }
+  diffuse.rgb = colorCorrection(diffuse.rgb);
 
   gl_FragColor = diffuse;
 }
