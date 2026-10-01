@@ -37,7 +37,7 @@
 */
 
 /* Color correction */
-#define NL_TONEMAP_TYPE 5              // 1:Exponential, 2:Reinhard, 3:Extended Reinhard, 4:ACES
+#define NL_TONEMAP_TYPE 4              // 1:Exponential, 2:Reinhard, 3:Extended Reinhard, 4:ACES, 5:Extensed Reinhard but extra curve ig
 #define NL_GAMMA 1.30                  // 0.3 low ~ 2.0 high
 #define NL_EXPOSURE 1.4              // [toggle] 0.5 dark ~ 3.0 bright
 #define NL_SATURATION 1.4            // [toggle] 0.0 grayscale ~ 4.0 super saturated
@@ -128,7 +128,7 @@
 #define NL_WATER_TRANSPARENCY 0.7 // 0.0 transparent ~ 1.0 normal
 #define NL_WATER_BUMP 0.0        // 0.001 plain ~ 0.2 bumpy water
 #define NL_WATER_WAVE_SPEED  1.2  // 0.2 calm ~ 2.0 turbulent
-#define NL_WATER_TEX_OPACITY 1.0  // 0.0 plain water ~ 1.0 vanilla water texture
+#define NL_WATER_TEX_OPACITY 3.72 // 0.0 plain water ~ 1.0 vanilla water texture
 //#define NL_WATER_WAVE             // [toggle] wave effect
 //#define NL_WATER_REFL_MASK        // [toggle] fake water reflection mask
 #define NL_WATER_TINT vec3(1.3, 1.1, 0.75)
@@ -184,12 +184,12 @@
 #define NL_CLOUD3_SHADOW_OFFSET 0.3      // 0.05 minimal ~ 1.0 large
 
 /* Lightweight Clouds */
-#define NL_CLOUD4_SCALE vec2(0.045, 0.045) // 0.005 large ~ 0.1 tiny
+#define NL_CLOUD4_SCALE vec2(0.035, 0.035) // 0.005 large ~ 0.1 tiny
 #define NL_CLOUD4_SHAPE vec2(0.3, 0.3)     // 0.0 round ~ 1.0 box 
 #define NL_CLOUD4_SPEED 0.8               // 0.0 static ~ 0.1 fast moving
 #define NL_CLOUD4_SHADOW 1.0               // 0.1 subtle ~ 1.0 dark shadow
 #define NL_CLOUD4_SHADOW_OFFSET 0.2        // 0.05 minimal ~ 1.0 large
-#define NL_CLOUD4_NIGHT_DARKEN 0.19       // 0.1 very dark ~ 1.0 same as day
+#define NL_CLOUD4_NIGHT_DARKEN 0.17       // 0.1 very dark ~ 1.0 same as day
 
 /* Aurora settings (old sine-based, unused, kept for reference) */
 //#define NL_AURORA 1.2           // [toggle] 0.4 dim ~ 4.0 very bright
@@ -199,7 +199,7 @@
 #define NL_AURORA_COL1 vec3(0.1,1.0,0.0)
 #define NL_AURORA_COL2 vec3(0.1,0.0,1.0)
 
-//#define NL_CLOUD_AURORA_REFLECTION // [toggle] simple clouds/aurora reflection (reflects type 4 clouds on water)
+#define NL_CLOUD_AURORA_REFLECTION // [toggle] (reflects type 4 clouds on water)
 
 /* Shooting star */
 #define NL_SHOOTING_STAR 1.0        // [toggle] 0.2 dim ~ 1.0 bright
@@ -229,7 +229,7 @@
 #define NL_SUN_BLOOM_SOFTNESS 0.2     // 0.0 hard edge ~ 0.3 very soft
 #define NL_SUN_BLOOM_COLOR vec3(1.0, 0.9, 0.7)
 #define NL_SUN_BLOOM_STRENGTH 2.0      // 0.5 subtle ~ 3.0 strong
-#define NL_WATER_GLITTER
+//#define NL_WATER_GLITTER
 #define NL_GLITTER_DENSITY 3.0
 #define NL_GLITTER_SPEED 0.6
 #define NL_GLITTER_STRENGTH 3.0
