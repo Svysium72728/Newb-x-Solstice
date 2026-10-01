@@ -215,6 +215,19 @@ vec3 pixelatedCloud(vec2 uv, float timeVal) {
     return vec3(clamp(a, 0.0, 1.0));
 }
 
+vec3 pixelatedCloudRefl(vec2 uv, float timeVal) {
+    float isTime = -timeVal * 0.02;
+    vec2 shadeDirection = vec2(0.05, 0.03);
+    uv *= 6.5;
+    uv.y *= 1.5;
+    float a = gridSDF(uv + isTime);
+    float shadeShape = gridSDF(uv + isTime - shadeDirection);
+    float b = smoothstep(0.05, 0.9, shadeShape);
+    a = smoothstep(0.1, 0.15, a);
+    a -= b * a * 0.15;
+    return vec3(clamp(a, 0.0, 1.0));
+}
+
 vec4 nlCloudAuroraReflection(nl_skycolor skycol, nl_environment env, vec3 viewDir, vec3 wPos, vec3 CAMERA_POS, highp float t) {
   vec2 cloudPos = wPos.xz;
   float divY = viewDir.y - 0.05; // shift instead of clamp, avoids hard discontinuity/starburst artifact
@@ -243,7 +256,7 @@ vec4 nlCloudAuroraReflection(nl_skycolor skycol, nl_environment env, vec3 viewDi
     clouds.a *= fade;
     refl = vec4(mix(refl.rgb, clouds.rgb, clouds.a), min(refl.a + clouds.a, 1.0));
   #elif NL_CLOUD_TYPE == 4
-    vec3 cloudNoise = pixelatedCloud(cloudPos*NL_CLOUD4_SCALE, t);
+    vec3 cloudNoise = pixelatedCloudRefl(cloudPos*NL_CLOUD4_SCALE, t);
     float cloudAlpha = clamp(length(cloudNoise.r), 0.0, 1.0) * fade;
     vec3 cloudcol = skycol.horizonEdge / max(env.dayFactor, 0.01);
     cloudcol = clamp(cloudcol*1.5, 0.0, 1.5);
