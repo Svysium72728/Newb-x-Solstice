@@ -7,7 +7,7 @@
                 "default": "entity_alphatest"
             },
             "textures": {
-                "default": "textures/models/krispy_torch_3d_realcolors"
+                "default": "textures/models/Krispy_torch_3d_realcolors"
             },
             "geometry": {
                 "default": "geometry.krispy_torch"
