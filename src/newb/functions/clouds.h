@@ -233,7 +233,9 @@ vec4 nlCloudAuroraReflection(nl_skycolor skycol, nl_environment env, vec3 viewDi
   float divY = viewDir.y - 0.05; // shift instead of clamp, avoids hard discontinuity/starburst artifact
   cloudPos += (187.0-(wPos.y+CAMERA_POS.y))*viewDir.xz/divY;
   float fade = clamp(2.0 - 0.0008*length(cloudPos), 0.0, 1.0);
+  #if NL_CLOUD_TYPE != 4
   cloudPos += CAMERA_POS.xz;
+  #endif
 
   vec4 refl = vec4_splat(0.0);
 
