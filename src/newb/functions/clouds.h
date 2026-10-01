@@ -258,10 +258,10 @@ vec4 nlCloudAuroraReflection(nl_skycolor skycol, nl_environment env, vec3 viewDi
     clouds.a *= fade;
     refl = vec4(mix(refl.rgb, clouds.rgb, clouds.a), min(refl.a + clouds.a, 1.0));
   #elif NL_CLOUD_TYPE == 4
-    vec3 cloudNoise = pixelatedCloudRefl(cloudPos*NL_CLOUD4_SCALE*NL_CLOUD4_REFL_SCALE, t);
+    vec3 cloudNoise = pixelatedCloudRefl(cloudPos*0.005, t);
     float cloudAlpha = clamp(length(cloudNoise.r), 0.0, 1.0) * fade;
-    vec3 cloudcol = skycol.horizonEdge / max(env.dayFactor, 0.01);
-    cloudcol = clamp(cloudcol*1.5, 0.0, 1.5);
+    float dayBright = clamp(env.dayFactor*0.5+0.5, 0.0, 1.0);
+    vec3 cloudcol = skycol.horizon*mix(NL_CLOUD4_NIGHT_DARKEN, 1.5, dayBright);
     refl = vec4(mix(refl.rgb, cloudcol, cloudAlpha), min(refl.a + cloudAlpha, 1.0));
   #endif
 
