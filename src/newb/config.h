@@ -1,6 +1,9 @@
 #ifndef NL_CONFIG_H
 #define NL_CONFIG_H
 
+#define NL_WATER_FOAM
+#define NL_WATER_FOAM_STRENGTH 1.0
+#define NL_WATER_FOAM_COLOR vec3(3.0, 3.0, 3.9)
 #define NL_SUN_CIRCLE_BLOOM 0.0
 #define NL_CLOUD4_REFL_HEIGHT 187.0
 #define NL_CLOUD4_REFL_SCALE 0.02
@@ -324,6 +327,7 @@
   #define NL_SKY_VOLUME_CLOUDS
   #define NL_SKY_AURORA_SMOOTH
   #define NL_BLINKING_TORCH
+  #undef NL_WATER_FOAM
 #endif
 
 #ifdef NL_REIMAGINED
