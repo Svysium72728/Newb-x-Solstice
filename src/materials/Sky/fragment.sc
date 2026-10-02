@@ -59,6 +59,75 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
     }
   #endif
 
+  #ifdef NL_SKY_VOLUME_CLOUDS
+    #ifndef NL_VOL_CLOUD_COVER
+      #define NL_VOL_CLOUD_COVER 0.5
+    #endif
+    #ifndef NL_VOL_CLOUD_SCALE
+      #define NL_VOL_CLOUD_SCALE 0.15
+    #endif
+    #ifndef NL_VOL_CLOUD_SPEED
+      #define NL_VOL_CLOUD_SPEED 0.004
+    #endif
+    #ifndef NL_VOL_CLOUD_DENSITY
+      #define NL_VOL_CLOUD_DENSITY 5.0
+    #endif
+    #ifndef NL_VOL_CLOUD_NIGHT
+      #define NL_VOL_CLOUD_NIGHT 0.12
+    #endif
+
+    SAMPLER2D_AUTOREG(s_VolCloudNoise);
+
+    vec4 VolumetricClouds(vec3 viewDir, vec3 sd, nl_skycolor skycol, nl_environment env, float time, float jitter) {
+      if (viewDir.y < 0.04) {
+        return vec4(0.0, 0.0, 0.0, 0.0);
+      }
+      const int steps = 6;
+      const float cloudBase = 1.0;
+      const float thick = 0.6;
+      float invY = 1.0/viewDir.y;
+      float cover = clamp(NL_VOL_CLOUD_COVER + 0.35*env.rainFactor, 0.0, 1.0);
+      float thr = mix(0.62, 0.40, cover);
+      vec3 L = mix(env.moonDir, env.sunDir, step(0.0, env.dayFactor));
+      vec3 lightCol = mix(nlMoonLightColor()*NL_VOL_CLOUD_NIGHT, nlSunLightColor(env), smoothstep(-0.1, 0.15, env.dayFactor))*(1.0 - 0.6*env.rainFactor);
+      vec3 ambient = mix(skycol.horizon, skycol.zenith, 0.6)*(1.0 - 0.4*env.rainFactor);
+      float cosv = max(dot(sd, L), 0.0);
+      vec2 wind = vec2(time*NL_VOL_CLOUD_SPEED, time*NL_VOL_CLOUD_SPEED*0.4);
+      vec2 toLight = L.xz/max(L.y, 0.25);
+
+      float T = 1.0;
+      vec3 col = vec3(0.0, 0.0, 0.0);
+      for (int i = 0; i < steps; i++) {
+        float h = (float(i) + jitter)/float(steps);
+        float t = (cloudBase + thick*h)*invY;
+        vec2 p = sd.xz*t*NL_VOL_CLOUD_SCALE + wind;
+        float b = texture2D(s_VolCloudNoise, p).r;
+        float prof = smoothstep(0.0, 0.2, h)*(1.0 - h*h);
+        float tp = thr + 0.3*(1.0 - prof);
+        if (b > tp - 0.12) {
+          float dt = texture2D(s_VolCloudNoise, p*3.7 + 0.31).g;
+          float n = b + (dt - 0.5)*0.3;
+          float d = clamp((n - tp)*3.5, 0.0, 1.0);
+          if (d > 0.0) {
+            vec2 pl = p + toLight*(1.0 - h)*thick*NL_VOL_CLOUD_SCALE;
+            float ld = clamp((texture2D(s_VolCloudNoise, pl).r - tp)*3.5, 0.0, 1.0);
+            float lit = exp(-ld*2.2);
+            float silver = pow(cosv, 8.0)*lit;
+            vec3 c = ambient*(0.5 + 0.5*h) + lightCol*(lit + 2.0*silver);
+            float a = 1.0 - exp(-d*NL_VOL_CLOUD_DENSITY/float(steps));
+            col += T*a*c;
+            T *= 1.0 - a;
+            if (T < 0.03) {
+              break;
+            }
+          }
+        }
+      }
+      float f = smoothstep(0.04, 0.22, viewDir.y);
+      return vec4(col*f, (1.0 - T)*f);
+    }
+  #endif
+
   #ifdef NL_SKY_AURORA
     float pow2(float x){return x*x;}
     float pow1_5(float x){return pow(x,1.5);}
@@ -191,6 +260,15 @@ void main() {
       vec4 cl = RoundedClouds(viewDir, v_underwaterRainTimeDay.z, cj);
       cl.rgb *= mix(NL_SKY_ROUND_CLOUDS_NIGHT, 1.0, smoothstep(-0.2, 0.25, env.dayFactor));
       skyColor = mix(skyColor, cl.rgb, cl.a);
+    }
+    #endif
+
+    #ifdef NL_SKY_VOLUME_CLOUDS
+    if (!env.underwater) {
+      float cj = fract(52.9829189*fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715))));
+      vec3 sdv = vec3(-viewDir.x, viewDir.y, -viewDir.z);
+      vec4 cv = VolumetricClouds(viewDir, sdv, skycol, env, v_underwaterRainTimeDay.z, cj);
+      skyColor = skyColor*(1.0 - cv.a) + cv.rgb;
     }
     #endif
 
