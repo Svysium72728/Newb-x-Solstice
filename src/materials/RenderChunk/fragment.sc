@@ -161,6 +161,7 @@ void main() {
 }
   #endif
 
+  #ifdef NL_WATER_FOAM
   highp float wcY = v_extra.g + CameraPosition.y;
   float dyW = abs(dFdy(v_extra.g));
   highp vec3 fwp = vec3(v_causticData.x - CameraPosition.x, v_extra.g, v_causticData.y - CameraPosition.z);
@@ -190,8 +191,9 @@ void main() {
     foamTex *= fade;
     foamTex = mix(foamTex, 1.0, fade * fade * fade);
 
-    diffuse.rgb = mix(diffuse.rgb, vec3(1.0, 1.0, 1.3) * 3.0, foamTex);
+    diffuse.rgb = mix(diffuse.rgb, NL_WATER_FOAM_COLOR, clamp(foamTex*NL_WATER_FOAM_STRENGTH, 0.0, 1.0));
   }
+  #endif
 
   diffuse.rgb = mix(diffuse.rgb, v_fog.rgb, v_fog.a);
 
