@@ -137,7 +137,7 @@
 //#define NL_WATER_WAVE             // [toggle] wave effect
 //#define NL_WATER_REFL_MASK        // [toggle] fake water reflection mask
 #define NL_WATER_TINT vec3(0.180,0.376,0.722)
-#define NL_WATER_SATURATION 0.8
+#define NL_WATER_SATURATION 1.0
 #define NL_WATER_BRIGHTNESS 0.70
 
 /* Underwater */
