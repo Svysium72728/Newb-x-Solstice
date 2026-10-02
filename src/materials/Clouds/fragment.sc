@@ -17,7 +17,10 @@ void main() {
     cloudPos.xz += CameraPosition.xz;
 
     #define NL_CLOUD_PARAMS(x) NL_CLOUD2##x##STEPS, NL_CLOUD2##x##THICKNESS, NL_CLOUD2##x##RAIN_THICKNESS, NL_CLOUD2##x##VELOCITY, NL_CLOUD2##x##SCALE, NL_CLOUD2##x##DENSITY, NL_CLOUD2##x##SHAPE
+    color = vec4(0.0, 0.0, 0.0, 0.0);
+    if (vDir.y > 0.05) {
     color = renderCloudsRounded(vDir, cloudPos, v_color1.w, v_color2.w, v_color2.rgb, v_color1.rgb, NL_CLOUD_PARAMS(_));
+}
 
     #ifdef NL_CLOUD2_LAYER2
         vec2 parallax = vDir.xz / abs(vDir.y) * NL_CLOUD2_LAYER2_OFFSET;
