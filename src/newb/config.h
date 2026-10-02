@@ -136,9 +136,9 @@
 #define NL_WATER_TEX_OPACITY 3.72 // 0.0 plain water ~ 1.0 vanilla water texture
 //#define NL_WATER_WAVE             // [toggle] wave effect
 //#define NL_WATER_REFL_MASK        // [toggle] fake water reflection mask
-#define NL_WATER_TINT vec3(0.180,0.376,0.722)
-#define NL_WATER_SATURATION 1.0
-#define NL_WATER_BRIGHTNESS 0.70
+#define NL_WATER_TINT vec3(0.576,0.714,0.980)
+#define NL_WATER_SATURATION 1.2
+#define NL_WATER_BRIGHTNESS 0.69
 
 /* Underwater */
 #define NL_UNDERWATER_BRIGHTNESS 0.6         // 0.0 dark ~ 3.0 bright
@@ -311,22 +311,21 @@
 #endif
 
 /* Effects tiers - aurora & black hole */
-#ifdef NL_EFFECTS_MEDIUM
-  #define NL_SKY_AURORA
-  #define NL_SKY_AURORA_MEDIUM
-  #define NL_SKY_AURORA_SPEED 4.0
-  #define NL_SKY_AURORA_SHARPNESS 1.6
-  #define NL_SKY_AURORA_FALLOFF 2.5
-  #define NL_BLACKHOLE
-  #undef NL_CLOUD_TYPE
-  #define NL_CLOUD_TYPE 4
+#ifdef NL_UNBOUND
+  #undef NL_SUN_CIRCLE_BLOOM
+  #define NL_SUN_CIRCLE_BLOOM 1.0
+  #undef NL_WATER_TEX_OPACITY
+  #define NL_WATER_TEX_OPACITY 0.0
+  #undef NL_SKY_ROUND_CLOUDS
+  #define NL_SKY_ROUND_CLOUDS
 #endif
 
-#ifdef NL_EFFECTS_HEAVY
+#ifdef NL_REIMAGINED
   #define NL_SKY_AURORA
   #define NL_SKY_AURORA_HEAVY
   #define NL_SKY_AURORA_SPEED 4.0
   #define NL_BLACKHOLE
+  #define NL_SKY_ROUND_CLOUDS
 #endif
 
 #endif
