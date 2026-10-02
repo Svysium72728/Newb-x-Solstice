@@ -11,6 +11,54 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
   uniform vec4 FogAndDistanceControl;
   uniform vec4 ViewPositionAndTime;
 
+  #ifdef NL_SKY_ROUND_CLOUDS
+    #ifndef NL_SKY_ROUND_CLOUDS_NIGHT
+      #define NL_SKY_ROUND_CLOUDS_NIGHT 0.15
+    #endif
+
+    SAMPLER2D_AUTOREG(s_NoiseTexture);
+
+    vec4 RoundedClouds(vec3 viewDir, float time, float jitter) {
+        const int steps = 6;
+        const float cloudBase = 1.1;
+        const float cloudTop = 1.3;
+        float stepSize = (cloudTop - cloudBase) / float(steps);
+        vec3 topColor = vec3(1.0, 0.925, 0.875);
+        vec3 bottomColor = vec3(0.0, 0.15, 0.25);
+
+        vec3 cloudAccum = vec3(0.35, 0.35, 0.35);
+        float alphaAccum = 0.0;
+
+        if (viewDir.y < 0.05) {
+            return vec4(cloudAccum, 0.0);
+        }
+        float invY = 1.0 / viewDir.y;
+
+        for (int i = 0; i < steps; i++) {
+            float height = cloudBase + stepSize * (float(i) + jitter);
+            float t = min(height * invY, 55.0);
+            vec2 uv = (viewDir.xz * t * 0.9 + time * 0.05) * 0.025;
+            float base = texture2D(s_NoiseTexture, uv).r;
+
+            float heightNorm = (height - cloudBase) / (cloudTop - cloudBase);
+            float heightFactor = smoothstep(0.2, 0.9, heightNorm) * (1.0 - smoothstep(0.6, 1.0, heightNorm));
+            heightFactor *= smoothstep(0.2, 0.6, base);
+
+            float density = clamp(2.4 * base, 0.0, 1.0);
+            density = density * density * heightFactor;
+
+            float alpha = smoothstep(0.0, 0.01, density) * (1.0 - alphaAccum);
+            cloudAccum += mix(bottomColor, topColor, smoothstep(-0.2, 1.0, heightNorm)) * alpha;
+            alphaAccum += alpha;
+
+            if (alphaAccum > 0.98) {
+                break;
+            }
+        }
+        return vec4(cloudAccum, alphaAccum);
+    }
+  #endif
+
   #ifdef NL_SKY_AURORA
     float pow2(float x){return x*x;}
     float pow1_5(float x){return pow(x,1.5);}
@@ -135,6 +183,15 @@ void main() {
 
     #ifdef NL_GALAXY_STARS
       skyColor += NL_GALAXY_STARS*nlRenderGalaxy(viewDir, env.fogCol, env, v_underwaterRainTimeDay.z);
+    #endif
+
+    #ifdef NL_SKY_ROUND_CLOUDS
+    if (!env.underwater) {
+      float cj = fract(52.9829189*fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715))));
+      vec4 cl = RoundedClouds(viewDir, v_underwaterRainTimeDay.z, cj);
+      cl.rgb *= mix(NL_SKY_ROUND_CLOUDS_NIGHT, 1.0, smoothstep(-0.2, 0.25, env.dayFactor));
+      skyColor = mix(skyColor, cl.rgb, cl.a);
+    }
     #endif
 
     #ifdef NL_SKY_AURORA
