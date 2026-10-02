@@ -9,7 +9,7 @@
   "default_texture": "",
   "unordered_access": false,
   "slot_count": 1,
-  "texture_path": "COPY_FROM_noisevoxels.json",
+  "texture_path": "textures/newb/noisevoxels",
   "unknown": 0,
   "sampler_state": {
     "filter": "Bilinear",
