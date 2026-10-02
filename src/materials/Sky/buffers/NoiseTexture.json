@@ -9,7 +9,7 @@
   "default_texture": "",
   "unordered_access": false,
   "slot_count": 1,
-  "texture_path": "textures/newb/noise_cloud"
+  "texture_path": "textures/newb/noise_cloud",
   "unknown": 0,
   "sampler_state": {
     "filter": "Bilinear",
