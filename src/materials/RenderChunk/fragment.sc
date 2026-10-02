@@ -1,10 +1,6 @@
 $input v_color0, v_color1, v_fog, v_refl, v_texcoord0, v_lightmapUV, v_extra, v_causticData
 
 #include <bgfx_shader.sh>
-
-#define NL_GLITTER_USE_TEX
-SAMPLER2D_AUTOREG(s_Glitter);
-
 #include <newb/main.sh>
 
 uniform vec4 ViewPositionAndTime;
@@ -126,19 +122,6 @@ void main() {
       vec4 cr = nlCloudAuroraReflection(skyc, env, rc, wpc, CameraPosition.xyz, ViewPositionAndTime.w);
       diffuse.rgb = mix(diffuse.rgb, cr.rgb, cr.a*smoothstep(0.7, 0.95, v_lightmapUV.y));
     }
-  #endif
-
-  #ifdef NL_WATER_GLITTER
-      if (abs(dFdy(v_extra.g)) < 0.0002 && !env.underwater) {
-        highp vec3 wp = vec3(v_causticData.x - CameraPosition.x, v_extra.g, v_causticData.y - CameraPosition.z);
-        vec3 toCam = ViewPositionAndTime.xyz - wp;
-        float camDist = length(toCam);
-        vec3 vdir = toCam/camDist;
-        float skyExp = smoothstep(0.7, 0.95, v_lightmapUV.y);
-        vec3 glitter = (nlSunGlitter(env, vdir, v_causticData.xy, ViewPositionAndTime.w, camDist) + nlMoonGlitter(env, vdir, v_causticData.xy, ViewPositionAndTime.w, camDist))*skyExp;
-        diffuse.rgb += glitter;
-        diffuse.a = min(diffuse.a + dot(glitter, vec3_splat(0.33)), 1.0);
-      }
   #endif
 
     if (!env.underwater && abs(dFdy(v_extra.g)) < 0.01) {
