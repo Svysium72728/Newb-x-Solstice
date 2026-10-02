@@ -35,21 +35,24 @@ credits = '''minmin, devendrn, Michaellynx, Jesus miguel gamer, Goboyy, rexytmc
 
 [[subpack]]
 define = "NL_EFFECTS_LOW"
-materials = ["Sky", "EndSky", "RenderChunk", "Actor"]
+materials = ["Sky", "EndSky", "RenderChunk", "Actor", "Clouds"]
 description = '''
-Low - no aurora, no black hole
+For low end phones
 '''
 
 [[subpack]]
 define = "NL_EFFECTS_HEAVY"
-materials = ["Sky", "EndSky", "RenderChunk", "Actor"]
+materials = ["Sky", "EndSky", "RenderChunk", "Actor", "Clouds"]
 description = '''
-Heavy - detailed aurora + black hole
+§4 Do not use if your phone is low end§f
+Known issue:
+1. Fps drop when looking upward
+2. Clouds bug when looking at the horizon on some devices
 '''
 
 [[subpack]]
 define = "NL_EFFECTS_MEDIUM"
-materials = ["Sky", "EndSky", "RenderChunk", "Actor"]
+materials = ["Sky", "EndSky", "RenderChunk", "Actor", "Clouds"]
 description = '''
-Medium - aurora + black hole
+Balanced tho will reduce quality a bit
 '''
