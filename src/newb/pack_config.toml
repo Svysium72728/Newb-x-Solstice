@@ -34,13 +34,6 @@ credits = '''minmin, devendrn, Michaellynx, Jesus miguel gamer, Goboyy, rexytmc
 # right-most subpack is enabled by default'
 
 [[subpack]]
-define = "NL_EFFECTS_LOW"
-materials = ["Sky", "EndSky", "RenderChunk", "Actor", "Clouds"]
-description = '''
-For low end phones
-'''
-
-[[subpack]]
 define = "NL_EFFECTS_HEAVY"
 materials = ["Sky", "EndSky", "RenderChunk", "Actor", "Clouds"]
 description = '''
