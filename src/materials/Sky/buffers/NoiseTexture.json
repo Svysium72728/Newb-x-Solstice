@@ -1,7 +1,7 @@
 {
   "name": "NoiseTexture",
-  "register_slot": 12,
-  "binding_slot": 12,
+  "register_slot": 15,
+  "binding_slot": 15,
   "type": "texture2D",
   "precision": "lowp",
   "access": "readonly",
