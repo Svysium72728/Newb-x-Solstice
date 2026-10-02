@@ -318,6 +318,8 @@
   #define NL_WATER_TEX_OPACITY 0.0
   #undef NL_SKY_ROUND_CLOUDS
   #define NL_SKY_VOLUME_CLOUDS
+  #define NL_SKY_AURORA_SMOOTH
+  #define NL_BLINKING_TORCH
 #endif
 
 #ifdef NL_REIMAGINED
