@@ -317,7 +317,7 @@
   #undef NL_WATER_TEX_OPACITY
   #define NL_WATER_TEX_OPACITY 0.0
   #undef NL_SKY_ROUND_CLOUDS
-  #define NL_SKY_ROUND_CLOUDS
+  #define NL_SKY_VOLUME_CLOUDS
 #endif
 
 #ifdef NL_REIMAGINED
