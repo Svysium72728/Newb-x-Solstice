@@ -149,7 +149,7 @@
 #define NL_WATER_LIGHT_STREAK_STRENGTH 0.0
 
 /* Cloud type */
-#define NL_CLOUD_TYPE 4 // 0:vanilla, 1:soft, 2:rounded, 3:realistic, 4:minmin's lightweight cloud
+#define NL_CLOUD_TYPE 5 // 0:vanilla, 1:soft, 2:rounded, 3:realistic, 4:minmin's lightweight cloud
 
 /* Vanilla cloud settings - make sure to remove clouds.png when using this */
 #define NL_CLOUD0_THICKNESS 2.1      // 0.5 slim ~ 8.0 fat
@@ -318,6 +318,8 @@
   #define NL_SKY_AURORA_SHARPNESS 1.6
   #define NL_SKY_AURORA_FALLOFF 2.5
   #define NL_BLACKHOLE
+  #undef NL_CLOUD_TYPE
+  #define NL_CLOUD_TYPE 4
 #endif
 
 #ifdef NL_EFFECTS_HEAVY
