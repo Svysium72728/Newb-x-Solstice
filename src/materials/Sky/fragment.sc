@@ -98,7 +98,7 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
       if (viewDir.y < 0.04) {
         return vec4(0.0, 0.0, 0.0, 0.0);
       }
-      const int steps = 6;
+      const int steps = 13;
       const float cloudBase = 1.0;
       const float thick = 0.6;
       float invY = 1.0/viewDir.y;
