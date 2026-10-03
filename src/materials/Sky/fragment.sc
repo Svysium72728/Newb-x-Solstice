@@ -16,7 +16,7 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
       #define NL_SKY_ROUND_CLOUDS_NIGHT 0.15
     #endif
     #ifndef NL_SKY_ROUND_CLOUDS_CELLS
-      #define NL_SKY_ROUND_CLOUDS_CELLS 28.0
+      #define NL_SKY_ROUND_CLOUDS_CELLS 16.0
     #endif
     #ifndef NL_SKY_ROUND_CLOUDS_BOXY
       #define NL_SKY_ROUND_CLOUDS_BOXY 0.4
@@ -44,14 +44,15 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
             float height = cloudBase + stepSize * (float(i) + jitter);
             float t = min(height * invY, 55.0);
             vec2 uv = (viewDir.xz * t * 0.9 + time * 0.05) * 0.025;
-            float base = clamp(texture2D(s_NoiseTexture, uv).r + boxOff, 0.0, 1.0);
 
-            float heightNorm = (height - cloudBase) / (cloudTop - cloudBase);
-            float heightFactor = smoothstep(0.2, 0.9, heightNorm) * (1.0 - smoothstep(0.6, 1.0, heightNorm));
             vec2 gc = uv*NL_SKY_ROUND_CLOUDS_CELLS;
             vec2 gf = fract(gc);
             vec2 sf = mix(gf, smoothstep(0.42, 0.58, gf), NL_SKY_ROUND_CLOUDS_BOXY);
             float base = texture2D(s_NoiseTexture, (floor(gc) + sf)/NL_SKY_ROUND_CLOUDS_CELLS).r;
+
+            float heightNorm = (height - cloudBase) / (cloudTop - cloudBase);
+            float heightFactor = smoothstep(0.2, 0.9, heightNorm) * (1.0 - smoothstep(0.6, 1.0, heightNorm));
+            heightFactor *= smoothstep(0.2, 0.6, base);
 
             float density = clamp(2.4 * base, 0.0, 1.0);
             density = density * density * heightFactor;
@@ -97,7 +98,7 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
       if (viewDir.y < 0.04) {
         return vec4(0.0, 0.0, 0.0, 0.0);
       }
-      const int steps = 13;
+      const int steps = 6;
       const float cloudBase = 1.0;
       const float thick = 0.6;
       float invY = 1.0/viewDir.y;
@@ -158,61 +159,106 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
 
     #ifdef NL_SKY_AURORA_HEAVY
       #ifdef NL_SKY_AURORA_SMOOTH
+        #ifndef NL_AURORA_SMOOTH_CENTER
+          #define NL_AURORA_SMOOTH_CENTER 0.4
+        #endif
+        #ifndef NL_AURORA_SMOOTH_SHARP
+          #define NL_AURORA_SMOOTH_SHARP 8.0
+        #endif
+
         SAMPLER2D_AUTOREG(s_noisesmooth);
 
-        float cubicFollowNoise(highp vec2 p){
-          vec2 quantized = floor(p * 1000.0) / 1000.0 + 0.000003;
+        float smoothAuroraNoise(highp vec2 p){
+          highp vec2 quantized = floor(p * 1000.0) / 1000.0 + 0.000003;
           return texture2D(s_noisesmooth, quantized).r;
+        }
+
+        vec3 GetAuroraSmooth(vec3 viewDir, highp float t, float dither) {
+            float VdotU = clamp(viewDir.y, 0.0, 1.0);
+            float visibility = sqrt1(clamp01(VdotU * 4.5 - 0.25));
+            visibility *= 8.0 - VdotU * 0.9;
+            if (visibility <= 1.0) return vec3(0.0);
+
+            vec3 aurora = vec3(0.0,0.0,0.0);
+            highp vec2 wpos = viewDir.xz / max(viewDir.y, 0.1);
+            highp vec2 cameraPosM = vec2(t * NL_SKY_AURORA_SPEED, 0.0);
+
+            const int sampleCount = 15;
+            const int sampleCountP = sampleCount + 10;
+
+            float ditherM = dither + 10.0;
+
+            for (int i = 0; i < sampleCount; i++) {
+                float current = pow2((float(i) + ditherM) / float(sampleCountP));
+                float currentM = 1.0 - current;
+
+                highp vec2 planePos = (wpos * (0.9 + current) * 10.0 + cameraPosM) * 0.003;
+
+                float noise = smoothAuroraNoise(planePos);
+                noise = pow(clamp(1.0 - abs(noise - NL_AURORA_SMOOTH_CENTER), 0.0, 1.0), NL_AURORA_SMOOTH_SHARP);
+
+                float anim1 = smoothAuroraNoise(planePos * 0.5);
+                float anim2 = smoothAuroraNoise(planePos * 0.8);
+                noise *= mix(anim1, anim2, 0.5);
+
+                aurora += noise * currentM *
+                    mix(vec3(0.65, 0.48, 1.35),
+                        vec3(0.0, 5.55, 1.85),
+                        pow2(pow2(currentM)));
+            }
+
+            aurora *= 0.8;
+            return aurora * visibility / float(sampleCount);
         }
       #else
         SAMPLER2D_AUTOREG(s_noisevoxels);
 
-        float cubicFollowNoise(highp vec2 p){
+        float cubicFollowNoise(vec2 p){
           vec2 quantized = floor(p * 128.0) / 128.0 + 2.0 / 128.0;
           return texture2D(s_noisevoxels, quantized).r;
         }
+
+        vec3 GetAuroraHeavy(vec3 viewDir, vec4 ViewPosTime, float dither) {
+            float VdotU = clamp(viewDir.y, 0.0, 1.0);
+            float visibility = sqrt1(clamp01(VdotU * 4.5 - 0.25));
+            visibility *= 8.0 - VdotU * 0.9;
+            if (visibility <= 1.0) return vec3(0.0);
+
+            vec3 aurora = vec3(0.0,0.0,0.0);
+            vec3 wpos = viewDir;
+            wpos.xz /= max(wpos.y, 0.1);
+
+            vec2 cameraPosM = vec2(ViewPosTime.w * NL_SKY_AURORA_SPEED, 0.0);
+
+            const int sampleCount = 15;
+            const int sampleCountP = sampleCount + 10;
+
+            float ditherM = dither + 10.0;
+
+            for (int i = 0; i < sampleCount; i++) {
+                float current = pow2((float(i) + ditherM) / float(sampleCountP));
+                float currentM = 1.0 - current;
+
+                vec2 planePos = wpos.xz * (0.9 + current) * 10.0 + cameraPosM;
+                planePos *= 0.003;
+
+                float noise = cubicFollowNoise(planePos);
+                noise = pow2(pow2(pow2(1.0 - 1.0 * abs(noise - 0.4))));
+
+                float anim1 = cubicFollowNoise(planePos * 0.5 + ViewPosTime.w * 0.00);
+                float anim2 = cubicFollowNoise(planePos * 0.8 - ViewPosTime.w * 0.00);
+                noise *= mix(anim1, anim2, 0.5);
+
+                aurora += noise * currentM *
+                    mix(vec3(0.65, 0.48, 1.35),
+                        vec3(0.0, 5.55, 1.85),
+                        pow2(pow2(currentM)));
+            }
+
+            aurora *= 0.8;
+            return aurora * visibility / float(sampleCount);
+        }
       #endif
-
-      vec3 GetAuroraHeavy(vec3 viewDir, vec4 ViewPosTime, float dither) {
-          float VdotU = clamp(viewDir.y, 0.0, 1.0);
-          float visibility = sqrt1(clamp01(VdotU * 4.5 - 0.25));
-          visibility *= 8.0 - VdotU * 0.9;
-          if (visibility <= 1.0) return vec3(0.0);
-
-          vec3 aurora = vec3(0.0,0.0,0.0);
-          vec3 wpos = viewDir;
-          wpos.xz /= max(wpos.y, 0.1);
-
-          vec2 cameraPosM = vec2(ViewPosTime.w * NL_SKY_AURORA_SPEED, 0.0);
-
-          const int sampleCount = 15;
-          const int sampleCountP = sampleCount + 10;
-
-          float ditherM = dither + 10.0;
-
-          for (int i = 0; i < sampleCount; i++) {
-              float current = pow2((float(i) + ditherM) / float(sampleCountP));
-              float currentM = 1.0 - current;
-
-              vec2 planePos = wpos.xz * (0.9 + current) * 10.0 + cameraPosM;
-              planePos *= 0.003;
-
-              float noise = cubicFollowNoise(planePos);
-              noise = pow2(pow2(pow2(1.0 - 1.0 * abs(noise - 0.4))));
-
-              float anim1 = cubicFollowNoise(planePos * 0.5 + ViewPosTime.w * 0.00);
-              float anim2 = cubicFollowNoise(planePos * 0.8 - ViewPosTime.w * 0.00);
-              noise *= mix(anim1, anim2, 0.5);
-
-              aurora += noise * currentM *
-                  mix(vec3(0.65, 0.48, 1.35),
-                      vec3(0.0, 5.55, 1.85),
-                      pow2(pow2(currentM)));
-          }
-
-          aurora *= 0.8;
-          return aurora * visibility / float(sampleCount);
-      }
     #endif
   #endif
 #endif
@@ -265,7 +311,11 @@ void main() {
       #ifdef NL_SKY_AURORA_HEAVY
         float dither2 = fract(sin(dot(viewDir.xy, vec2(12.9898,78.233))) * 43758.5453);
         float mask = (1.0-1.0*env.rainFactor)*max(1.0 - 3.0*max(v_fogColor.b, v_fogColor.g), 0.0);
-        skyColor += GetAuroraHeavy(viewDir, ViewPositionAndTime, dither2) * mask;
+        #ifdef NL_SKY_AURORA_SMOOTH
+          skyColor += GetAuroraSmooth(viewDir, ViewPositionAndTime.w, dither2) * mask;
+        #else
+          skyColor += GetAuroraHeavy(viewDir, ViewPositionAndTime, dither2) * mask;
+        #endif
       #endif
     }
     #endif
