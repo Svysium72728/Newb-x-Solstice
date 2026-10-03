@@ -323,7 +323,6 @@
   #define NL_SUN_CIRCLE_BLOOM 1.0
   #undef NL_WATER_TEX_OPACITY
   #define NL_WATER_TEX_OPACITY 0.0
-  #undef NL_SKY_ROUND_CLOUDS
   #define NL_SKY_VOLUME_CLOUDS
   #define NL_SKY_AURORA_SMOOTH
   #define NL_BLINKING_TORCH
@@ -336,6 +335,8 @@
   #define NL_SKY_AURORA_SPEED 4.0
   #define NL_BLACKHOLE
   #define NL_SKY_ROUND_CLOUDS
+  #undef NL_CLOUD_TYPE
+  #define NL_CLOUD_TYPE 2
 #endif
 
 #endif
