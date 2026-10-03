@@ -48,7 +48,10 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
 
             float heightNorm = (height - cloudBase) / (cloudTop - cloudBase);
             float heightFactor = smoothstep(0.2, 0.9, heightNorm) * (1.0 - smoothstep(0.6, 1.0, heightNorm));
-            heightFactor *= smoothstep(0.2, 0.6, base);
+            vec2 gc = uv*NL_SKY_ROUND_CLOUDS_CELLS;
+            vec2 gf = fract(gc);
+            vec2 sf = mix(gf, smoothstep(0.42, 0.58, gf), NL_SKY_ROUND_CLOUDS_BOXY);
+            float base = texture2D(s_NoiseTexture, (floor(gc) + sf)/NL_SKY_ROUND_CLOUDS_CELLS).r;
 
             float density = clamp(2.4 * base, 0.0, 1.0);
             density = density * density * heightFactor;
