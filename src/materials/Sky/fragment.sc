@@ -40,10 +40,6 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
         }
         float invY = 1.0 / viewDir.y;
 
-        vec2 uvMid = (viewDir.xz * min((cloudBase + 0.5*(cloudTop - cloudBase)) * invY, 55.0) * 0.9 + time * 0.05) * 0.025;
-        float cellN = texture2D(s_NoiseTexture, (floor(uvMid*NL_SKY_ROUND_CLOUDS_CELLS) + 0.5)/NL_SKY_ROUND_CLOUDS_CELLS + 0.37).r;
-        float boxOff = (cellN - 0.5)*NL_SKY_ROUND_CLOUDS_BOXY;
-
         for (int i = 0; i < steps; i++) {
             float height = cloudBase + stepSize * (float(i) + jitter);
             float t = min(height * invY, 55.0);
