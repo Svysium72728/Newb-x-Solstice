@@ -142,9 +142,7 @@ vec4 nlWater(
     float viewAngleFactor = 1.0 - viewDir.y;
     float opacity = mix(NL_WATER_TRANSPARENCY, 1.0, pow(viewAngleFactor, 4.0));
 
-    float wLum = dot(color.rgb, vec3(0.299, 0.587, 0.114));
-color.rgb = mix(vec3_splat(wLum), color.rgb, NL_WATER_SATURATION);
-color.rgb *= NL_WATER_BRIGHTNESS * NL_WATER_TINT * (1.0 - 0.75 * fresnel);
+    color.rgb *= 0.22 * NL_WATER_TINT * (1.0 - 0.75 * fresnel);
     color.a = mix(COLOR.a * opacity, 1.0, fresnel);
 
     #ifdef NL_WATER_WAVE
