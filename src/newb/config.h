@@ -253,7 +253,7 @@
 #define NL_MOON_PATH_YAW   17.0 //
 #define NL_SUN_PATH_TILT   32.0 //
 #define NL_MOON_PATH_TILT -28.0 //
-#define NL_SUN_TILT        32.0 // 0.0 no tilt ~ 90.0 tilt of 90 degrees
+#define NL_SUN_TILT        0.0 // 0.0 no tilt ~ 90.0 tilt of 90 degrees
 #define NL_MOON_TILT       0.0 // 0.0 no tilt ~ 90.0 tilt of 90 degrees
 //#define NL_SUN_BLOOM_SQUARE            // [toggle] square-shaped sun bloom
 #define NL_SUN_BLOOM_SIZE 0.03         // 0.05 tight ~ 0.5 large
@@ -277,7 +277,7 @@
 #define NL_SUN_REFL_STRENGTH 1.5
 
 /* Fake godrays during sunrise/sunset */
-#define NL_GODRAY 0.8 // [toggle] 0.1 subtle ~ 0.8 strong
+//#define NL_GODRAY 0.8 // [toggle] 0.1 subtle ~ 0.8 strong
 #define NL_GODRAY_SPOKE_COUNT 4.0
 #define NL_GODRAY_SPOKE_SHARPNESS 0.5
 #define NL_GODRAY_COLOR vec3(1.0, 0.95, 0.8)
