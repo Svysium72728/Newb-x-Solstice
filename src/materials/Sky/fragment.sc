@@ -15,61 +15,72 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
     #ifndef NL_SKY_ROUND_CLOUDS_NIGHT
       #define NL_SKY_ROUND_CLOUDS_NIGHT 0.15
     #endif
-    #ifndef NL_SKY_ROUND_CLOUDS_CELLS
-      #define NL_SKY_ROUND_CLOUDS_CELLS 16.0
-    #endif
-    #ifndef NL_SKY_ROUND_CLOUDS_BOXY
-      #define NL_SKY_ROUND_CLOUDS_BOXY 0.4
-    #endif
 
     SAMPLER2D_AUTOREG(s_NoiseTexture);
 
+    float fbmTex(vec3 p) {
+        vec2 uv = p.xy * 0.025;
+        uv = fract(uv);
+        return texture2D(s_NoiseTexture, uv).r;
+    }
+
     vec4 RoundedClouds(vec3 viewDir, float time, float jitter) {
-        const int steps = 6;
-        const float cloudBase = 1.1;
-        const float cloudTop = 1.3;
+        float cloudBase = 1.1;
+        float cloudTop = 1.3;
+        const int steps = 32;
+        vec3 bottomColor = vec3(0.5,0.55,0.6);
+        vec3 sideColor = vec3(0.9,0.95,1.0);
+        vec3 colors = mix(sideColor,bottomColor,0.5);
         float stepSize = (cloudTop - cloudBase) / float(steps);
-        vec3 topColor = vec3(1.0, 0.925, 0.875);
-        vec3 bottomColor = vec3(0.0, 0.15, 0.25);
 
-        vec3 cloudAccum = vec3(0.35, 0.35, 0.35);
+        vec3 rayOrigin = vec3(0.0,0.0,0.0);
+        vec3 cloudAccum = vec3(0.35,0.35,0.35);
         float alphaAccum = 0.0;
+        float viewLift = smoothstep(0.0, 0.0, viewDir.y);
 
-        if (viewDir.y < 0.05) {
-            return vec4(cloudAccum, 0.0);
-        }
-        float invY = 1.0 / viewDir.y;
+        float prevDensity = 0.0;
 
         for (int i = 0; i < steps; i++) {
             float height = cloudBase + stepSize * (float(i) + jitter);
-            float t = min(height * invY, 55.0);
-            vec2 uv = (viewDir.xz * t * 0.9 + time * 0.05) * 0.025;
+            float t = height / max(viewDir.y, 0.001);
+            t = min(t, 55.0);
+            vec3 pos = rayOrigin + viewDir * t;
 
-            vec2 gc = uv*NL_SKY_ROUND_CLOUDS_CELLS;
-            vec2 gf = fract(gc);
-            vec2 sf = mix(gf, smoothstep(0.42, 0.58, gf), NL_SKY_ROUND_CLOUDS_BOXY);
-            float base = texture2D(s_NoiseTexture, (floor(gc) + sf)/NL_SKY_ROUND_CLOUDS_CELLS).r;
+            vec3 noisePos = vec3(pos.xz * 0.9 + time * 0.05, height * 0.8);
+            float base = fbmTex(noisePos);
 
             float heightNorm = (height - cloudBase) / (cloudTop - cloudBase);
             float heightFactor = smoothstep(0.2, 0.9, heightNorm) * (1.0 - smoothstep(0.6, 1.0, heightNorm));
             heightFactor *= smoothstep(0.2, 0.6, base);
 
-            float density = clamp(2.4 * base, 0.0, 1.0);
-            density = density * density * heightFactor;
+            float density = base;
+            density = 2.4 * clamp(density - 0.0, 0.0, 1.0);
+            density = pow(density, 1.8) * heightFactor;
 
-            float alpha = smoothstep(0.0, 0.01, density) * (1.0 - alphaAccum);
-            cloudAccum += mix(bottomColor, topColor, smoothstep(-0.2, 1.0, heightNorm)) * alpha;
+            float alpha = 1.0 - smoothstep(0.01, 0.0, density);
+            alpha *= (1.0 - alphaAccum) * viewLift;
+
+            vec3 cloudColor = colors;
+
+            float edge = abs(density - prevDensity);
+            vec3 TopColor = vec3(1.0,0.925,0.875);
+            vec3 BottomColor = vec3(0.0,0.15,0.25);
+            float heightNormal = smoothstep(-0.2,1.0,heightNorm);
+            vec3 coloredScattering = mix(BottomColor,TopColor,heightNormal);
+            cloudAccum += vec3(1.0,1.0,1.0) * (coloredScattering)*alpha;
             alphaAccum += alpha;
 
-            if (alphaAccum > 0.98) {
-                break;
-            }
+            if (alphaAccum > 0.98 && viewDir.y < 0.9) break;
         }
+
         return vec4(cloudAccum, alphaAccum);
     }
   #endif
 
   #ifdef NL_SKY_VOLUME_CLOUDS
+    #ifndef NL_VOL_CLOUD_STEPS
+      #define NL_VOL_CLOUD_STEPS 8
+    #endif
     #ifndef NL_VOL_CLOUD_COVER
       #define NL_VOL_CLOUD_COVER 0.5
     #endif
@@ -91,6 +102,9 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
     #ifndef NL_VOL_CLOUD_SHADE_DIST
       #define NL_VOL_CLOUD_SHADE_DIST 0.012
     #endif
+    #ifndef NL_VOL_CLOUD_SHADOW_TINT
+      #define NL_VOL_CLOUD_SHADOW_TINT vec3(0.78, 0.84, 1.0)
+    #endif
 
     SAMPLER2D_AUTOREG(s_VolCloudNoise);
 
@@ -98,7 +112,7 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
       if (viewDir.y < 0.04) {
         return vec4(0.0, 0.0, 0.0, 0.0);
       }
-      const int steps = 6;
+      const int steps = NL_VOL_CLOUD_STEPS;
       const float cloudBase = 1.0;
       const float thick = 0.6;
       float invY = 1.0/viewDir.y;
@@ -111,7 +125,8 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
       vec3 sunCol = mix(mix(NL_NOON_SUNLIGHT_COL, vec3_splat(1.0), 0.45), NL_DAWN_SUNLIGHT_COL, dawn);
       vec3 moonCol = NL_NIGHT_MOONLIGHT_COL/max(max(NL_NIGHT_MOONLIGHT_COL.r, NL_NIGHT_MOONLIGHT_COL.g), NL_NIGHT_MOONLIGHT_COL.b);
       vec3 lightCol = mix(moonCol*NL_VOL_CLOUD_NIGHT, sunCol, smoothstep(-0.1, 0.15, env.dayFactor))*(1.0 - 0.6*env.rainFactor);
-      vec3 ambient = mix(skycol.horizon, skycol.zenith, 0.6)*(1.0 - 0.4*env.rainFactor);
+      vec3 shadowCol = mix(skycol.zenith, skycol.horizon, 0.5)*NL_VOL_CLOUD_SHADOW_TINT*(1.0 - 0.4*env.rainFactor);
+      vec3 topAmb = mix(shadowCol, vec3_splat(1.0), 0.45)*mix(NL_VOL_CLOUD_NIGHT*2.0, 1.0, smoothstep(-0.1, 0.15, env.dayFactor));
       float cosv = max(dot(sd, L), 0.0);
       vec2 wind = vec2(time*NL_VOL_CLOUD_SPEED, time*NL_VOL_CLOUD_SPEED*0.4);
       vec2 toLight = L.xz/max(L.y, 0.25);
@@ -124,20 +139,20 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
         float t = (cloudBase + thick*h)*invY;
         vec2 p = sd.xz*t*NL_VOL_CLOUD_SCALE + wind;
         float b = texture2D(s_VolCloudNoise, p).r;
-        float prof = smoothstep(0.0, 0.2, h)*(1.0 - h*h);
-        float tp = thr + 0.3*(1.0 - prof);
+        float prof = smoothstep(0.0, 0.15, h)*(1.0 - smoothstep(0.35, 1.0, h - (b - 0.5)*0.9));
+        float tp = thr + 0.25*(1.0 - prof);
         if (b > tp - 0.12) {
           float dt = texture2D(s_VolCloudNoise, p*3.7 + 0.31).g;
-          float n = b + (dt - 0.5)*0.3;
-          float d = clamp((n - tp)*3.5, 0.0, 1.0);
+          float n = b + (dt - 0.5)*(0.18 + 0.25*(1.0 - prof));
+          float d = smoothstep(0.0, 1.0, clamp((n - tp)*3.0, 0.0, 1.0));
           if (d > 0.0) {
             vec2 pl = p + toLight*(1.0 - h)*thick*NL_VOL_CLOUD_SCALE;
-            float ld = clamp((texture2D(s_VolCloudNoise, pl).r - tp)*3.5, 0.0, 1.0);
-            float lit = exp(-ld*2.2);
+            float ld = clamp((texture2D(s_VolCloudNoise, pl).r - thr)*3.0, 0.0, 1.0);
+            float lit = exp(-ld*1.6);
             float bs = texture2D(s_VolCloudNoise, p + sdir).r;
-            float shade = clamp(1.0 + (b - bs)*NL_VOL_CLOUD_SHADE, 0.35, 1.6);
+            float shade = clamp(1.0 + (b - bs)*NL_VOL_CLOUD_SHADE, 0.4, 1.5);
             float silver = pow(cosv, 8.0)*lit;
-            vec3 c = ambient*(0.5 + 0.5*h) + lightCol*(lit + 2.0*silver)*shade;
+            vec3 c = mix(shadowCol, topAmb, h) + lightCol*(lit*0.9 + 2.0*silver)*shade;
             float a = 1.0 - exp(-d*NL_VOL_CLOUD_DENSITY/float(steps));
             col += T*a*c;
             T *= 1.0 - a;
@@ -290,10 +305,12 @@ void main() {
 
     #ifdef NL_SKY_ROUND_CLOUDS
     if (!env.underwater) {
-      float cj = fract(52.9829189*fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715))));
-      vec4 cl = RoundedClouds(viewDir, v_underwaterRainTimeDay.z, cj);
-      cl.rgb *= mix(NL_SKY_ROUND_CLOUDS_NIGHT, 1.0, smoothstep(-0.2, 0.25, env.dayFactor));
-      skyColor = mix(skyColor, cl.rgb, cl.a);
+      float jitter = fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453);
+      vec4 clouds = RoundedClouds(viewDir, v_underwaterRainTimeDay.z, jitter);
+      clouds.rgb *= mix(NL_SKY_ROUND_CLOUDS_NIGHT, 1.0, smoothstep(-0.2, 0.25, env.dayFactor));
+      float opacity = smoothstep(0.1, 0.3, viewDir.y);
+      float cloudMask = clouds.a * 0.5 * opacity;
+      skyColor.rgb = mix(skyColor.rgb, clouds.rgb, cloudMask);
     }
     #endif
 
