@@ -24,6 +24,8 @@
 #define NL_VOL_CLOUD_SCALE 0.25
 #define NL_VOL_CLOUD_COVER 0.55
 #define NL_VOL_CLOUD_DENSITY 6.0
+#define NL_SKY_ROUND_CLOUDS
+#define NL_BLACKHOLE
 
 /*
   NEWB SHADER MAIN CONFIG
@@ -330,16 +332,16 @@
   #define NL_SKY_AURORA_SMOOTH
   #define NL_BLINKING_TORCH
   #undef NL_WATER_FOAM
+  #undef NL_SKY_ROUND_CLOUDS
+  #undef NL_VOL_CLOUD_STEPS
+  #define NL_VOL_CLOUD_STEPS 16
 #endif
 
 #ifdef NL_REIMAGINED
   #define NL_SKY_AURORA
   #define NL_SKY_AURORA_HEAVY
   #define NL_SKY_AURORA_SPEED 4.0
-  #define NL_BLACKHOLE
   #define NL_SKY_ROUND_CLOUDS
-  #undef NL_CLOUD_TYPE
-  #define NL_CLOUD_TYPE 2
 #endif
 
 #endif
