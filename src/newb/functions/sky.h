@@ -4,13 +4,6 @@
 #include "detection.h"
 #include "noise.h"
 
-#ifndef NL_GODRAY
-#define NL_GODRAY 0.0
-#define NL_GODRAY_SPOKE_COUNT 0.0
-#define NL_GODRAY_SPOKE_SHARPNESS 0.0
-#define NL_GODRAY_COLOR vec3(1.0, 0.95, 0.8)
-#endif
-
 #ifndef NL_SUN_CIRCLE_BLOOM
 #define NL_SUN_CIRCLE_BLOOM 1.0
 #endif
