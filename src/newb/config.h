@@ -1,6 +1,7 @@
 #ifndef NL_CONFIG_H
 #define NL_CONFIG_H
 
+#define NL_SKY_BLOCK_CLOUDS
 #define NL_WATER_FOAM
 #define NL_WATER_FOAM_STRENGTH 1.0
 #define NL_WATER_FOAM_COLOR vec3(3.0, 3.0, 3.9)
@@ -24,7 +25,6 @@
 #define NL_VOL_CLOUD_SCALE 0.15
 #define NL_VOL_CLOUD_COVER 0.70
 #define NL_VOL_CLOUD_DENSITY 6.0
-//#define NL_SKY_ROUND_CLOUDS
 #define NL_BLACKHOLE
 
 /*
@@ -332,7 +332,7 @@
   #define NL_SKY_AURORA_SMOOTH
   #define NL_BLINKING_TORCH
   #undef NL_WATER_FOAM
-  #undef NL_SKY_ROUND_CLOUDS
+  #undef NL_SKY_BLOCK_CLOUDS
   #undef NL_VOL_CLOUD_STEPS
   #define NL_VOL_CLOUD_STEPS 16
 #endif
@@ -341,9 +341,7 @@
   #define NL_SKY_AURORA
   #define NL_SKY_AURORA_HEAVY
   #define NL_SKY_AURORA_SPEED 4.0
-  #define NL_SKY_ROUND_CLOUDS
-  #undef NL_CLOUD_TYPE
-  #define NL_CLOUD_TYPE
+  #define NL_SKY_BLOCK_CLOUDS
 #endif
 
 #endif
