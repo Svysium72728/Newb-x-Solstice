@@ -7,13 +7,15 @@ uniform vec4 ViewPositionAndTime;
 uniform vec4 FogAndDistanceControl;
 uniform vec4 FogColor;
 uniform vec4 TimeOfDay;
+uniform vec4 CameraPosition;
 
 SAMPLER2D_AUTOREG(s_MatTexture);
 SAMPLER2D_AUTOREG(s_SeasonsTexture);
 SAMPLER2D_AUTOREG(s_LightMapTexture);
 SAMPLER2D_AUTOREG(s_CausticTex);
+SAMPLER2D_AUTOREG(s_SunRefl);
 
-#define DROP_NUMBER 3
+#define DROP_NUMBER 5
 
 float stickyRaindrop(vec2 uv, vec2 center, float baseSize, float stretch) {
     vec2 p = (uv - center);
@@ -96,7 +98,9 @@ void main() {
 
   #if defined(TRANSPARENT) && !(defined(SEASONS) || defined(RENDER_AS_BILLBOARDS))
     if (v_extra.b > 0.9) {
-      diffuse.rgb = vec3_splat(1.0 - NL_WATER_TEX_OPACITY*(1.0 - diffuse.b*1.8));
+      float texPattern = NL_WATER_TEX_OPACITY*(diffuse.b*1.8 - 1.0);
+      texPattern = texPattern/(1.0 + abs(texPattern)/(texPattern < 0.0 ? 0.75 : 1.5));
+      diffuse.rgb = vec3_splat(1.0 + texPattern);
       diffuse.a = color.a;
     }
   #else
@@ -108,6 +112,34 @@ void main() {
 
   if (v_extra.b > 0.9) {
     diffuse.rgb += v_refl.rgb*v_refl.a;
+
+  #ifdef NL_CLOUD_AURORA_REFLECTION
+    if (!env.underwater && abs(dFdy(v_extra.g)) < 0.0002) {
+      highp vec3 wpc = vec3(v_causticData.x - CameraPosition.x, v_extra.g, v_causticData.y - CameraPosition.z);
+      vec3 vdc = normalize(ViewPositionAndTime.xyz - wpc);
+      vec3 rc = vec3(-vdc.x, vdc.y, -vdc.z);
+      nl_skycolor skyc = nlSkyColors(env);
+      vec4 cr = nlCloudAuroraReflection(skyc, env, rc, wpc, CameraPosition.xyz, ViewPositionAndTime.w);
+      diffuse.rgb = mix(diffuse.rgb, cr.rgb, cr.a*smoothstep(0.7, 0.95, v_lightmapUV.y));
+    }
+  #endif
+
+    if (!env.underwater && abs(dFdy(v_extra.g)) < 0.01) {
+      highp vec3 wps = vec3(v_causticData.x - CameraPosition.x, v_extra.g, v_causticData.y - CameraPosition.z);
+      vec3 vds = normalize(ViewPositionAndTime.xyz - wps);
+      vec3 rds = vec3(mix(vds.x, -vds.x, NL_SUN_REFL_MIRROR), vds.y, mix(vds.z, -vds.z, NL_SUN_REFL_MIRROR));
+      vec3 sd = env.sunDir;
+      vec3 sr = normalize(vec3(0.0, 0.0, 1.0) - sd*sd.z);
+      vec3 su = cross(sd, sr);
+      float facing = dot(rds, sd);
+      vec2 suv = vec2(dot(rds, sr), dot(rds, su))/max(facing, 0.001)*NL_SUN_REFL_SCALE + 0.5;
+      float inside = step(0.0, suv.x)*step(suv.x, 1.0)*step(0.0, suv.y)*step(suv.y, 1.0)*step(0.0, facing);
+      float sunVis = smoothstep(0.0, 0.12, sd.y)*(1.0 - env.rainFactor)*smoothstep(0.7, 0.95, v_lightmapUV.y);
+      vec3 sunCol = mix(mix(NL_NOON_SUNLIGHT_COL, vec3_splat(1.0), 0.45), NL_DAWN_SUNLIGHT_COL, pow(1.0 - env.dayFactor*env.dayFactor, 3.0));
+      vec3 sunRefl = texture2D(s_SunRefl, suv).rgb*sunCol*inside*sunVis*NL_SUN_REFL_STRENGTH;
+      diffuse.rgb += sunRefl;
+    }
+
   } else if (v_refl.a > 0.0) {
     // reflective effect - only on xz plane
     float dy = abs(dFdy(v_extra.g));
@@ -120,16 +152,53 @@ void main() {
 
   #if defined(NL_CAUSTIC_INTENSITY) && !(defined(RENDER_AS_BILLBOARDS) || defined(SEASONS))
     if (v_causticData.z > 0.5 && v_extra.b < 0.9) {
-      vec2 causticUV = fract(v_causticData.xy);
-      float caustic = texture2D(s_CausticTex, causticUV).r;
-      diffuse.rgb += caustic * NL_CAUSTIC_INTENSITY * 0.3;
+    float dy = abs(dFdy(v_extra.g));
+    if (dy < 0.0002) {
+        vec2 causticUV = fract(v_causticData.xy);
+        float caustic = texture2D(s_CausticTex, causticUV).r;
+        diffuse.rgb += caustic * NL_CAUSTIC_INTENSITY * 0.3;
     }
+}
+  #endif
+
+  #ifdef NL_WATER_FOAM
+  highp float wcY = v_extra.g + CameraPosition.y;
+  float dyW = abs(dFdy(v_extra.g));
+  highp vec3 fwp = vec3(v_causticData.x - CameraPosition.x, v_extra.g, v_causticData.y - CameraPosition.z);
+  vec3 fvd = normalize(ViewPositionAndTime.xyz - fwp);
+
+  bool isOneBlockUnderwater = ((wcY <= 62.89 && wcY > 62.0) || (wcY <= -60.11 && wcY > -61.0))
+    && v_extra.b < 0.9
+    && dyW >= 0.0002
+    && fvd.y > 0.02
+    && step(0.85, v_lightmapUV.y) * step(v_lightmapUV.y, 0.927) == 1.0;
+
+  if (isOneBlockUnderwater) {
+    float d = 0.865;
+    float bpy = fract(wcY);
+    vec2 offset = (d - bpy) * fvd.xz / fvd.y;
+    vec2 watpos = v_causticData.xy + offset;
+
+    float fade = 1.0 - clamp((d - bpy) / abs(fvd.y), 0.0, 1.0);
+
+    float ft = 0.3 * ViewPositionAndTime.w;
+    vec2 st = watpos;
+    float n = sin(st.x + 3.0*sin(0.5*st.y) + ft) * sin(st.y + 3.0*sin(0.5*st.x) - ft);
+    n = 0.5 + 0.5 * sin(st.x + 2.0*n + 0.2*ft) * sin(st.y - 4.0*n + 0.1*ft);
+    fade = pow(fade, 1.0 + 4.0 * n);
+
+    float foamTex = fract(238.084 * sin(dot(floor(16.0 * watpos), vec2(1.32, 141.3))));
+    foamTex *= fade;
+    foamTex = mix(foamTex, 1.0, fade * fade * fade);
+
+    diffuse.rgb = mix(diffuse.rgb, NL_WATER_FOAM_COLOR, clamp(foamTex*NL_WATER_FOAM_STRENGTH, 0.0, 1.0));
+  }
   #endif
 
   diffuse.rgb = mix(diffuse.rgb, v_fog.rgb, v_fog.a);
 
   float rain = mix(smoothstep(0.66, 0.3, FogAndDistanceControl.x), 0.0, step(FogAndDistanceControl.x, 0.0));
-  float dropStrength = env.underwater ? 1.0 : rain;
+  float dropStrength = (env.nether || env.end) ? 0.0 : (env.underwater ? 1.0 : rain);
 
   if (dropStrength > 0.0) {
     vec2 screenUV = gl_FragCoord.xy / vec2(1280.0, 720.0); // match your actual target res

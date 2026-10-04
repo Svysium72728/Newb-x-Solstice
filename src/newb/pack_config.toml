@@ -8,6 +8,8 @@ description = '''
 A modified fork of the original Newb shader, inspired by:
 • §sComplementary Shaders §dReimagined
 • §uSuper Duper Vanilla Shader
+• §6Complementary Shaders Unbound§ §r
+
 
 %v
 §3https://newb-shader.devendrn.com/
@@ -27,29 +29,20 @@ You can compile the shader from source and distribute the result under your own 
 
 Contact (Discord Server): https://discord.gg/newb-community-844591537430069279
 ''' # %a = authors
-credits = '''minmin, devendrn, Michaellynx, Jesus miguel gamer, Goboyy, rexytmc
+credits = '''minmin, devendrn, Michaellynx, Jesus miguel gamer, Goboyy, rexytmc,kurinkishi
 '''
 
 # subpacks are arranged in left to right order
 # right-most subpack is enabled by default'
 
 [[subpack]]
-define = "NL_EFFECTS_LOW"
-materials = ["Sky", "EndSky", "RenderChunk", "Actor"]
+define = "NL_UNBOUND"
+materials = ["Sky", "EndSky", "RenderChunk", "Actor", "Clouds"]
 description = '''
-Low - no aurora, no black hole
-'''
+Complementary Unbound inspired '''
 
 [[subpack]]
-define = "NL_EFFECTS_HEAVY"
-materials = ["Sky", "EndSky", "RenderChunk", "Actor"]
+define = "NL_REIMAGINED"
+materials = ["Sky", "EndSky", "RenderChunk", "Actor", "Clouds"]
 description = '''
-Heavy - detailed aurora + black hole
-'''
-
-[[subpack]]
-define = "NL_EFFECTS_MEDIUM"
-materials = ["Sky", "EndSky", "RenderChunk", "Actor"]
-description = '''
-Medium - aurora + black hole
-'''
+complementary Reimagined inspired '''

@@ -10,6 +10,19 @@
 #define NL_GODRAY_COLOR vec3(1.0, 0.95, 0.8)
 #endif
 
+#ifndef NL_SUN_CIRCLE_BLOOM
+#define NL_SUN_CIRCLE_BLOOM 1.0
+#endif
+#ifndef NL_MOON_BLOOM_SIZE
+#define NL_MOON_BLOOM_SIZE 0.12
+#endif
+#ifndef NL_MOON_BLOOM_SOFTNESS
+#define NL_MOON_BLOOM_SOFTNESS 0.1
+#endif
+#ifndef NL_MOON_BLOOM_STRENGTH
+#define NL_MOON_BLOOM_STRENGTH 0.3
+#endif
+
 struct nl_skycolor {
     vec3 zenith;
     vec3 horizon;
@@ -109,6 +122,28 @@ vec3 nlRenderGodrays(vec3 viewDir, nl_environment env, float t) {
     return rays*rayColor;
 }
 
+vec3 nlSunLightColor(nl_environment env) {
+    float dawn = 1.0 - env.dayFactor*env.dayFactor;
+    dawn *= dawn*dawn;
+    return mix(mix(NL_NOON_SUNLIGHT_COL, vec3_splat(1.0), 0.45), NL_DAWN_SUNLIGHT_COL, dawn);
+}
+
+vec3 nlMoonLightColor() {
+    return NL_NIGHT_MOONLIGHT_COL/max(max(NL_NIGHT_MOONLIGHT_COL.r, NL_NIGHT_MOONLIGHT_COL.g), NL_NIGHT_MOONLIGHT_COL.b);
+}
+
+float nlSquareBloom(vec3 viewDir, vec3 dir, float size, float soft) {
+    float fwd = dot(viewDir, dir);
+    if (fwd <= 0.0) {
+        return 0.0;
+    }
+    vec3 up = abs(dir.y) < 0.99 ? vec3(0.0,1.0,0.0) : vec3(1.0,0.0,0.0);
+    vec3 tg = normalize(cross(up, dir));
+    vec3 bt = cross(dir, tg);
+    float d = max(abs(dot(viewDir, tg)), abs(dot(viewDir, bt)))/fwd;
+    return 1.0 - smoothstep(size, size + soft, d);
+}
+
 vec3 renderOverworldSky(nl_skycolor skyCol, nl_environment env, vec3 viewDir, bool isSkyPlane) {
     float avy = abs(viewDir.y);
     float mask = 0.5 + (0.5*viewDir.y/(0.4+avy));
@@ -117,7 +152,7 @@ vec3 renderOverworldSky(nl_skycolor skyCol, nl_environment env, vec3 viewDir, bo
     vec2 g2 = g1*g1;
     vec2 g4 = g2*g2;
     vec2 g8 = g4*g4;
-    float mg8 = (g8.x+g8.y)*mask*(1.0-0.9*env.rainFactor);
+    float mg8 = (g8.x*NL_SUN_CIRCLE_BLOOM+g8.y)*mask*(1.0-0.9*env.rainFactor);
     float vh = 1.0-viewDir.y*viewDir.y;
     float vh2 = vh*vh;
     vh2 = mix(vh2, mix(1.0, vh2*vh2, NL_SKY_VOID_FACTOR), step(viewDir.y, 0.0));
@@ -138,7 +173,7 @@ vec3 renderOverworldSky(nl_skycolor skyCol, nl_environment env, vec3 viewDir, bo
         float source = max(0.0, (mg8-0.22)/0.78);
         source *= source;
         source *= source;
-        sky *= 1.0+5.0*source*(1.0-env.rainFactor);
+        sky *= 1.0+0.0*source*(1.0-env.rainFactor);
     }
 #ifdef NL_RAINBOW
     if (!env.underwater) {
@@ -150,17 +185,10 @@ vec3 renderOverworldSky(nl_skycolor skyCol, nl_environment env, vec3 viewDir, bo
     }
 #endif
 #ifdef NL_SUN_BLOOM_SQUARE
-    vec3 sunUp = abs(env.sunDir.y) < 0.99 ? vec3(0.0,1.0,0.0) : vec3(1.0,0.0,0.0);
-    vec3 sunTangent = normalize(cross(sunUp, env.sunDir));
-    vec3 sunBitangent = cross(env.sunDir, sunTangent);
-    float sunForward = dot(viewDir, env.sunDir);
-    if (sunForward > 0.0) {
-        float su = dot(viewDir, sunTangent) / sunForward;
-        float sv = dot(viewDir, sunBitangent) / sunForward;
-        float squareDist = max(abs(su), abs(sv));
-        float squareBloom = 1.0 - smoothstep(NL_SUN_BLOOM_SIZE, NL_SUN_BLOOM_SIZE + NL_SUN_BLOOM_SOFTNESS, squareDist);
-        sky += squareBloom * NL_SUN_BLOOM_COLOR * NL_SUN_BLOOM_STRENGTH * max(env.dayFactor, 0.0);
-    }
+    float sunBloom = nlSquareBloom(viewDir, env.sunDir, NL_SUN_BLOOM_SIZE*NL_SUN_SIZE, NL_SUN_BLOOM_SOFTNESS*NL_SUN_SIZE);
+    sky += sunBloom*nlSunLightColor(env)*NL_SUN_BLOOM_STRENGTH*max(env.dayFactor, 0.0);
+    float moonBloom = nlSquareBloom(viewDir, env.moonDir, NL_MOON_BLOOM_SIZE*NL_MOON_SIZE, NL_MOON_BLOOM_SOFTNESS*NL_MOON_SIZE);
+    sky += moonBloom*nlMoonLightColor()*NL_MOON_BLOOM_STRENGTH*smoothstep(0.2, -0.1, env.dayFactor)*(1.0 - env.rainFactor);
 #endif
 #ifdef NL_GODRAY
     sky += nlRenderGodrays(viewDir, env, 0.0);

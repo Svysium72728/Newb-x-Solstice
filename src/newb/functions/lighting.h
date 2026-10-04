@@ -75,7 +75,7 @@ vec3 nlLighting(
     sunLightAttenuation *= 1.0-0.4*env.rainFactor;
 
     // shadow cast by sun light
-    float shadow = step(0.93, uv1.y);
+    float shadow = smoothstep(0.87, 0.96, uv1.y);
     shadow = max(shadow, (1.0 - NL_SHADOW_INTENSITY + (0.6*NL_SHADOW_INTENSITY*nightIntensity))*lit.y);
     shadow *= shade > 0.8 ? 1.0 : 0.8;
     #if defined(NL_CLOUD_SHADOW) && (NL_CLOUD_TYPE == 1 || NL_CLOUD_TYPE == 2)
@@ -204,6 +204,23 @@ vec3 nlEntityLighting(nl_skycolor skycol, nl_environment env, vec3 pos, vec4 nor
 
   lum = luminance(light);
   light += torchColor*(smoothstep(0.1, 0.0, tileLightCol.b-tileLightCol.r)*NL_TORCHLIGHT_INTENSITY*tl/(1.0+lum));
+
+  // night/dark-area desaturation with warm torch-lit tint
+  if (!(env.nether || env.end)) {
+    float sceneDarkness = 1.0 - clamp(l*2.0, 0.0, 1.0);
+    float entityNight = 1.0-(0.5+0.5*env.dayFactor);
+    entityNight *= entityNight;
+    sceneDarkness = max(sceneDarkness, entityNight);
+
+    float nearLight = smoothstep(0.05, 0.4, tl);
+
+    float lum2 = dot(light.rgb, vec3(0.3, 0.59, 0.11));
+    vec3 desatColor = vec3_splat(lum2);
+    vec3 warmColor = light.rgb * vec3(1.15, 0.95, 0.75);
+
+    light.rgb = mix(light.rgb, desatColor, (1.0-nearLight)*sceneDarkness*0.6);
+    light.rgb = mix(light.rgb, warmColor, nearLight*sceneDarkness*0.5);
+  }
 
   // game min brightness
   lum = luminance(light);

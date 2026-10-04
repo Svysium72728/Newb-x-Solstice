@@ -1,7 +1,7 @@
 {
-  "name": "NoiseTex",
-  "register_slot": 10,
-  "binding_slot": 10,
+  "name": "NoiseTexture",
+  "register_slot": 15,
+  "binding_slot": 15,
   "type": "texture2D",
   "precision": "lowp",
   "access": "readonly",
@@ -9,7 +9,7 @@
   "default_texture": "",
   "unordered_access": false,
   "slot_count": 1,
-  "texture_path": "textures/newb/noise",
+  "texture_path": "textures/newb/noise_cloud",
   "unknown": 0,
   "sampler_state": {
     "filter": "Bilinear",
