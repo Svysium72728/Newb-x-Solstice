@@ -136,7 +136,7 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
     }
   #endif
 
-  #ifdef NL_SKY_VOLUME_CLOUD
+  #ifdef NL_SKY_VOLUME_CLOUDS
     #ifndef NL_VOL_CLOUD_STEPS
       #define NL_VOL_CLOUD_STEPS 8
     #endif
