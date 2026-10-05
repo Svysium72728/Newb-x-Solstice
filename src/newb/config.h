@@ -351,6 +351,7 @@
   #define NL_SKY_AURORA_HEAVY
   #define NL_SKY_AURORA_SPEED 4.0
   #define NL_SKY_BLOCK_CLOUDS
+  #undef NL_WATER_RESOLUTE_WAVES
 #endif
 
 #endif
