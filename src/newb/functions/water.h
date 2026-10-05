@@ -51,6 +51,7 @@ vec4 nlWater(
         waveH = h0/NL_WAVE_STRENGTH;
         bumpK = NL_WAVE_NORMAL;
     #else
+      #ifdef NL_UNBOUND
         bump.x = movingNoise2D(gPos.xz + gPos.yy, waveTime, 0.6);
         bump.y = movingNoise2D(gPos.zx + vec2(1.5, 3.2), waveTime * 0.9, 0.6);
 
@@ -69,6 +70,9 @@ vec4 nlWater(
 
         bump.x *= 1.2;
         bump.y *= 0.8;
+      #else
+        bump = vec2_splat(movingNoise2D(gPos.xz + gPos.yy, waveTime, 0.6));
+      #endif
         bumpK = NL_WATER_BUMP;
     #endif
 
@@ -85,18 +89,21 @@ vec4 nlWater(
     nrm = normalize(nrm);
 
     float cosR = dot(nrm, viewDir);
-    vec3 reflDir = reflect(viewDir, nrm);
 
-    vec3 distortedRefl = normalize(reflDir + vec3(nrm.x * 0.15, 0.0, nrm.z * 0.15));
+    #ifdef NL_UNBOUND
+      vec3 reflDir = reflect(viewDir, nrm);
+      vec3 distortedRefl = normalize(reflDir + vec3(nrm.x * 0.15, 0.0, nrm.z * 0.15));
 
-    float roughness = smoothstep(5.0, 40.0, camDist) * 0.04;
-    distortedRefl.x += sin(gPos.x * 50.0) * roughness;
-    distortedRefl.z += cos(gPos.z * 50.0) * roughness;
-    distortedRefl = normalize(distortedRefl);
+      float roughness = smoothstep(5.0, 40.0, camDist) * 0.04;
+      distortedRefl.x += sin(gPos.x * 50.0) * roughness;
+      distortedRefl.z += cos(gPos.z * 50.0) * roughness;
+      distortedRefl = normalize(distortedRefl);
+    #else
+      vec3 distortedRefl = viewDir - 2.0 * cosR * nrm;
+    #endif
 
     vec3 waterRefl = nlRenderSky(skycol, env, distortedRefl, t, false);
 
-    // Torchlight
     float tc = 0.5 + 0.5 * sin(16.0 * distortedRefl.x) * sin(16.0 * distortedRefl.z);
     waterRefl += torchColor * NL_TORCHLIGHT_INTENSITY * lit.x * (tc * tc);
 
