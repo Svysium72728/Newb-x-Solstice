@@ -41,8 +41,6 @@
 #define NL_MOON_BLOOM_SIZE 0.12
 #define NL_MOON_BLOOM_SOFTNESS 0.8
 #define NL_MOON_BLOOM_STRENGTH 2.0
-#define NL_SKY_ROUND_CLOUDS_CELLS 16.0
-#define NL_SKY_ROUND_CLOUDS_BOXY 0.6
 #define NL_VOL_CLOUD_SHADE 14.0
 #define NL_VOL_CLOUD_SHADE_DIST 0.012
 #define NL_VOL_CLOUD_SCALE 0.15
@@ -170,7 +168,7 @@
 #define NL_WATER_WAVE_SPEED  1.2  // 0.2 calm ~ 2.0 turbulent
 #define NL_WATER_TEX_OPACITY 3.72 // 0.0 plain water ~ 1.0 vanilla water texture
 //#define NL_WATER_WAVE             // [toggle] wave effect
-//#define NL_WATER_REFL_MASK        // [toggle] fake water reflection mask
+#define NL_WATER_REFL_MASK        // [toggle] fake water reflection mask
 #define NL_WATER_TINT vec3(0.576,0.714,0.408)
 
 /* Underwater */
@@ -182,7 +180,7 @@
 #define NL_WATER_LIGHT_STREAK_STRENGTH 0.0
 
 /* Cloud type */
-#define NL_CLOUD_TYPE 5 // 0:vanilla, 1:soft, 2:rounded, 3:realistic, 4:minmin's lightweight cloud
+#define NL_CLOUD_TYPE 5 // 0:vanilla, 1:soft, 2:rounded, 3:realistic, 4:minmin's lightweight cloud, 5:Nothing :p
 
 /* Vanilla cloud settings - make sure to remove clouds.png when using this */
 #define NL_CLOUD0_THICKNESS 2.1      // 0.5 slim ~ 8.0 fat
@@ -261,7 +259,7 @@
 #define NL_SUN_PATH_TILT   32.0 //
 #define NL_MOON_PATH_TILT -28.0 //
 #define NL_SUN_TILT        0.0 // 0.0 no tilt ~ 90.0 tilt of 90 degrees
-#define NL_MOON_TILT       0.0 // 0.0 no tilt ~ 90.0 tilt of 90 degrees
+#define NL_MOON_TILT       45.0 // 0.0 no tilt ~ 90.0 tilt of 90 degrees
 //#define NL_SUN_BLOOM_SQUARE            // [toggle] square-shaped sun bloom
 #define NL_SUN_BLOOM_SIZE 0.03         // 0.05 tight ~ 0.5 large
 #define NL_SUN_BLOOM_SOFTNESS 1.0     // 0.0 hard edge ~ 0.3 very soft
@@ -352,6 +350,7 @@
   #define NL_SKY_AURORA_SPEED 4.0
   #define NL_SKY_BLOCK_CLOUDS
   #undef NL_WATER_RESOLUTE_WAVES
+  #undef NL_WATER_REFL_MASK
 #endif
 
 #endif
