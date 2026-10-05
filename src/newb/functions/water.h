@@ -51,7 +51,6 @@ vec4 nlWater(
         waveH = h0/NL_WAVE_STRENGTH;
         bumpK = NL_WAVE_NORMAL;
     #else
-      #ifdef NL_UNBOUND_WATER_RENDERING
         bump.x = movingNoise2D(gPos.xz + gPos.yy, waveTime, 0.6);
         bump.y = movingNoise2D(gPos.zx + vec2(1.5, 3.2), waveTime * 0.9, 0.6);
 
@@ -70,9 +69,6 @@ vec4 nlWater(
 
         bump.x *= 1.2;
         bump.y *= 0.8;
-      #else
-        bump = vec2_splat(movingNoise2D(gPos.xz + gPos.yy, waveTime, 0.6));
-      #endif
         bumpK = NL_WATER_BUMP;
     #endif
 
@@ -89,26 +85,23 @@ vec4 nlWater(
     nrm = normalize(nrm);
 
     float cosR = dot(nrm, viewDir);
+    vec3 reflDir = reflect(viewDir, nrm);
 
-    #ifdef NL_UNBOUND_WATER_RENDERING
-      vec3 reflDir = reflect(viewDir, nrm);
-      vec3 distortedRefl = normalize(reflDir + vec3(nrm.x * 0.15, 0.0, nrm.z * 0.15));
+    vec3 distortedRefl = normalize(reflDir + vec3(nrm.x * 0.15, 0.0, nrm.z * 0.15));
 
-      float roughness = smoothstep(5.0, 40.0, camDist) * 0.04;
-      distortedRefl.x += sin(gPos.x * 50.0) * roughness;
-      distortedRefl.z += cos(gPos.z * 50.0) * roughness;
-      distortedRefl = normalize(distortedRefl);
-    #else
-      vec3 distortedRefl = viewDir - 2.0 * cosR * nrm;
-    #endif
+    float roughness = smoothstep(5.0, 40.0, camDist) * 0.04;
+    distortedRefl.x += sin(gPos.x * 50.0) * roughness;
+    distortedRefl.z += cos(gPos.z * 50.0) * roughness;
+    distortedRefl = normalize(distortedRefl);
 
     vec3 waterRefl = nlRenderSky(skycol, env, distortedRefl, t, false);
 
+    // Torchlight
     float tc = 0.5 + 0.5 * sin(16.0 * distortedRefl.x) * sin(16.0 * distortedRefl.z);
     waterRefl += torchColor * NL_TORCHLIGHT_INTENSITY * lit.x * (tc * tc);
 
     if (!env.end) {
-        waterRefl *= 0.05 + lit.y * 1.14;
+        waterRefl *= 0.1 + lit.y * 0.9;
     }
 
     #ifdef NL_WATER_REFL_MASK
@@ -118,12 +111,13 @@ vec4 nlWater(
 
     cosR = abs(cosR);
     // 0.02 is the natural baseline reflectivity coefficient of clean water
-    float fresnel = calculateFresnel(cosR, 0.07);
+    float fresnel = calculateFresnel(cosR, 0.02);
 
-    float opacity = 1.0 - cosR;
+    float viewAngleFactor = 1.0 - viewDir.y;
+    float opacity = mix(NL_WATER_TRANSPARENCY, 1.0, pow(viewAngleFactor, 4.0));
 
-    color.rgb *= 0.22 * NL_WATER_TINT * (1.0 - 0.8 * fresnel);
-    color.a = mix(COLOR.a * NL_WATER_TRANSPARENCY, 1.0, opacity * opacity);
+    color.rgb *= 0.22 * NL_WATER_TINT * (1.0 - 0.75 * fresnel);
+    color.a = mix(COLOR.a * opacity, 1.0, fresnel);
 
     #ifdef NL_WATER_WAVE
     #ifdef NL_WATER_RESOLUTE_WAVES
