@@ -342,6 +342,14 @@
   #undef NL_SKY_BLOCK_CLOUDS
   #undef NL_VOL_CLOUD_STEPS
   #define NL_VOL_CLOUD_STEPS 16
+  #define NL_END_CLOUDS
+  #define NL_END_CLOUD_LAYERS 3
+  #define NL_END_CLOUD_HEIGHT 1.0
+  #define NL_END_CLOUD_SCALE 0.35
+  #define NL_END_CLOUD_SPEED 0.002
+  #define NL_END_CLOUD_LIGHT_OFFSET vec2(-0.02,-0.022)
+  #define NL_END_CLOUD_COL_LIGHT vec3(0.40,0.27,0.60)
+  #define NL_END_CLOUD_COL_DARK  vec3(0.14,0.07,0.27) 
 #endif
 
 #ifdef NL_REIMAGINED
