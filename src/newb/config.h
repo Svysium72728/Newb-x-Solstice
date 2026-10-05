@@ -3,7 +3,7 @@
 
 #define NL_SKY_BLOCK_CLOUDS
 #define NL_BLOCK_CLOUD_STEPS 5
-#define NL_BLOCK_CLOUD_SCALE 4.5
+#define NL_BLOCK_CLOUD_SCALE 3.5
 #define NL_BLOCK_CLOUD_COVER 0.12
 #define NL_BLOCK_CLOUD_BASE 1.0
 #define NL_BLOCK_CLOUD_THICK 0.24
@@ -94,13 +94,13 @@
 //#define NL_CLOUD_SHADOW      // [toggle] cloud shadow (simple clouds only)
 
 /* End glowing beam ig */
-#define NL_ENDGLOW_COLOR2     vec3(0.2,0.20,0.5)
-#define NL_ENDGLOW_COLOR      vec3(0.2,0.25,0.65)
-#define NL_ENDGLOW_STRENGTH 2.5
+#define NL_ENDGLOW_COLOR   vec3(0.38, 0.24, 0.70)
+#define NL_ENDGLOW_COLOR2  vec3(0.26, 0.16, 0.52)
+#define NL_ENDGLOW_STRENGTH 2.0
 
 /* Ambient light for nether/end */
 #define NL_NETHER_AMBIENT vec3(0.102,0.0,0.0)
-#define NL_END_AMBIENT    vec3(0.03,0.01,0.03)
+#define NL_END_AMBIENT    vec3(0.09,0.06,0.14)
 
 /* Sun/moon light color */
 #define NL_DAWN_SUNLIGHT_COL   vec3(1.208,0.749,0.255)
@@ -137,8 +137,8 @@
 #define NL_RAIN_ZENITH_COL   vec3(0.47,0.51,0.56)
 #define NL_RAIN_HORIZON_COL  vec3(0.6,0.6,0.6)
 
-#define NL_END_ZENITH_COL    vec3(0.08,0.02,0.08)
-#define NL_END_HORIZON_COL   vec3(0.15,0.05,0.30)
+#define NL_END_ZENITH_COL  vec3(0.08, 0.04, 0.11)
+#define NL_END_HORIZON_COL vec3(0.36, 0.26, 0.46)
 
 /* Rainbow */
 #define NL_RAINBOW           // [toggle] enable rainbow in sky
@@ -279,8 +279,8 @@
 #define NL_BH_DIST 1.0
 #define NL_BH_AZIMUTH 2.4
 #define NL_BH_HEIGHT 0.5
-#define NL_BH_COL_LOW  vec3(0.784,0.580,0.969)
-#define NL_BH_COL_HIGH vec3(0.318,0.161,0.541)
+#define NL_BH_COL_LOW      vec3(0.85, 0.70, 0.95)
+#define NL_BH_COL_HIGH     vec3(0.48, 0.36, 0.62)
 #define NL_BH_REFLECT_STRENGTH 6.0
 
 /* Sky reflection */
