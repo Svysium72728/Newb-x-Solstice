@@ -51,7 +51,7 @@ vec4 nlWater(
         waveH = h0/NL_WAVE_STRENGTH;
         bumpK = NL_WAVE_NORMAL;
     #else
-      #ifdef NL_UNBOUND
+      #ifdef NL_UNBOUND_WATER_RENDERING
         bump.x = movingNoise2D(gPos.xz + gPos.yy, waveTime, 0.6);
         bump.y = movingNoise2D(gPos.zx + vec2(1.5, 3.2), waveTime * 0.9, 0.6);
 
@@ -90,7 +90,7 @@ vec4 nlWater(
 
     float cosR = dot(nrm, viewDir);
 
-    #ifdef NL_UNBOUND
+    #ifdef NL_UNBOUND_WATER_RENDERING
       vec3 reflDir = reflect(viewDir, nrm);
       vec3 distortedRefl = normalize(reflDir + vec3(nrm.x * 0.15, 0.0, nrm.z * 0.15));
 
