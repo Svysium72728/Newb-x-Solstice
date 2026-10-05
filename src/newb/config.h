@@ -3,7 +3,7 @@
 
 #define NL_SKY_BLOCK_CLOUDS
 #define NL_BLOCK_CLOUD_STEPS 5
-#define NL_BLOCK_CLOUD_SCALE 2.0
+#define NL_BLOCK_CLOUD_SCALE 4.5
 #define NL_BLOCK_CLOUD_COVER 0.12
 #define NL_BLOCK_CLOUD_BASE 1.0
 #define NL_BLOCK_CLOUD_THICK 0.24
@@ -16,15 +16,24 @@
 #define NL_BLOCK_CLOUD_LIGHT_COL vec3(1.0, 0.90, 0.76)
 #define NL_BLOCK_CLOUD_SHADE_COL vec3(0.55, 0.42, 0.50)
 
+#define NL_WATER_RESOLUTE_WAVES
+#define NL_WAVE_COUNT 8
+#define NL_WAVE_SPEED 0.5
+#define NL_WAVE_STEEP 2.0
+#define NL_WAVE_FREQ 0.4
+#define NL_WAVE_FREQ_STEP 0.2
+#define NL_WAVE_AMP 0.4
+#define NL_WAVE_AMP_STEP 0.2
+#define NL_WAVE_STRENGTH 0.25
+#define NL_WAVE_NORMAL 4.0
+#define NL_WAVE_DISP 0.12
+
 #define NL_WATER_FOAM
 #define NL_WATER_FOAM_STRENGTH 1.0
 #define NL_WATER_FOAM_COLOR vec3(3.0, 3.0, 3.9)
 #define NL_SUN_CIRCLE_BLOOM 0.0
 #define NL_CLOUD4_REFL_HEIGHT 187.0
 #define NL_CLOUD4_REFL_SCALE 0.02
-#define NL_GLITTER_LANE 60.0
-#define NL_GLITTER_LENGTH 0.7
-#define NL_SUN_BOUNCE_STRENGTH 0.6
 #define NL_SUN_REFL_SCALE  0.890
 #define NL_SUN_REFL_STRENGTH 1.5
 #define NL_SUN_REFL_MIRROR 0.0
@@ -163,8 +172,6 @@
 //#define NL_WATER_WAVE             // [toggle] wave effect
 //#define NL_WATER_REFL_MASK        // [toggle] fake water reflection mask
 #define NL_WATER_TINT vec3(0.576,0.714,0.408)
-#define NL_WATER_SATURATION 1.4
-#define NL_WATER_BRIGHTNESS 0.87
 
 /* Underwater */
 #define NL_UNDERWATER_BRIGHTNESS 0.6         // 0.0 dark ~ 3.0 bright
@@ -260,21 +267,6 @@
 #define NL_SUN_BLOOM_SOFTNESS 1.0     // 0.0 hard edge ~ 0.3 very soft
 #define NL_SUN_BLOOM_COLOR vec3(1.0, 0.9, 0.7)
 #define NL_SUN_BLOOM_STRENGTH 2.1      // 0.5 subtle ~ 3.0 strong
-//#define NL_WATER_GLITTER
-#define NL_GLITTER_DENSITY 3.0
-#define NL_GLITTER_SPEED 0.6
-#define NL_GLITTER_STRENGTH 3.0
-#define NL_GLITTER_SPREAD_ALONG 0.35
-#define NL_GLITTER_SPREAD_ACROSS 0.1
-#define NL_GLITTER_EDGE 0.997
-#define NL_GLITTER_FADE_START 60.0
-#define NL_GLITTER_FADE_END 180.0
-#define NL_MOON_GLITTER_STRENGTH 1.5
-#define NL_MOON_GLITTER_WHITE 0.5
-#define NL_GLITTER_LANE 60.0
-#define NL_GLITTER_LENGTH 0.7
-#define NL_SUN_BOUNCE_STRENGTH 0.6
-#define NL_SUN_REFL_STRENGTH 1.5
 
 /* Fake godrays during sunrise/sunset */
 #define NL_GODRAY 0.0 // [toggle] 0.1 subtle ~ 0.8 strong
