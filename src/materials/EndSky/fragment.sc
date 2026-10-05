@@ -9,6 +9,10 @@ $input v_texcoord0, v_posTime
 
   SAMPLER2D_AUTOREG(s_SkyTexture);
 
+  #ifdef NL_END_CLOUDS
+  SAMPLER2D_AUTOREG(s_NoiseTex);
+  #endif
+
   //blackhole
 
   #ifdef NL_BLACKHOLE
@@ -80,6 +84,37 @@ $input v_texcoord0, v_posTime
 
     return vec3(star * brightness * twinkle);
   }
+
+  //end clouds (layered plane-projected cloud sea below the horizon)
+
+  #ifdef NL_END_CLOUDS
+  vec4 renderEndClouds(vec3 vdir, float t) {
+    float k = -vdir.y;
+    float fade = smoothstep(0.02, 0.3, k);
+    if (fade <= 0.0) return vec4(0.0, 0.0, 0.0, 0.0);
+
+    vec3 col = vec3(0.0, 0.0, 0.0);
+    float trans = 1.0;
+
+    for (int i = 0; i < NL_END_CLOUD_LAYERS; i++) {
+      float fi = float(i);
+      float h = NL_END_CLOUD_HEIGHT * (1.0 + 0.6*fi);
+      vec2 p = vdir.xz / k * h * NL_END_CLOUD_SCALE;
+      p += vec2(t * NL_END_CLOUD_SPEED * (1.0 + 0.3*fi), 0.0) + fi*vec2(0.37, 0.61);
+
+      float d = 0.65*texture2D(s_NoiseTex, p).r + 0.35*texture2D(s_NoiseTex, p*2.3 + 0.5).r;
+      float dl = texture2D(s_NoiseTex, p + NL_END_CLOUD_LIGHT_OFFSET).r;
+
+      float a = smoothstep(0.45, 0.75, d);
+      float shade = clamp(0.6 - (dl - d)*3.0, 0.0, 1.0);
+
+      col += trans * a * mix(NL_END_CLOUD_COL_DARK, NL_END_CLOUD_COL_LIGHT, shade);
+      trans *= 1.0 - a;
+    }
+
+    return vec4(col, 1.0 - trans) * fade;
+  }
+  #endif
 #endif
 
 void main() {
@@ -102,6 +137,11 @@ void main() {
 
     // Add procedural stars
     color += renderEndStars(viewDir, 0.0015, 1.2);
+
+    #ifdef NL_END_CLOUDS
+        vec4 cl = renderEndClouds(viewDir, t);
+        color = mix(color, cl.rgb / max(cl.a, 0.001), cl.a);
+    #endif
 
     // Blend Blackhole mathematical layer over the base sky box
     #ifdef NL_BLACKHOLE
