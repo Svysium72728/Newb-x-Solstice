@@ -21,7 +21,7 @@ float nlWaveHeight(highp vec2 uv, highp float t) {
         vec2 dir = vec2(cos(ang), sin(ang));
         float freq = NL_WAVE_FREQ + fi*NL_WAVE_FREQ_STEP;
         float amp = NL_WAVE_AMP/(1.0 + fi*NL_WAVE_AMP_STEP);
-        float arg = dot(dir, uv*freq) + sqrt(9.8*freq)*t*NL_WAVE_SPEED + sin(fi*3.17)*6.2831;
+        float arg = dot(dir, uv*freq) + sqrt(9.8*freq)*t*NL_RESOLUTE_WAVE_SPEED + sin(fi*3.17)*6.2831;
         h += sin(arg)*amp;
         totalAmp += amp;
         uv += dir*cos(arg)*amp*NL_WAVE_STEEP;
