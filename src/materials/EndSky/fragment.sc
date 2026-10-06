@@ -10,7 +10,7 @@ $input v_texcoord0, v_posTime
   SAMPLER2D_AUTOREG(s_SkyTexture);
 
   #ifdef NL_END_CLOUDS
-  SAMPLER2D_AUTOREG(s_NoiseTex);
+  SAMPLER2D_AUTOREG(s_EndCloudTex);
   #endif
 
   //blackhole
@@ -69,121 +69,42 @@ $input v_texcoord0, v_posTime
 
   //end stars (procedural, layered over vanilla texture stars)
 
-  vec3 renderEndStars(vec3 viewDir, float density, float brightness) {
-    vec3 p = viewDir * 400.0;
+  vec3 renderEndStarLayer(vec3 viewDir, float scale, float density, float brightness, float seed) {
+    vec3 p = viewDir * scale;
     vec3 cell = floor(p);
     vec3 f = fract(p);
 
-    float h = fract(sin(dot(cell, vec3(12.9898, 78.233, 45.164))) * 43758.5453);
+    float h = fract(sin(dot(cell + seed, vec3(12.9898, 78.233, 45.164))) * 43758.5453);
     float star = step(1.0 - density, h);
 
     float d = length(f - 0.5);
     star *= smoothstep(0.5, 0.1, d);
 
     float twinkle = 0.7 + 0.3*sin(h*123.4 + dot(cell, vec3(1.0)));
+    vec3 tint = mix(vec3(0.7, 0.8, 1.0), vec3(1.0, 0.75, 0.95), fract(h*17.0));
 
-    return vec3(star * brightness * twinkle);
+    return tint * star * brightness * twinkle;
   }
 
-  //end clouds
+  //end clouds (equirectangular image, lower hemisphere only)
 
   #ifdef NL_END_CLOUDS
   vec4 renderEndClouds(vec3 vdir, float t) {
     float k = -vdir.y;
-    float fade = smoothstep(0.02, 0.3, k);
-    if (fade <= 0.0) return vec4(0.0, 0.0, 0.0, 0.0);
+    if (k <= 0.0) return vec4(0.0, 0.0, 0.0, 0.0);
 
-    vec3 col = vec3(0.0, 0.0, 0.0);
-    float trans = 1.0;
+    float u = atan2(vdir.x, vdir.z) * 0.15915494 + 0.5 + t * NL_END_CLOUD_SPEED;
+    float v = clamp(asin(min(k, 1.0)) * 0.63661977, 0.002, 0.998);
 
-    for (int i = 0; i < NL_END_CLOUD_LAYERS; i++) {
-      float fi = float(i);
-      float h = NL_END_CLOUD_HEIGHT * (1.0 + 0.6*fi);
-      vec2 p = vdir.xz / k * h * NL_END_CLOUD_SCALE;
-      p += vec2(t * NL_END_CLOUD_SPEED * (1.0 + 0.3*fi), 0.0) + fi*vec2(0.37, 0.61);
+    float L = texture2DLod(s_EndCloudTex, vec2(u, v), 0.0).r;
 
-      float d = 0.65*texture2D(s_NoiseTex, p).r + 0.35*texture2D(s_NoiseTex, p*2.3 + 0.5).r;
-      float dl = texture2D(s_NoiseTex, p + NL_END_CLOUD_LIGHT_OFFSET).r;
+    float a = smoothstep(NL_END_CLOUD_LO, NL_END_CLOUD_HI, L) * NL_END_CLOUD_OPACITY;
+    vec3 col = mix(NL_END_CLOUD_COL_DARK, NL_END_CLOUD_COL_LIGHT, L);
 
-      float a = smoothstep(0.45, 0.75, d);
-      float shade = clamp(0.6 - (dl - d)*3.0, 0.0, 1.0);
+    float haze = smoothstep(0.0, NL_END_CLOUD_HAZE, k);
+    col = mix(NL_END_CLOUD_FOG_COL, col, haze);
 
-      col += trans * a * mix(NL_END_CLOUD_COL_DARK, NL_END_CLOUD_COL_LIGHT, shade);
-      trans *= 1.0 - a;
-    }
-
-    return vec4(col, 1.0 - trans) * fade;
-  }
-
-  #ifdef NL_END_CLOUDS_3D
-  float cloudNoise3(vec3 p) {
-    float iy = floor(p.y);
-    float fy = fract(p.y);
-    fy = fy*fy*(3.0 - 2.0*fy);
-    vec2 o = vec2(0.371, 0.173) * iy;
-    float a = texture2D(s_NoiseTex, p.xz + o).r;
-    float b = texture2D(s_NoiseTex, p.xz + o + vec2(0.371, 0.173)).r;
-    return mix(a, b, fy);
-  }
-
-  float cloudDensity(vec3 p, float alt) {
-    float n = 0.7*cloudNoise3(p) + 0.3*texture2D(s_NoiseTex, p.xz*2.7 + vec2(p.y*0.13, 0.0)).r;
-    float prof = smoothstep(0.0, 0.2, alt) * (1.0 - smoothstep(0.6, 1.0, alt));
-    return smoothstep(0.42, 0.72, n + 0.35*(prof - 0.6));
-  }
-
-  vec4 renderEndClouds3D(vec3 vdir, float t) {
-    float k = -vdir.y;
-    float fade = smoothstep(0.02, 0.3, k);
-    if (fade <= 0.0) return vec4(0.0, 0.0, 0.0, 0.0);
-
-    float top = NL_END_CLOUD_HEIGHT;
-    float thick = NL_END_CLOUD3D_THICKNESS;
-    float s0 = top / k;
-    float s1 = (top + thick) / k;
-    float ds = (s1 - s0) / float(NL_END_CLOUD3D_STEPS);
-    float dither = fract(sin(dot(vdir.xz, vec2(12.9898, 78.233))) * 43758.5453);
-
-    vec3 lstep = vec3(NL_END_CLOUD_LIGHT_OFFSET.x*2.0, -NL_END_CLOUD3D_LIGHT, NL_END_CLOUD_LIGHT_OFFSET.y*2.0);
-
-    vec3 col = vec3(0.0, 0.0, 0.0);
-    float trans = 1.0;
-
-    for (int i = 0; i < NL_END_CLOUD3D_STEPS; i++) {
-      float s = s0 + ds * (float(i) + dither);
-      float depth = s * k;
-      float alt = 1.0 - (depth - top) / thick;
-
-      vec2 pxz = vdir.xz * s * NL_END_CLOUD_SCALE + vec2(t * NL_END_CLOUD_SPEED, 0.0);
-      vec3 p = vec3(pxz.x, depth * NL_END_CLOUD3D_YFREQ, pxz.y);
-
-      float d = cloudDensity(p, alt);
-      if (d > 0.01) {
-        float dl = cloudDensity(p + lstep, alt + 0.2);
-        float shade = clamp(1.0 - dl*1.4 + 0.25*alt, 0.0, 1.0);
-        float a = 1.0 - exp(-d * NL_END_CLOUD3D_DENSITY * min(ds, 1.5));
-
-        col += trans * a * mix(NL_END_CLOUD_COL_DARK, NL_END_CLOUD_COL_LIGHT, shade);
-        trans *= 1.0 - a;
-        if (trans < 0.03) break;
-      }
-    }
-
-    return vec4(col, 1.0 - trans) * fade;
-  }
-  #endif
-
-  vec4 renderEndCloudsLOD(vec3 vdir, float t) {
-    #ifdef NL_END_CLOUDS_3D
-      float k = max(-vdir.y, 0.001);
-      float lod = smoothstep(NL_END_CLOUD3D_RANGE*0.7, NL_END_CLOUD3D_RANGE, NL_END_CLOUD_HEIGHT / k);
-      vec4 c = vec4(0.0, 0.0, 0.0, 0.0);
-      if (lod < 1.0) c += (1.0 - lod) * renderEndClouds3D(vdir, t);
-      if (lod > 0.0) c += lod * renderEndClouds(vdir, t);
-      return c;
-    #else
-      return renderEndClouds(vdir, t);
-    #endif
+    return vec4(col, a);
   }
   #endif
 #endif
@@ -201,11 +122,13 @@ void main() {
 
     color += renderEndAmbientGlow(viewDir, t);
 
-    color += renderEndStars(viewDir, 0.0015, 1.2);
+    color += renderEndStarLayer(viewDir, 300.0, 0.002, 1.2, 0.0);
+    color += renderEndStarLayer(viewDir, 550.0, 0.004, 0.8, 7.0);
+    color += renderEndStarLayer(viewDir, 900.0, 0.006, 0.5, 19.0);
 
     #ifdef NL_END_CLOUDS
-        vec4 cl = renderEndCloudsLOD(viewDir, t);
-        color = mix(color, cl.rgb / max(cl.a, 0.001), cl.a);
+        vec4 cl = renderEndClouds(viewDir, t);
+        color = mix(color, cl.rgb, cl.a);
     #endif
 
     #ifdef NL_BLACKHOLE
