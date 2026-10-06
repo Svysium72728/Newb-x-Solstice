@@ -1,5 +1,5 @@
 {
-  "name": "NoiseTex",
+  "name": "EndCloudTex",
   "register_slot": 10,
   "binding_slot": 10,
   "type": "texture2D",
@@ -9,7 +9,7 @@
   "default_texture": "",
   "unordered_access": false,
   "slot_count": 1,
-  "texture_path": "textures/newb/noise",
+  "texture_path": "textures/newb/solas_end_clouds",
   "unknown": 0,
   "sampler_state": {
     "filter": "Bilinear",
