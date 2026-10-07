@@ -1,6 +1,11 @@
 #ifndef NL_CONFIG_H
 #define NL_CONFIG_H
 
+#define NL_SKY_BLOCK_CLOUDS_REFL
+#define NL_SKY_VOLUME_CLOUDS_REFL
+#define NL_CLOUD_REFL_UNIT 120.0
+#define NL_CLOUD_REFL_STRENGTH 0.85
+
 #define NL_SKY_BLOCK_CLOUDS
 #define NL_BLOCK_CLOUD_STEPS 5
 #define NL_BLOCK_CLOUD_SCALE 3.5
@@ -351,6 +356,7 @@
   #define NL_END_CLOUD_COL_LIGHT vec3(0.70,0.52,0.94)
   #define NL_END_CLOUD_COL_DARK  vec3(0.22,0.13,0.40)
   #define NL_END_CLOUD_FOG_COL   vec3(0.30,0.18,0.48)
+  #undef NL_SKY_BLOCK_CLOUDS_REFL
 #endif
 
 #ifdef NL_REIMAGINED
@@ -360,6 +366,7 @@
   #define NL_SKY_BLOCK_CLOUDS
   #undef NL_WATER_RESOLUTE_WAVES
   #undef NL_WATER_REFL_MASK
+  #undef NL_SKY_VOLUME_CLOUDS_REFL
 #endif
 
 #endif
