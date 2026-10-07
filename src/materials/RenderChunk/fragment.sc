@@ -12,9 +12,13 @@ uniform vec4 CameraPosition;
 SAMPLER2D_AUTOREG(s_MatTexture);
 SAMPLER2D_AUTOREG(s_SeasonsTexture);
 SAMPLER2D_AUTOREG(s_LightMapTexture);
-SAMPLER2D_AUTOREG(s_CausticTex);
 SAMPLER2D_AUTOREG(s_SunRefl);
-SAMPLER2D_AUTOREG(s_UnboundCausticTex);
+
+#ifdef NL_CAUSTIC_ATLAS
+  SAMPLER2D_AUTOREG(s_UnboundCausticTex);
+#else
+  SAMPLER2D_AUTOREG(s_CausticTex);
+#endif
 
 #define DROP_NUMBER 5
 
@@ -78,41 +82,34 @@ vec3 screenDrops(vec3 baseColor, float time, vec2 uv, bool falling) {
     #define NL_CAUSTIC_GAIN 0.6
   #endif
 
-  #define NL_CAUSTIC_FRAME_PX 128.0
-  #define NL_CAUSTIC_PAD 2.0
-  #define NL_CAUSTIC_CELL_H 132.0
-  #define NL_CAUSTIC_TOTAL_H 4224.0
-
-  float nlCausticAtlasTap(vec2 uv, float f) {
-    highp float y = (f*NL_CAUSTIC_CELL_H + NL_CAUSTIC_PAD + uv.y*NL_CAUSTIC_FRAME_PX)/NL_CAUSTIC_TOTAL_H;
-    return texture2D(s_CausticTex, vec2(uv.x, y)).r;
+  float nlUnboundCausticTap(vec2 uv, float f) {
+    highp float y = (f*132.0 + 2.0 + uv.y*128.0)/4224.0;
+    return texture2D(s_UnboundCausticTex, vec2(uv.x, y)).r;
   }
-#endif
 
-float nlCausticFlip(vec2 uv, highp float t) {
-  const float frames = 32.0;
-  float ft = t*NL_CAUSTIC_FPS;
-  float f0 = mod(floor(ft), frames);
-  float f1 = mod(f0 + 1.0, frames);
-
-  #ifdef NL_CAUSTIC_ATLAS
-    float a = nlCausticAtlasTap(uv, f0);
+  float nlUnboundCaustic(vec2 uv, highp float t) {
+    float ft = t*NL_CAUSTIC_FPS;
+    float f0 = mod(floor(ft), 32.0);
+    float a = nlUnboundCausticTap(uv, f0);
     #if NL_CAUSTIC_BLEND
-      a = mix(a, nlCausticAtlasTap(uv, f1), fract(ft));
+      a = mix(a, nlUnboundCausticTap(uv, mod(f0 + 1.0, 32.0)), fract(ft));
     #endif
     return smoothstep(NL_CAUSTIC_LO, NL_CAUSTIC_HI, a)*NL_CAUSTIC_GAIN;
-  #else
+  }
+#else
+  float nlCausticFlip(vec2 uv, highp float t) {
+    const float frames = 32.0;
+    float ft = t*NL_CAUSTIC_FPS;
+    float f0 = mod(floor(ft), frames);
     vec2 u = vec2(uv.x, uv.y/frames);
     float a = texture2D(s_CausticTex, u + vec2(0.0, f0/frames)).r;
     #if NL_CAUSTIC_BLEND
-      float b = texture2D(s_CausticTex, u + vec2(0.0, f1/frames)).r;
+      float b = texture2D(s_CausticTex, u + vec2(0.0, mod(f0 + 1.0, frames)/frames)).r;
       a = mix(a, b, fract(ft));
     #endif
     return a;
-  #endif
-}
-
-// ---------- sky cloud reflection (water) ----------
+  }
+#endif
 
 #if defined(NL_SKY_BLOCK_CLOUDS_REFL) || defined(NL_SKY_VOLUME_CLOUDS_REFL)
 
@@ -200,7 +197,6 @@ float nlCausticFlip(vec2 uv, highp float t) {
   SAMPLER2D_AUTOREG(s_VolCloudNoise);
 #endif
 
-// r: reflected direction (y up), pos: surface position relative to camera (blocks)
 vec4 nlSkyCloudReflection(vec3 r, vec3 pos, nl_skycolor skycol, nl_environment env, highp float time) {
   float f = smoothstep(0.04, 0.22, r.y);
   vec3 col = vec3(0.0, 0.0, 0.0);
@@ -282,14 +278,11 @@ void main() {
   float sideshadow = smoothstep(0.64, 0.62, v_color1.g) * max(v_lightmapUV.x, v_lightmapUV.y);
   diffuse.rgb *= 1.0-0.25*sideshadow;
 
-    vec3 glow = nlGlow(s_MatTexture, v_texcoord0, v_extra.a);
+  vec3 glow = nlGlow(s_MatTexture, v_texcoord0, v_extra.a);
 
-  // === FAKE BLOOM EFFECT FOR TORCHES ===
   #ifdef NL_TORCH_BLOOM
     float glowAmount = max(glow.r, max(glow.g, glow.b));
     float bloom = max(0.0, glowAmount - NL_TORCH_BLOOM_THRESHOLD) * 2.0;
-    
-    // Add warm bloom glow to the existing glow
     glow += NL_TORCH_BLOOM_COLOR * bloom * NL_TORCH_BLOOM_STRENGTH;
   #endif
 
@@ -354,7 +347,6 @@ void main() {
     }
 
   } else if (v_refl.a > 0.0) {
-    // reflective effect - only on xz plane
     float dy = abs(dFdy(v_extra.g));
     if (dy < 0.0002) {
       float mask = v_refl.a*(clamp(v_extra.r*10.0,8.2,8.8)-7.8);
@@ -365,13 +357,17 @@ void main() {
 
   #if defined(NL_CAUSTIC_INTENSITY) && !(defined(RENDER_AS_BILLBOARDS) || defined(SEASONS))
     if (v_causticData.z > 0.5 && v_extra.b < 0.9) {
-    float dy = abs(dFdy(v_extra.g));
-    if (dy < 0.0002) {
+      float dy = abs(dFdy(v_extra.g));
+      if (dy < 0.0002) {
         vec2 causticUV = fract(v_causticData.xy);
-        float caustic = nlCausticFlip(causticUV, ViewPositionAndTime.w);
+        #ifdef NL_CAUSTIC_ATLAS
+          float caustic = nlUnboundCaustic(causticUV, ViewPositionAndTime.w);
+        #else
+          float caustic = nlCausticFlip(causticUV, ViewPositionAndTime.w);
+        #endif
         diffuse.rgb += caustic * NL_CAUSTIC_INTENSITY * 0.3;
+      }
     }
-}
   #endif
 
   #ifdef NL_WATER_FOAM
@@ -414,7 +410,7 @@ void main() {
   float dropStrength = (env.nether || env.end) ? 0.0 : (env.underwater ? 1.0 : rain);
 
   if (dropStrength > 0.0) {
-    vec2 screenUV = gl_FragCoord.xy / vec2(1280.0, 720.0); // match your actual target res
+    vec2 screenUV = gl_FragCoord.xy / vec2(1280.0, 720.0);
     diffuse.rgb = screenDrops(diffuse.rgb, ViewPositionAndTime.w, screenUV, !env.underwater);
   }
 
