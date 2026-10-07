@@ -80,7 +80,7 @@ $input v_texcoord0, v_posTime
     float d = length(f - 0.5);
     star *= smoothstep(0.5, 0.1, d);
 
-    float twinkle = 0.7 + 0.3*sin(h*123.4 + dot(cell, vec3(1.0)));
+    float twinkle = 0.7 + 0.3*sin(h*123.4 + dot(cell, vec3_splat(1.0)));
     vec3 tint = mix(vec3(0.7, 0.8, 1.0), vec3(1.0, 0.75, 0.95), fract(h*17.0));
 
     return tint * star * brightness * twinkle;
