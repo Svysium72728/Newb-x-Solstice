@@ -251,7 +251,7 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
             float VdotU = clamp(viewDir.y, 0.0, 1.0);
             float visibility = sqrt1(clamp01(VdotU * 4.5 - 0.25));
             visibility *= 8.0 - VdotU * 0.9;
-            if (visibility <= 1.0) return vec3(0.0);
+            if (visibility <= 1.0) return vec3_splat(0.0);
 
             vec3 aurora = vec3(0.0,0.0,0.0);
             highp vec2 wpos = viewDir.xz / max(viewDir.y, 0.1);
@@ -296,7 +296,7 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
             float VdotU = clamp(viewDir.y, 0.0, 1.0);
             float visibility = sqrt1(clamp01(VdotU * 4.5 - 0.25));
             visibility *= 8.0 - VdotU * 0.9;
-            if (visibility <= 1.0) return vec3(0.0);
+            if (visibility <= 1.0) return vec3_splat(0.0);
 
             vec3 aurora = vec3(0.0,0.0,0.0);
             vec3 wpos = viewDir;
