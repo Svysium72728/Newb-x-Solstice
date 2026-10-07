@@ -14,6 +14,7 @@ SAMPLER2D_AUTOREG(s_SeasonsTexture);
 SAMPLER2D_AUTOREG(s_LightMapTexture);
 SAMPLER2D_AUTOREG(s_CausticTex);
 SAMPLER2D_AUTOREG(s_SunRefl);
+SAMPLER2D_AUTOREG(s_UnboundCausticTex);
 
 #define DROP_NUMBER 5
 
