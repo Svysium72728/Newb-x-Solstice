@@ -357,6 +357,13 @@
   #define NL_END_CLOUD_COL_DARK  vec3(0.22,0.13,0.40)
   #define NL_END_CLOUD_FOG_COL   vec3(0.30,0.18,0.48)
   #undef NL_SKY_BLOCK_CLOUDS_REFL
+  #define NL_CAUSTIC_INTENSITY 1.0
+  #define NL_CAUSTIC_ATLAS
+  #define NL_CAUSTIC_FPS 10.0
+  #define NL_CAUSTIC_BLEND 1
+  #define NL_CAUSTIC_LO 0.68
+  #define NL_CAUSTIC_HI 1.0
+  #define NL_CAUSTIC_GAIN 0.6
 #endif
 
 #ifdef NL_REIMAGINED
@@ -367,6 +374,9 @@
   #undef NL_WATER_RESOLUTE_WAVES
   #undef NL_WATER_REFL_MASK
   #undef NL_SKY_VOLUME_CLOUDS_REFL
+  #define NL_CAUSTIC_INTENSITY 1.0
+  #define NL_CAUSTIC_FPS 10.0
+  #define NL_CAUSTIC_BLEND 1
 #endif
 
 #endif
