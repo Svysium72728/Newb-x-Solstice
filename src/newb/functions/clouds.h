@@ -214,7 +214,7 @@ vec3 pixelatedCloud(vec2 uv, float timeVal) {
     a = smoothstep(0.1, 0.15, a);
 
     a -= b * a * 0.15;
-    return vec3(clamp(a, 0.0, 1.0));
+    return vec3_splat(clamp(a, 0.0, 1.0));
 }
 
 vec3 pixelatedCloudRefl(vec2 uv, float timeVal) {
@@ -227,7 +227,7 @@ vec3 pixelatedCloudRefl(vec2 uv, float timeVal) {
     float b = smoothstep(0.05, 0.9, shadeShape);
     a = smoothstep(0.1, 0.15, a);
     a -= b * a * 0.15;
-    return vec3(clamp(a, 0.0, 1.0));
+    return vec3_splat(clamp(a, 0.0, 1.0));
 }
 
 vec4 nlCloudAuroraReflection(nl_skycolor skycol, nl_environment env, vec3 viewDir, vec3 wPos, vec3 CAMERA_POS, highp float t) {
