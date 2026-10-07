@@ -193,11 +193,14 @@ vec3 screenDrops(vec3 baseColor, float time, vec2 uv, bool falling) {
   #ifndef NL_VOL_CLOUD_SHADOW_TINT
     #define NL_VOL_CLOUD_SHADOW_TINT vec3(0.78, 0.84, 1.0)
   #endif
+  #ifndef NL_VOL_CLOUD_REFL_STEPS
+    #define NL_VOL_CLOUD_REFL_STEPS 4
+  #endif
 
   SAMPLER2D_AUTOREG(s_VolCloudNoise);
 #endif
 
-vec4 nlSkyCloudReflection(vec3 r, vec3 pos, nl_skycolor skycol, nl_environment env, highp float time) {
+vec4 nlSkyCloudReflection(vec3 r, vec3 pos, nl_skycolor skycol, nl_environment env, highp float time, float jitter) {
   float f = smoothstep(0.04, 0.22, r.y);
   vec3 col = vec3(0.0, 0.0, 0.0);
   float T = 1.0;
@@ -206,45 +209,68 @@ vec4 nlSkyCloudReflection(vec3 r, vec3 pos, nl_skycolor skycol, nl_environment e
     float dawn = 1.0 - env.dayFactor*env.dayFactor;
     dawn *= dawn*dawn;
     vec3 sunCol = mix(mix(NL_NOON_SUNLIGHT_COL, vec3_splat(1.0), 0.45), NL_DAWN_SUNLIGHT_COL, dawn);
-    float daylight = smoothstep(-0.2, 0.25, env.dayFactor);
+    vec3 pu = pos/NL_CLOUD_REFL_UNIT;
+    float invY = 1.0/r.y;
 
     #ifdef NL_SKY_BLOCK_CLOUDS_REFL
     {
-      float H = (NL_BLOCK_CLOUD_BASE + 0.5*NL_BLOCK_CLOUD_THICK)*NL_CLOUD_REFL_UNIT;
-      vec2 q = (pos.xz + r.xz*(max(H - pos.y, 0.0)/r.y))/NL_CLOUD_REFL_UNIT;
-      highp vec2 p = q*NL_BLOCK_CLOUD_SCALE + vec2(time*NL_BLOCK_CLOUD_SPEED, time*NL_BLOCK_CLOUD_SPEED*0.4);
+      float t = max(NL_BLOCK_CLOUD_BASE + 0.5*NL_BLOCK_CLOUD_THICK - pu.y, 0.0)*invY;
+      highp vec2 p = (pu.xz + r.xz*t)*NL_BLOCK_CLOUD_SCALE + vec2(time*NL_BLOCK_CLOUD_SPEED, time*NL_BLOCK_CLOUD_SPEED*0.4);
       float occThr = clamp(1.0 - NL_BLOCK_CLOUD_COVER - 0.25*env.rainFactor, 0.05, 0.95);
       float w = mix(0.5, 0.12, NL_BLOCK_CLOUD_SQUARE);
       float d = smoothstep(0.5 - NL_BLOCK_CLOUD_SOFT, 0.5 + NL_BLOCK_CLOUD_SOFT, nlRBlockField(p, occThr, 0.5 - w, 0.5 + w));
-      float bright = mix(NL_BLOCK_CLOUD_NIGHT, 1.0, daylight)*(1.0 - 0.35*env.rainFactor);
-      vec3 topCol = NL_BLOCK_CLOUD_LIGHT_COL*mix(vec3_splat(1.0), sunCol, 0.5)*bright;
-      vec3 shadeCol = NL_BLOCK_CLOUD_SHADE_COL*mix(vec3_splat(1.0), skycol.horizon*1.4, 0.35)*bright;
-      float a = d*NL_BLOCK_CLOUD_OPACITY;
-      col += T*a*mix(shadeCol, topCol, 0.25);
-      T *= 1.0 - a;
+      if (d > 0.01) {
+        float daylight = smoothstep(-0.2, 0.25, env.dayFactor);
+        float bright = mix(NL_BLOCK_CLOUD_NIGHT, 1.0, daylight)*(1.0 - 0.35*env.rainFactor);
+        vec3 topCol = NL_BLOCK_CLOUD_LIGHT_COL*mix(vec3_splat(1.0), sunCol, 0.5)*bright;
+        vec3 shadeCol = NL_BLOCK_CLOUD_SHADE_COL*mix(vec3_splat(1.0), skycol.horizon*1.4, 0.35)*bright;
+        float a = d*NL_BLOCK_CLOUD_OPACITY;
+        col += a*mix(shadeCol, topCol, 0.25);
+        T *= 1.0 - a;
+      }
     }
     #endif
 
     #ifdef NL_SKY_VOLUME_CLOUDS_REFL
-    {
-      float H = 1.3*NL_CLOUD_REFL_UNIT;
-      vec2 q = (pos.xz + r.xz*(max(H - pos.y, 0.0)/r.y))/NL_CLOUD_REFL_UNIT;
-      vec2 p = q*NL_VOL_CLOUD_SCALE + vec2(time*NL_VOL_CLOUD_SPEED, time*NL_VOL_CLOUD_SPEED*0.4);
+    if (T > 0.04) {
       float cover = clamp(NL_VOL_CLOUD_COVER + 0.35*env.rainFactor, 0.0, 1.0);
       float thr = mix(0.62, 0.40, cover);
-      float b = texture2D(s_VolCloudNoise, p).r;
-      float dt = texture2D(s_VolCloudNoise, p*3.7 + 0.31).g;
-      float prof = smoothstep(0.0, 0.15, 0.5)*(1.0 - smoothstep(0.35, 1.0, 0.5 - (b - 0.5)*0.9));
-      float tp = thr + 0.25*(1.0 - prof);
-      float n = b + (dt - 0.5)*(0.18 + 0.25*(1.0 - prof));
-      float d = smoothstep(0.0, 1.0, clamp((n - tp)*3.0, 0.0, 1.0));
-      float a = 1.0 - exp(-d*NL_VOL_CLOUD_DENSITY*0.7);
-
+      float dayK = smoothstep(-0.1, 0.15, env.dayFactor);
+      vec3 L = mix(env.moonDir, env.sunDir, step(0.0, env.dayFactor));
       vec3 moonCol = NL_NIGHT_MOONLIGHT_COL/max(max(NL_NIGHT_MOONLIGHT_COL.r, NL_NIGHT_MOONLIGHT_COL.g), NL_NIGHT_MOONLIGHT_COL.b);
-      vec3 lightCol = mix(moonCol*NL_VOL_CLOUD_NIGHT, sunCol, smoothstep(-0.1, 0.15, env.dayFactor))*(1.0 - 0.6*env.rainFactor);
+      vec3 lightCol = mix(moonCol*NL_VOL_CLOUD_NIGHT, sunCol, dayK)*(1.0 - 0.6*env.rainFactor);
       vec3 shadowCol = mix(skycol.zenith, skycol.horizon, 0.5)*NL_VOL_CLOUD_SHADOW_TINT*(1.0 - 0.4*env.rainFactor);
-      col += T*a*(shadowCol + lightCol*0.35);
-      T *= 1.0 - a;
+      vec3 topAmb = mix(shadowCol, vec3_splat(1.0), 0.45)*mix(NL_VOL_CLOUD_NIGHT*2.0, 1.0, dayK);
+      float silver = pow(max(dot(r, L), 0.0), 8.0);
+      vec2 base = pu.xz*NL_VOL_CLOUD_SCALE + vec2(time*NL_VOL_CLOUD_SPEED, time*NL_VOL_CLOUD_SPEED*0.4);
+      vec2 stepXZ = r.xz*invY*NL_VOL_CLOUD_SCALE;
+
+      float Tv = 1.0;
+      vec3 cv = vec3(0.0, 0.0, 0.0);
+      for (int i = 0; i < NL_VOL_CLOUD_REFL_STEPS; i++) {
+        float h = (float(i) + jitter)/float(NL_VOL_CLOUD_REFL_STEPS);
+        vec2 p = base + stepXZ*max(1.0 + 0.6*h - pu.y, 0.0);
+        float b = texture2DLod(s_VolCloudNoise, p, 0.0).r;
+        float prof = smoothstep(0.0, 0.15, h)*(1.0 - smoothstep(0.35, 1.0, h - (b - 0.5)*0.9));
+        float tp = thr + 0.25*(1.0 - prof);
+        if (b > tp - 0.12) {
+          float dt = texture2DLod(s_VolCloudNoise, p*3.7 + 0.31, 0.0).g;
+          float n = b + (dt - 0.5)*(0.18 + 0.25*(1.0 - prof));
+          float d = smoothstep(0.0, 1.0, clamp((n - tp)*3.0, 0.0, 1.0));
+          if (d > 0.0) {
+            float lit = mix(0.3, 1.0, h)*exp(-d*0.9);
+            vec3 c = mix(shadowCol, topAmb, h) + lightCol*lit*(0.9 + 2.0*silver);
+            float a = 1.0 - exp(-d*NL_VOL_CLOUD_DENSITY/float(NL_VOL_CLOUD_REFL_STEPS));
+            cv += Tv*a*c;
+            Tv *= 1.0 - a;
+            if (Tv < 0.04) {
+              break;
+            }
+          }
+        }
+      }
+      col += T*cv;
+      T *= Tv;
     }
     #endif
   }
@@ -323,7 +349,8 @@ void main() {
       vec3 rk = vec3(-vdk.x, vdk.y, -vdk.z);
       if (rk.y > 0.04) {
         nl_skycolor skyk = nlSkyColors(env);
-        vec4 ck = nlSkyCloudReflection(rk, wpk - ViewPositionAndTime.xyz, skyk, env, ViewPositionAndTime.w);
+        float cj = fract(52.9829189*fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715))));
+        vec4 ck = nlSkyCloudReflection(rk, wpk - ViewPositionAndTime.xyz, skyk, env, ViewPositionAndTime.w, cj);
         float mk = smoothstep(0.7, 0.95, v_lightmapUV.y);
         diffuse.rgb = diffuse.rgb*(1.0 - ck.a*mk) + ck.rgb*mk;
       }
@@ -413,6 +440,22 @@ void main() {
     vec2 screenUV = gl_FragCoord.xy / vec2(1280.0, 720.0);
     diffuse.rgb = screenDrops(diffuse.rgb, ViewPositionAndTime.w, screenUV, !env.underwater);
   }
+
+  #ifdef NL_OCEAN_DEPTH
+    if (env.underwater) {
+      float od = clamp((NL_OCEAN_SEA_LEVEL - CameraPosition.y)/NL_OCEAN_DEPTH_MAX, 0.0, 1.0);
+      od = od*od*(3.0 - 2.0*od);
+
+      float keep = smoothstep(0.4, 0.9, v_lightmapUV.x)*NL_OCEAN_TORCH_KEEP;
+      vec3 darkTint = mix(vec3_splat(1.0), NL_OCEAN_DEEP_COL, od);
+      diffuse.rgb *= mix(darkTint, vec3_splat(1.0), keep);
+
+      vec2 screenuv = gl_FragCoord.xy / u_viewRect.zw;
+      float dist = distance(screenuv, vec2_splat(0.5));
+      float vignette = pow(1.0 - smoothstep(NL_OCEAN_VIG_START, NL_OCEAN_VIG_END, dist), NL_OCEAN_VIG_POWER);
+      diffuse.rgb *= mix(1.0, vignette, od*NL_OCEAN_VIG_STRENGTH);
+    }
+  #endif
 
   diffuse.rgb = colorCorrection(diffuse.rgb);
 
