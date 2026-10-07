@@ -9,7 +9,7 @@
   "default_texture": "",
   "unordered_access": false,
   "slot_count": 1,
-  "texture_path": "textures/YOURFOLDER/caustic_atlas_unbound",
+  "texture_path": "textures/newb/unbound_caustic",
   "unknown": 0,
   "sampler_state": {
     "filter": "Bilinear",
