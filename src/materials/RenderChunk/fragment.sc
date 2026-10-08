@@ -114,7 +114,7 @@ vec3 screenDrops(vec3 baseColor, float time, vec2 uv, bool falling) {
 #if defined(NL_SKY_BLOCK_CLOUDS_REFL) || defined(NL_SKY_VOLUME_CLOUDS_REFL)
 
 #ifndef NL_CLOUD_REFL_UNIT
-  #define NL_CLOUD_REFL_UNIT 120.0
+  #define NL_CLOUD_REFL_UNIT 600.0
 #endif
 #ifndef NL_CLOUD_REFL_STRENGTH
   #define NL_CLOUD_REFL_STRENGTH 0.85
@@ -132,6 +132,9 @@ vec3 screenDrops(vec3 baseColor, float time, vec2 uv, bool falling) {
   #endif
   #ifndef NL_BLOCK_CLOUD_THICK
     #define NL_BLOCK_CLOUD_THICK 0.22
+  #endif
+  #ifndef NL_BLOCK_CLOUD_BEVEL
+    #define NL_BLOCK_CLOUD_BEVEL 0.45
   #endif
   #ifndef NL_BLOCK_CLOUD_SQUARE
     #define NL_BLOCK_CLOUD_SQUARE 0.7
@@ -154,6 +157,9 @@ vec3 screenDrops(vec3 baseColor, float time, vec2 uv, bool falling) {
   #ifndef NL_BLOCK_CLOUD_SHADE_COL
     #define NL_BLOCK_CLOUD_SHADE_COL vec3(0.66, 0.68, 0.86)
   #endif
+  #ifndef NL_BLOCK_CLOUD_REFL_STEPS
+    #define NL_BLOCK_CLOUD_REFL_STEPS 5
+  #endif
 
   float nlRBlockHash(highp vec2 p) {
     highp vec3 p3 = fract(vec3(p.x, p.y, p.x)*0.1031);
@@ -161,7 +167,7 @@ vec3 screenDrops(vec3 baseColor, float time, vec2 uv, bool falling) {
     return fract((p3.x + p3.y)*p3.z);
   }
 
-  float nlRBlockField(highp vec2 p, float occThr, float lo, float hi) {
+  vec3 nlRBlockField(highp vec2 p, float occThr, float lo, float hi) {
     highp vec2 i = floor(p);
     vec2 f = fract(p);
     float a = step(occThr, nlRBlockHash(i));
@@ -170,7 +176,13 @@ vec3 screenDrops(vec3 baseColor, float time, vec2 uv, bool falling) {
     float d = step(occThr, nlRBlockHash(i + vec2(1.0, 1.0)));
     vec2 tt = clamp((f - lo)/(hi - lo), 0.0, 1.0);
     vec2 u = tt*tt*(3.0 - 2.0*tt);
-    return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
+    vec2 du = 6.0*tt*(1.0 - tt)/(hi - lo);
+    float bx0 = mix(a, b, u.x);
+    float bx1 = mix(c, d, u.x);
+    float fld = mix(bx0, bx1, u.y);
+    float gx = mix(b - a, d - c, u.y)*du.x;
+    float gy = (bx1 - bx0)*du.y;
+    return vec3(fld, gx, gy);
   }
 #endif
 
@@ -211,22 +223,51 @@ vec4 nlSkyCloudReflection(vec3 r, vec3 pos, nl_skycolor skycol, nl_environment e
     vec3 sunCol = mix(mix(NL_NOON_SUNLIGHT_COL, vec3_splat(1.0), 0.45), NL_DAWN_SUNLIGHT_COL, dawn);
     vec3 pu = pos/NL_CLOUD_REFL_UNIT;
     float invY = 1.0/r.y;
+    vec3 sdr = vec3(-r.x, r.y, -r.z);
 
     #ifdef NL_SKY_BLOCK_CLOUDS_REFL
     {
-      float t = max(NL_BLOCK_CLOUD_BASE + 0.5*NL_BLOCK_CLOUD_THICK - pu.y, 0.0)*invY;
-      highp vec2 p = (pu.xz + r.xz*t)*NL_BLOCK_CLOUD_SCALE + vec2(time*NL_BLOCK_CLOUD_SPEED, time*NL_BLOCK_CLOUD_SPEED*0.4);
       float occThr = clamp(1.0 - NL_BLOCK_CLOUD_COVER - 0.25*env.rainFactor, 0.05, 0.95);
       float w = mix(0.5, 0.12, NL_BLOCK_CLOUD_SQUARE);
-      float d = smoothstep(0.5 - NL_BLOCK_CLOUD_SOFT, 0.5 + NL_BLOCK_CLOUD_SOFT, nlRBlockField(p, occThr, 0.5 - w, 0.5 + w));
-      if (d > 0.01) {
-        float daylight = smoothstep(-0.2, 0.25, env.dayFactor);
-        float bright = mix(NL_BLOCK_CLOUD_NIGHT, 1.0, daylight)*(1.0 - 0.35*env.rainFactor);
-        vec3 topCol = NL_BLOCK_CLOUD_LIGHT_COL*mix(vec3_splat(1.0), sunCol, 0.5)*bright;
-        vec3 shadeCol = NL_BLOCK_CLOUD_SHADE_COL*mix(vec3_splat(1.0), skycol.horizon*1.4, 0.35)*bright;
-        float a = d*NL_BLOCK_CLOUD_OPACITY;
-        col += a*mix(shadeCol, topCol, 0.25);
-        T *= 1.0 - a;
+      float lo = 0.5 - w;
+      float hi = 0.5 + w;
+      float daylight = smoothstep(-0.2, 0.25, env.dayFactor);
+      float bright = mix(NL_BLOCK_CLOUD_NIGHT, 1.0, daylight)*(1.0 - 0.35*env.rainFactor);
+      vec3 Lb = mix(env.moonDir, env.sunDir, step(0.0, env.dayFactor));
+      vec3 topCol = NL_BLOCK_CLOUD_LIGHT_COL*mix(vec3_splat(1.0), sunCol, 0.5)*bright;
+      vec3 shadeCol = NL_BLOCK_CLOUD_SHADE_COL*mix(vec3_splat(1.0), skycol.horizon*1.4, 0.35)*bright;
+      highp vec2 wind = vec2(time*NL_BLOCK_CLOUD_SPEED, time*NL_BLOCK_CLOUD_SPEED*0.4);
+
+      for (int i = 0; i < NL_BLOCK_CLOUD_REFL_STEPS; i++) {
+        float h = (float(i) + jitter)/float(NL_BLOCK_CLOUD_REFL_STEPS);
+        float t = max(NL_BLOCK_CLOUD_BASE + NL_BLOCK_CLOUD_THICK*h - pu.y, 0.0)*invY;
+        highp vec2 p = (sdr.xz*t - pu.xz)*NL_BLOCK_CLOUD_SCALE + wind;
+        vec3 fg = nlRBlockField(p, occThr, lo, hi);
+
+        float e = abs(2.0*h - 1.0);
+        float e2 = e*e;
+        float inset = NL_BLOCK_CLOUD_BEVEL*(1.0 - sqrt(max(1.0 - e2*e2, 0.0)));
+        float thr = 0.5 + inset;
+        float d = smoothstep(thr - NL_BLOCK_CLOUD_SOFT, thr + NL_BLOCK_CLOUD_SOFT, fg.x);
+
+        if (d > 0.01) {
+          float s = step(0.5, h)*2.0 - 1.0;
+          float vtl = smoothstep(0.45, 1.0, e);
+          float gmag = length(fg.yz);
+          vec2 gd = fg.yz/max(gmag, 0.0001);
+          float gm = clamp(gmag*3.0, 0.0, 1.0);
+          float ny = s*max(vtl, 0.2);
+          float nh = sqrt(max(1.0 - ny*ny, 0.0))*gm;
+          vec3 nrm = normalize(vec3(-gd.x*nh, ny, -gd.y*nh));
+          float diff = clamp(dot(nrm, Lb)*0.5 + 0.5, 0.0, 1.0);
+          diff = diff*diff*(3.0 - 2.0*diff);
+          float a = d*NL_BLOCK_CLOUD_OPACITY;
+          col += T*a*mix(shadeCol, topCol, diff);
+          T *= 1.0 - a;
+          if (T < 0.05) {
+            break;
+          }
+        }
       }
     }
     #endif
@@ -241,9 +282,9 @@ vec4 nlSkyCloudReflection(vec3 r, vec3 pos, nl_skycolor skycol, nl_environment e
       vec3 lightCol = mix(moonCol*NL_VOL_CLOUD_NIGHT, sunCol, dayK)*(1.0 - 0.6*env.rainFactor);
       vec3 shadowCol = mix(skycol.zenith, skycol.horizon, 0.5)*NL_VOL_CLOUD_SHADOW_TINT*(1.0 - 0.4*env.rainFactor);
       vec3 topAmb = mix(shadowCol, vec3_splat(1.0), 0.45)*mix(NL_VOL_CLOUD_NIGHT*2.0, 1.0, dayK);
-      float silver = pow(max(dot(r, L), 0.0), 8.0);
-      vec2 base = pu.xz*NL_VOL_CLOUD_SCALE + vec2(time*NL_VOL_CLOUD_SPEED, time*NL_VOL_CLOUD_SPEED*0.4);
-      vec2 stepXZ = r.xz*invY*NL_VOL_CLOUD_SCALE;
+      float silver = pow(max(dot(sdr, L), 0.0), 8.0);
+      vec2 base = -pu.xz*NL_VOL_CLOUD_SCALE + vec2(time*NL_VOL_CLOUD_SPEED, time*NL_VOL_CLOUD_SPEED*0.4);
+      vec2 stepXZ = -r.xz*invY*NL_VOL_CLOUD_SCALE;
 
       float Tv = 1.0;
       vec3 cv = vec3(0.0, 0.0, 0.0);
@@ -309,7 +350,8 @@ void main() {
   #ifdef NL_TORCH_BLOOM
     float glowAmount = max(glow.r, max(glow.g, glow.b));
     float bloom = max(0.0, glowAmount - NL_TORCH_BLOOM_THRESHOLD) * 2.0;
-    glow += NL_TORCH_BLOOM_COLOR * bloom * NL_TORCH_BLOOM_STRENGTH;
+    vec3 bloomCol = mix(NL_TORCH_BLOOM_COLOR, glow/max(glowAmount, 0.001), NL_TORCH_BLOOM_TINT);
+    glow += bloomCol * bloom * NL_TORCH_BLOOM_STRENGTH;
   #endif
 
   diffuse.rgb *= diffuse.rgb;
