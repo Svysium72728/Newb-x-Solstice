@@ -192,10 +192,10 @@
 #define NL_WATER_TRANSPARENCY 0.7 // 0.0 transparent ~ 1.0 normal
 #define NL_WATER_BUMP 0.0        // 0.001 plain ~ 0.2 bumpy water
 #define NL_WATER_WAVE_SPEED  1.2  // 0.2 calm ~ 2.0 turbulent
-#define NL_WATER_TEX_OPACITY 3.72 // 0.0 plain water ~ 1.0 vanilla water texture
+#define NL_WATER_TEX_OPACITY 1.5 // 0.0 plain water ~ 1.0 vanilla water texture
 //#define NL_WATER_WAVE             // [toggle] wave effect
 #define NL_WATER_REFL_MASK        // [toggle] fake water reflection mask
-#define NL_WATER_TINT vec3(0.576,0.714,0.408)
+#define NL_WATER_TINT vec3(0.45,0.70,1.0)
 
 /* Underwater */
 #define NL_UNDERWATER_BRIGHTNESS 0.6         // 0.0 dark ~ 3.0 bright
