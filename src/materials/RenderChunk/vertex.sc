@@ -133,6 +133,12 @@ void main() {
     fogColor.a += (1.0-fogColor.a)*fg*fg;
   #endif
 
+  #if defined(NL_SUN_FOG_GLOW) && defined(NL_FOG)
+    float sg = nlSunFogGlow(viewDir, env)*smoothstep(NL_SUN_FOG_START, 1.0, relativeDist);
+    fogColor.rgb += nlSunLightColor(env)*sg*NL_SUN_FOG_GLOW;
+    fogColor.a += (1.0 - fogColor.a)*clamp(sg*NL_SUN_FOG_DENSITY, 0.0, 1.0);
+  #endif
+
   float water = 0.0;
   vec4 refl = vec4(0.0,0.0,0.0,0.0);
   #if defined(TRANSPARENT) && !(defined(RENDER_AS_BILLBOARDS) || defined(SEASONS))
