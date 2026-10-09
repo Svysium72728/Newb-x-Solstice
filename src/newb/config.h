@@ -1,8 +1,8 @@
 #ifndef NL_CONFIG_H
 #define NL_CONFIG_H
 
-#define NL_SUN_FOG_GLOW 1.0
-#define NL_SUN_FOG_POWER 6.0
+#define NL_SUN_FOG_GLOW 3.0
+#define NL_SUN_FOG_POWER 10.0
 #define NL_SUN_FOG_NOON 0.15
 #define NL_SUN_FOG_START 0.15
 #define NL_SUN_FOG_DENSITY 0.8
