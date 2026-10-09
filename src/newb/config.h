@@ -30,7 +30,7 @@
 #define NL_SKY_BLOCK_CLOUDS
 #define NL_BLOCK_CLOUD_STEPS 5
 #define NL_BLOCK_CLOUD_SCALE 3.5
-#define NL_BLOCK_CLOUD_COVER 0.12
+#define NL_BLOCK_CLOUD_COVER 0.27
 #define NL_BLOCK_CLOUD_BASE 1.0
 #define NL_BLOCK_CLOUD_THICK 0.24
 #define NL_BLOCK_CLOUD_BEVEL 0.40
@@ -39,8 +39,8 @@
 #define NL_BLOCK_CLOUD_OPACITY 1.0
 #define NL_BLOCK_CLOUD_SPEED 0.01
 #define NL_BLOCK_CLOUD_NIGHT 0.30
-#define NL_BLOCK_CLOUD_LIGHT_COL vec3(1.0, 0.90, 0.76)
-#define NL_BLOCK_CLOUD_SHADE_COL vec3(0.55, 0.42, 0.60)
+#define NL_BLOCK_CLOUD_LIGHT_COL vec3(1.0, 0.90, 0.90)
+#define NL_BLOCK_CLOUD_SHADE_COL vec3(0.55, 0.47, 0.60)
 
 #define NL_WATER_RESOLUTE_WAVES
 #define NL_WAVE_COUNT 8
@@ -56,7 +56,7 @@
 
 #define NL_WATER_FOAM
 #define NL_WATER_FOAM_STRENGTH 1.0
-#define NL_WATER_FOAM_COLOR vec3(3.0, 3.0, 3.9)
+#define NL_WATER_FOAM_COLOR vec3(3.0, 3.0, 3.0)
 #define NL_SUN_CIRCLE_BLOOM 0.3
 #define NL_CLOUD4_REFL_HEIGHT 187.0
 #define NL_CLOUD4_REFL_SCALE 0.02
@@ -195,7 +195,7 @@
 #define NL_WATER_TEX_OPACITY 1.5 // 0.0 plain water ~ 1.0 vanilla water texture
 //#define NL_WATER_WAVE             // [toggle] wave effect
 #define NL_WATER_REFL_MASK        // [toggle] fake water reflection mask
-#define NL_WATER_TINT vec3(0.45,0.70,1.0)
+#define NL_WATER_TINT vec3(0.35, 0.39, 0.68)
 
 /* Underwater */
 #define NL_UNDERWATER_BRIGHTNESS 0.6         // 0.0 dark ~ 3.0 bright
@@ -299,7 +299,7 @@
 #define NL_GODRAY_COLOR vec3(1.0, 0.95, 0.8)
 
 /* Black hole value tuning (feature itself toggled per subpack tier below) */
-#define NL_BH_SPEED 0.05
+#define NL_BH_SPEED 0.3
 #define NL_BH_DIST 1.0
 #define NL_BH_AZIMUTH 2.4
 #define NL_BH_HEIGHT 0.5
@@ -374,12 +374,12 @@
   #define NL_END_CLOUD_HI 0.55
   #define NL_END_CLOUD_OPACITY 1.0
   #define NL_END_CLOUD_HAZE 0.15
-  #define NL_END_CLOUD_COL_LIGHT vec3(0.70,0.52,0.94)
+  #define NL_END_CLOUD_COL_LIGHT vec3(0.70,0.55,0.94)
   #define NL_END_CLOUD_COL_DARK  vec3(0.22,0.13,0.40)
   #define NL_END_CLOUD_FOG_COL   vec3(0.30,0.18,0.48)
   #undef NL_SKY_BLOCK_CLOUDS_REFL
   #undef NL_CAUSTIC_INTENSITY
-  #define NL_CAUSTIC_INTENSITY 1.0
+  #define NL_CAUSTIC_INTENSITY 0.3
   #define NL_CAUSTIC_ATLAS
   #define NL_CAUSTIC_FPS 10.0
   #define NL_CAUSTIC_BLEND 1
@@ -397,7 +397,7 @@
   #undef NL_WATER_REFL_MASK
   #undef NL_SKY_VOLUME_CLOUDS_REFL
   #undef NL_CAUSTIC_INTENSITY
-  #define NL_CAUSTIC_INTENSITY 1.0
+  #define NL_CAUSTIC_INTENSITY 0.5
   #define NL_CAUSTIC_FPS 10.0
   #define NL_CAUSTIC_BLEND 1
 #endif
