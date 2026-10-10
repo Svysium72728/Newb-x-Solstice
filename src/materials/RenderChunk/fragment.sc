@@ -160,6 +160,7 @@ vec3 screenDrops(vec3 baseColor, float time, vec2 uv, bool falling) {
   #ifndef NL_BLOCK_CLOUD_REFL_STEPS
     #define NL_BLOCK_CLOUD_REFL_STEPS 5
   #endif
+#endif
 
 #ifdef NL_SKY_VOLUME_CLOUDS_REFL
   #ifndef NL_VOL_CLOUD_COVER
@@ -187,70 +188,65 @@ vec3 screenDrops(vec3 baseColor, float time, vec2 uv, bool falling) {
   SAMPLER2D_AUTOREG(s_VolCloudNoise);
 #endif
 
-  #ifndef NL_BLOCK_CLOUD_CLUSTER
-    #define NL_BLOCK_CLOUD_CLUSTER 0.15
-  #endif
-  #ifndef NL_BLOCK_CLOUD_CONTRAST
-    #define NL_BLOCK_CLOUD_CONTRAST 2.3
-  #endif
+vec4 nlSkyCloudReflection(vec3 r, vec3 pos, nl_skycolor skycol, nl_environment env, highp float time, float jitter) {
+  float f = smoothstep(0.04, 0.22, r.y);
+  vec3 col = vec3(0.0, 0.0, 0.0);
+  float T = 1.0;
 
-  float blockHash(highp vec2 p) {
-    highp vec3 p3 = fract(vec3(p.x, p.y, p.x)*0.1031);
-    p3 += dot(p3, p3.yzx + 33.33);
-    return fract((p3.x + p3.y)*p3.z);
-  }
+  if (f > 0.0) {
+    float dawn = 1.0 - env.dayFactor*env.dayFactor;
+    dawn *= dawn*dawn;
+    vec3 sunCol = mix(mix(NL_NOON_SUNLIGHT_COL, vec3_splat(1.0), 0.45), NL_DAWN_SUNLIGHT_COL, dawn);
+    vec3 pu = pos/NL_CLOUD_REFL_UNIT;
+    float invY = 1.0/r.y;
+    vec3 sdr = vec3(-r.x, r.y, -r.z);
 
-  float blockBil(vec4 h, vec2 f) {
-    vec2 u = f*f*(3.0 - 2.0*f);
-    return mix(mix(h.x, h.y, u.x), mix(h.z, h.w, u.x), u.y);
-  }
+    #ifdef NL_SKY_BLOCK_CLOUDS_REFL
+    {
+      float occThr = clamp(1.0 - NL_BLOCK_CLOUD_COVER - 0.25*env.rainFactor, 0.05, 0.95);
+      float w = mix(0.5, 0.12, NL_BLOCK_CLOUD_SQUARE);
+      float lo = 0.5 - w;
+      float hi = 0.5 + w;
+      float daylight = smoothstep(-0.2, 0.25, env.dayFactor);
+      float bright = mix(NL_BLOCK_CLOUD_NIGHT, 1.0, daylight)*(1.0 - 0.35*env.rainFactor);
+      vec3 Lb = mix(env.moonDir, env.sunDir, step(0.0, env.dayFactor));
+      vec3 topCol = NL_BLOCK_CLOUD_LIGHT_COL*mix(vec3_splat(1.0), sunCol, 0.5)*bright;
+      vec3 shadeCol = NL_BLOCK_CLOUD_SHADE_COL*mix(vec3_splat(1.0), skycol.horizon*1.4, 0.35)*bright;
+      highp vec2 wind = vec2(time*NL_BLOCK_CLOUD_SPEED, time*NL_BLOCK_CLOUD_SPEED*0.4);
 
-  vec4 blockCells(highp vec2 i) {
-    float k1 = NL_BLOCK_CLOUD_CLUSTER;
-    float k2 = NL_BLOCK_CLOUD_CLUSTER*2.4;
-    highp vec2 q1 = (i + 0.5)*k1 + vec2(7.3, 3.1);
-    highp vec2 q2 = (i + 0.5)*k2 + vec2(1.7, 9.2);
-    highp vec2 l1 = floor(q1);
-    highp vec2 l2 = floor(q2);
-    vec2 f1 = q1 - l1;
-    vec2 f2 = q2 - l2;
-    vec4 h1 = vec4(blockHash(l1), blockHash(l1 + vec2(1.0, 0.0)), blockHash(l1 + vec2(0.0, 1.0)), blockHash(l1 + vec2(1.0, 1.0)));
-    vec4 h2 = vec4(blockHash(l2), blockHash(l2 + vec2(1.0, 0.0)), blockHash(l2 + vec2(0.0, 1.0)), blockHash(l2 + vec2(1.0, 1.0)));
-    vec4 n1 = vec4(
-      blockBil(h1, f1),
-      blockBil(h1, clamp(f1 + vec2(k1, 0.0), 0.0, 1.0)),
-      blockBil(h1, clamp(f1 + vec2(0.0, k1), 0.0, 1.0)),
-      blockBil(h1, clamp(f1 + vec2(k1, k1), 0.0, 1.0))
-    );
-    vec4 n2 = vec4(
-      blockBil(h2, f2),
-      blockBil(h2, clamp(f2 + vec2(k2, 0.0), 0.0, 1.0)),
-      blockBil(h2, clamp(f2 + vec2(0.0, k2), 0.0, 1.0)),
-      blockBil(h2, clamp(f2 + vec2(k2, k2), 0.0, 1.0))
-    );
-    return (0.7*n1 + 0.3*n2 - 0.5)*NL_BLOCK_CLOUD_CONTRAST + 0.5;
-  }
+      for (int i = 0; i < NL_BLOCK_CLOUD_REFL_STEPS; i++) {
+        float h = (float(i) + jitter)/float(NL_BLOCK_CLOUD_REFL_STEPS);
+        float t = max(NL_BLOCK_CLOUD_BASE + NL_BLOCK_CLOUD_THICK*h - pu.y, 0.0)*invY;
+        highp vec2 p = (sdr.xz*t - pu.xz)*NL_BLOCK_CLOUD_SCALE + wind;
+        vec3 fg = blockField(p, occThr, lo, hi);
 
-  vec3 blockField(highp vec2 p, float occThr, float lo, float hi) {
-    highp vec2 i = floor(p);
-    vec2 f = fract(p);
-    vec4 n = blockCells(i);
-    float a = step(occThr, n.x);
-    float b = step(occThr, n.y);
-    float c = step(occThr, n.z);
-    float d = step(occThr, n.w);
-    vec2 tt = clamp((f - lo)/(hi - lo), 0.0, 1.0);
-    vec2 u = tt*tt*(3.0 - 2.0*tt);
-    vec2 du = 6.0*tt*(1.0 - tt)/(hi - lo);
-    float bx0 = mix(a, b, u.x);
-    float bx1 = mix(c, d, u.x);
-    float fld = mix(bx0, bx1, u.y);
-    float gx = mix(b - a, d - c, u.y)*du.x;
-    float gy = (bx1 - bx0)*du.y;
-    return vec3(fld, gx, gy);
-  }
+        float e = abs(2.0*h - 1.0);
+        float e2 = e*e;
+        float inset = NL_BLOCK_CLOUD_BEVEL*(1.0 - sqrt(max(1.0 - e2*e2, 0.0)));
+        float thr = 0.5 + inset;
+        float d = smoothstep(thr - NL_BLOCK_CLOUD_SOFT, thr + NL_BLOCK_CLOUD_SOFT, fg.x);
 
-#endif
+        if (d > 0.01) {
+          float s = step(0.5, h)*2.0 - 1.0;
+          float vtl = smoothstep(0.45, 1.0, e);
+          float gmag = length(fg.yz);
+          vec2 gd = fg.yz/max(gmag, 0.0001);
+          float gm = clamp(gmag*3.0, 0.0, 1.0);
+          float ny = s*max(vtl, 0.2);
+          float nh = sqrt(max(1.0 - ny*ny, 0.0))*gm;
+          vec3 nrm = normalize(vec3(-gd.x*nh, ny, -gd.y*nh));
+          float diff = clamp(dot(nrm, Lb)*0.5 + 0.5, 0.0, 1.0);
+          diff = diff*diff*(3.0 - 2.0*diff);
+          float a = d*NL_BLOCK_CLOUD_OPACITY;
+          col += T*a*mix(shadeCol, topCol, diff);
+          T *= 1.0 - a;
+          if (T < 0.05) {
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
     #ifdef NL_SKY_VOLUME_CLOUDS_REFL
     if (T > 0.04) {
