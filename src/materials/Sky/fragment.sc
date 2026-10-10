@@ -52,6 +52,60 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
       #define NL_BLOCK_CLOUD_SHADE_COL vec3(0.66, 0.68, 0.86)
     #endif
 
+    #ifndef NL_BLOCK_CLOUD_CLUSTER
+      #define NL_BLOCK_CLOUD_CLUSTER 0.15
+    #endif
+    #ifndef NL_BLOCK_CLOUD_CONTRAST
+      #define NL_BLOCK_CLOUD_CONTRAST 2.3
+    #endif
+    
+    float blockHash(highp vec2 p) {
+      highp vec3 p3 = fract(vec3(p.x, p.y, p.x) * 0.1031);
+      p3 += dot(p3, p3.yzx + 33.33);
+      return fract((p3.x + p3.y) * p3.z);
+    }
+    
+    float blockNoise(highp vec2 p) {
+      highp vec2 i = floor(p);
+      vec2 f = fract(p);
+      f = f * f * (3.0 - 2.0 * f);
+      float a = blockHash(i);
+      float b = blockHash(i + vec2(1.0, 0.0));
+      float c = blockHash(i + vec2(0.0, 1.0));
+      float d = blockHash(i + vec2(1.0, 1.0));
+      return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+    }
+    
+    vec3 blockField(highp vec2 p, float occThr, float lo, float hi) {
+      highp vec2 i = floor(p);
+      vec2 f = fract(p);
+      float k = max(NL_BLOCK_CLOUD_CLUSTER, 0.001);
+      float n = (0.7 * blockNoise((i + 0.5) * k) +
+                 0.3 * blockNoise((i + 0.5) * k * 2.4 + vec2(1.7, 9.2)) - 0.5)
+                 * NL_BLOCK_CLOUD_CONTRAST + 0.5;
+      float nx = (0.7 * blockNoise((i + vec2(1.5, 0.5)) * k) +
+                  0.3 * blockNoise((i + vec2(1.5, 0.5)) * k * 2.4 + vec2(1.7, 9.2)) - 0.5)
+                  * NL_BLOCK_CLOUD_CONTRAST + 0.5;
+      float ny = (0.7 * blockNoise((i + vec2(0.5, 1.5)) * k) +
+                  0.3 * blockNoise((i + vec2(0.5, 1.5)) * k * 2.4 + vec2(1.7, 9.2)) - 0.5)
+                  * NL_BLOCK_CLOUD_CONTRAST + 0.5;
+      float a = step(occThr, n);
+      float b = step(occThr, nx);
+      float c = step(occThr, ny);
+      float d = step(occThr, (0.7 * blockNoise((i + vec2(1.5, 1.5)) * k) +
+                              0.3 * blockNoise((i + vec2(1.5, 1.5)) * k * 2.4 + vec2(1.7, 9.2)) - 0.5)
+                              * NL_BLOCK_CLOUD_CONTRAST + 0.5);
+      vec2 t = clamp((f - lo) / max(hi - lo, 0.001), 0.0, 1.0);
+      vec2 u = t * t * (3.0 - 2.0 * t);
+      vec2 du = 6.0 * t * (1.0 - t) / max(hi - lo, 0.001);
+      float x0 = mix(a, b, u.x);
+      float x1 = mix(c, d, u.x);
+      float field = mix(x0, x1, u.y);
+      float gx = mix(b - a, d - c, u.y) * du.x;
+      float gy = (x1 - x0) * du.y;
+      return vec3(field, gx, gy);
+    }
+    
     vec4 BlockClouds(vec3 viewDir, vec3 sd, nl_skycolor skycol, nl_environment env, highp float time, float jitter) {
       if (viewDir.y < 0.05) {
         return vec4(0.0, 0.0, 0.0, 0.0);
