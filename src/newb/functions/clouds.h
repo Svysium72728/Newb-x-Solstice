@@ -274,4 +274,85 @@ float divY = viewDir.y - 0.05;
   return refl;
 }
 
+#if defined(NL_SKY_BLOCK_CLOUDS) || defined(NL_SKY_BLOCK_CLOUDS_REFL)
+
+#ifndef NL_BLOCK_CLOUD_CLUSTER
+  #define NL_BLOCK_CLOUD_CLUSTER 0.15
+#endif
+#ifndef NL_BLOCK_CLOUD_CONTRAST
+  #define NL_BLOCK_CLOUD_CONTRAST 2.3
+#endif
+#ifndef NL_BLOCK_CLOUD_WARP
+  #define NL_BLOCK_CLOUD_WARP 2.0
+#endif
+#ifndef NL_BLOCK_CLOUD_VARIATION
+  #define NL_BLOCK_CLOUD_VARIATION 0.7
+#endif
+
+float blockHash(highp vec2 p) {
+  highp vec3 p3 = fract(vec3(p.x, p.y, p.x)*0.1031);
+  p3 += dot(p3, p3.yzx + 33.33);
+  return fract((p3.x + p3.y)*p3.z);
+}
+
+float blockBil(vec4 h, vec2 f) {
+  vec2 u = f*f*(3.0 - 2.0*f);
+  return mix(mix(h.x, h.y, u.x), mix(h.z, h.w, u.x), u.y);
+}
+
+vec4 blockCells(highp vec2 i) {
+  float k1 = NL_BLOCK_CLOUD_CLUSTER;
+  float k2 = NL_BLOCK_CLOUD_CLUSTER*2.4;
+  highp vec2 c = i + 0.5;
+  highp vec2 qc = c*0.045 + vec2(31.7, 11.3);
+  highp vec2 lc = floor(qc);
+  vec2 fc = qc - lc;
+  vec4 hc = vec4(blockHash(lc), blockHash(lc + vec2(1.0, 0.0)), blockHash(lc + vec2(0.0, 1.0)), blockHash(lc + vec2(1.0, 1.0)));
+  float dens = blockBil(hc, fc);
+  float ang = blockBil(hc.yzwx, fc)*6.2832;
+  c += vec2(cos(ang), sin(ang))*NL_BLOCK_CLOUD_WARP;
+  highp vec2 q1 = c*k1 + vec2(7.3, 3.1);
+  highp vec2 q2 = c*k2 + vec2(1.7, 9.2);
+  highp vec2 l1 = floor(q1);
+  highp vec2 l2 = floor(q2);
+  vec2 f1 = q1 - l1;
+  vec2 f2 = q2 - l2;
+  vec4 h1 = vec4(blockHash(l1), blockHash(l1 + vec2(1.0, 0.0)), blockHash(l1 + vec2(0.0, 1.0)), blockHash(l1 + vec2(1.0, 1.0)));
+  vec4 h2 = vec4(blockHash(l2), blockHash(l2 + vec2(1.0, 0.0)), blockHash(l2 + vec2(0.0, 1.0)), blockHash(l2 + vec2(1.0, 1.0)));
+  vec4 n1 = vec4(
+    blockBil(h1, f1),
+    blockBil(h1, clamp(f1 + vec2(k1, 0.0), 0.0, 1.0)),
+    blockBil(h1, clamp(f1 + vec2(0.0, k1), 0.0, 1.0)),
+    blockBil(h1, clamp(f1 + vec2(k1, k1), 0.0, 1.0))
+  );
+  vec4 n2 = vec4(
+    blockBil(h2, f2),
+    blockBil(h2, clamp(f2 + vec2(k2, 0.0), 0.0, 1.0)),
+    blockBil(h2, clamp(f2 + vec2(0.0, k2), 0.0, 1.0)),
+    blockBil(h2, clamp(f2 + vec2(k2, k2), 0.0, 1.0))
+  );
+  return (0.7*n1 + 0.3*n2 - 0.5)*NL_BLOCK_CLOUD_CONTRAST + 0.5 + (dens - 0.5)*NL_BLOCK_CLOUD_VARIATION;
+}
+
+vec3 blockField(highp vec2 p, float occThr, float lo, float hi) {
+  highp vec2 i = floor(p);
+  vec2 f = fract(p);
+  vec4 n = blockCells(i);
+  float a = step(occThr, n.x);
+  float b = step(occThr, n.y);
+  float c = step(occThr, n.z);
+  float d = step(occThr, n.w);
+  vec2 tt = clamp((f - lo)/(hi - lo), 0.0, 1.0);
+  vec2 u = tt*tt*(3.0 - 2.0*tt);
+  vec2 du = 6.0*tt*(1.0 - tt)/(hi - lo);
+  float bx0 = mix(a, b, u.x);
+  float bx1 = mix(c, d, u.x);
+  float fld = mix(bx0, bx1, u.y);
+  float gx = mix(b - a, d - c, u.y)*du.x;
+  float gy = (bx1 - bx0)*du.y;
+  return vec3(fld, gx, gy);
+}
+
+#endif
+
 #endif
