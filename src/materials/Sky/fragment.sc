@@ -52,30 +52,6 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
       #define NL_BLOCK_CLOUD_SHADE_COL vec3(0.66, 0.68, 0.86)
     #endif
 
-    float blockHash(highp vec2 p) {
-      highp vec3 p3 = fract(vec3(p.x, p.y, p.x)*0.1031);
-      p3 += dot(p3, p3.yzx + 33.33);
-      return fract((p3.x + p3.y)*p3.z);
-    }
-
-    vec3 blockField(highp vec2 p, float occThr, float lo, float hi) {
-      highp vec2 i = floor(p);
-      vec2 f = fract(p);
-      float a = step(occThr, blockHash(i));
-      float b = step(occThr, blockHash(i + vec2(1.0, 0.0)));
-      float c = step(occThr, blockHash(i + vec2(0.0, 1.0)));
-      float d = step(occThr, blockHash(i + vec2(1.0, 1.0)));
-      vec2 tt = clamp((f - lo)/(hi - lo), 0.0, 1.0);
-      vec2 u = tt*tt*(3.0 - 2.0*tt);
-      vec2 du = 6.0*tt*(1.0 - tt)/(hi - lo);
-      float bx0 = mix(a, b, u.x);
-      float bx1 = mix(c, d, u.x);
-      float fld = mix(bx0, bx1, u.y);
-      float gx = mix(b - a, d - c, u.y)*du.x;
-      float gy = (bx1 - bx0)*du.y;
-      return vec3(fld, gx, gy);
-    }
-
     vec4 BlockClouds(vec3 viewDir, vec3 sd, nl_skycolor skycol, nl_environment env, highp float time, float jitter) {
       if (viewDir.y < 0.05) {
         return vec4(0.0, 0.0, 0.0, 0.0);
