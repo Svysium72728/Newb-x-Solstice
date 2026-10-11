@@ -204,7 +204,7 @@ vec4 nlSkyCloudReflection(vec3 r, vec3 pos, nl_skycolor skycol, nl_environment e
 
     #ifdef NL_SKY_BLOCK_CLOUDS_REFL
     {
-      float occThr = clamp(1.0 - NL_BLOCK_CLOUD_COVER - 0.25*env.rainFactor, 0.05, 0.95);
+      float occThr = clamp(1.0 - NL_BLOCK_CLOUD_COVER, 0.05, 0.95);
       float w = mix(0.5, 0.12, NL_BLOCK_CLOUD_SQUARE);
       float lo = 0.5 - w;
       float hi = 0.5 + w;
