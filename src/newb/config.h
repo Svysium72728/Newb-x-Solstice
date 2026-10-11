@@ -28,11 +28,11 @@
 #define NL_OCEAN_VIG_STRENGTH 1.0
 
 #define NL_SKY_BLOCK_CLOUDS
-#define NL_BLOCK_CLOUD_STEPS 5
-#define NL_BLOCK_CLOUD_SCALE 3.5
-#define NL_BLOCK_CLOUD_COVER 0.27
+#define NL_BLOCK_CLOUD_STEPS 6
+#define NL_BLOCK_CLOUD_SCALE 4.3
+#define NL_BLOCK_CLOUD_COVER 0.21
 #define NL_BLOCK_CLOUD_BASE 1.0
-#define NL_BLOCK_CLOUD_THICK 0.24
+#define NL_BLOCK_CLOUD_THICK 0.28
 #define NL_BLOCK_CLOUD_BEVEL 0.40
 #define NL_BLOCK_CLOUD_CLUSTER 0.2
 #define NL_BLOCK_CLOUD_WARP 2.0
@@ -41,7 +41,7 @@
 #define NL_BLOCK_CLOUD_SOFT 0.06
 #define NL_BLOCK_CLOUD_OPACITY 1.0
 #define NL_BLOCK_CLOUD_SPEED 0.01
-#define NL_BLOCK_CLOUD_NIGHT 0.30
+#define NL_BLOCK_CLOUD_NIGHT 0.07
 #define NL_BLOCK_CLOUD_LIGHT_COL vec3(1.0, 0.90, 0.90)
 #define NL_BLOCK_CLOUD_SHADE_COL vec3(0.55, 0.47, 0.60)
 
@@ -195,7 +195,7 @@
 #define NL_WATER_TRANSPARENCY 0.7 // 0.0 transparent ~ 1.0 normal
 #define NL_WATER_BUMP 0.0        // 0.001 plain ~ 0.2 bumpy water
 #define NL_WATER_WAVE_SPEED  1.2  // 0.2 calm ~ 2.0 turbulent
-#define NL_WATER_TEX_OPACITY 1.5 // 0.0 plain water ~ 1.0 vanilla water texture
+#define NL_WATER_TEX_OPACITY 1.0 // 0.0 plain water ~ 1.0 vanilla water texture
 //#define NL_WATER_WAVE             // [toggle] wave effect
 #define NL_WATER_REFL_MASK        // [toggle] fake water reflection mask
 #define NL_WATER_TINT vec3(0.35, 0.39, 0.68)
