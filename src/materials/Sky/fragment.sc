@@ -255,9 +255,9 @@ vec3    fg = blockField(cell, p, occThr, lo, hi);
                 noise *= mix(anim1, anim2, 0.5);
 
                 aurora += noise * currentM *
-                    mix(vec3(0.65, 0.48, 1.35),
-                        vec3(0.0, 5.55, 1.85),
-                        pow2(pow2(currentM)));
+                    mix(vec3(0.8, 0.55, 1.8),
+                     vec3(0.1, 2.0, 1.9),
+                     pow2(pow2(pow2(currentM))))
             }
 
             aurora *= 0.8;
