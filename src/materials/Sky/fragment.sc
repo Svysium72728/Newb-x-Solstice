@@ -292,8 +292,7 @@ vec3    fg = blockField(cell, p, occThr, lo, hi);
                 float current = pow2((float(i) + ditherM) / float(sampleCountP));
                 float currentM = 1.0 - current;
 
-                vec2 planePos = wpos.xz * (0.9 + current) * 10.0 + cameraPosM;
-                planePos *= 0.003;
+                vec2 planePos = wpos.xz * (0.9 + current) * 10.0 * 0.0075 + cameraPosM * 0.003;
 
                 float noise = cubicFollowNoise(planePos);
                 noise = pow2(pow2(pow2(1.0 - 1.0 * abs(noise - 0.4))));
