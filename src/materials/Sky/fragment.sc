@@ -11,9 +11,8 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
   uniform vec4 FogAndDistanceControl;
   uniform vec4 ViewPositionAndTime;
 
-  SAMPLER2D_AUTOREG(s_BlockCloudNoise);
-
   #ifdef NL_SKY_BLOCK_CLOUDS
+    SAMPLER2D_AUTOREG(s_BlockCloudNoise);
     #ifndef NL_BLOCK_CLOUD_STEPS
       #define NL_BLOCK_CLOUD_STEPS 6
     #endif
@@ -60,7 +59,7 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
       }
       const int steps = NL_BLOCK_CLOUD_STEPS;
       float invY = 1.0/viewDir.y;
-      float occThr = clamp(1.0 - NL_BLOCK_CLOUD_COVER - 0.25*env.rainFactor, 0.05, 0.95);
+      float occThr = clamp(1.0 - NL_BLOCK_CLOUD_COVER, 0.05, 0.95);
       float w = mix(0.5, 0.12, NL_BLOCK_CLOUD_SQUARE);
       float lo = 0.5 - w;
       float hi = 0.5 + w;
@@ -82,7 +81,7 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
         float t = (NL_BLOCK_CLOUD_BASE + NL_BLOCK_CLOUD_THICK*h)*invY;
         highp vec2 p = sd.xz*t*NL_BLOCK_CLOUD_SCALE + wind;
         vec4 cell = texture2D(s_BlockCloudNoise, (floor(p) + 0.5)*0.00390625);
-vec3    fg = blockField(cell, p, occThr, lo, hi);
+        vec3 fg = blockField(cell, p, occThr, lo, hi);
 
         float e = abs(2.0*h - 1.0);
         float e2 = e*e;
@@ -245,7 +244,7 @@ vec3    fg = blockField(cell, p, occThr, lo, hi);
                 float current = pow2((float(i) + ditherM) / float(sampleCountP));
                 float currentM = 1.0 - current;
 
-                highp vec2 planePos = (wpos * (0.9 + current) * 10.0 + cameraPosM) * 0.003;
+                highp vec2 planePos = wpos * (0.9 + current) * 10.0 * 0.0075 + cameraPosM * 0.003;
 
                 float noise = smoothAuroraNoise(planePos);
                 noise = pow(clamp(1.0 - abs(noise - NL_AURORA_SMOOTH_CENTER), 0.0, 1.0), NL_AURORA_SMOOTH_SHARP);
@@ -254,10 +253,11 @@ vec3    fg = blockField(cell, p, occThr, lo, hi);
                 float anim2 = smoothAuroraNoise(planePos * 0.8);
                 noise *= mix(anim1, anim2, 0.5);
 
-                aurora += noise * currentM *
-                    mix(vec3(0.8, 0.55, 1.8),
-                     vec3(0.1, 2.0, 1.9),
-                     pow2(pow2(pow2(currentM))))
+                float tealW = pow2(pow2(pow2(currentM)));
+                vec3 purpleCol = vec3(0.8, 0.55, 1.8);
+                vec3 tealCol = vec3(0.1, 2.0, 1.9);
+                aurora += noise * (purpleCol * pow(max(currentM, 0.001), 0.4) * (1.0 - tealW)
+                                 + tealCol * currentM * tealW);
             }
 
             aurora *= 0.8;
@@ -305,10 +305,10 @@ vec3    fg = blockField(cell, p, occThr, lo, hi);
                 vec3 purpleCol = vec3(0.8, 0.55, 1.8);
                 vec3 tealCol = vec3(0.1, 2.0, 1.9);
                 aurora += noise * (purpleCol * pow(max(currentM, 0.001), 0.4) * (1.0 - tealW)
-                 + tealCol * currentM * tealW);
+                                 + tealCol * currentM * tealW);
             }
 
-            aurora *= 0.5;
+            aurora *= 0.8;
             return aurora * visibility / float(sampleCount);
         }
       #endif
@@ -341,6 +341,10 @@ void main() {
       skyColor += NL_GALAXY_STARS*nlRenderGalaxy(viewDir, env.fogCol, env, v_underwaterRainTimeDay.z);
     #endif
 
+    #ifdef NL_SUN_FOG_GLOW
+      skyColor += nlSunLightColor(env)*nlSunFogGlow(-viewDir, env)*NL_SUN_FOG_GLOW*NL_SUN_FOG_SKY;
+    #endif
+
     #ifdef NL_SKY_AURORA
     if (!env.underwater && !env.end && !env.nether) {
       #ifdef NL_SKY_AURORA_HEAVY
@@ -353,10 +357,6 @@ void main() {
         #endif
       #endif
     }
-    #endif
-
-    #ifdef NL_SUN_FOG_GLOW
-      skyColor += nlSunLightColor(env)*nlSunFogGlow(-viewDir, env)*NL_SUN_FOG_GLOW*NL_SUN_FOG_SKY;
     #endif
 
     #ifdef NL_SKY_BLOCK_CLOUDS
