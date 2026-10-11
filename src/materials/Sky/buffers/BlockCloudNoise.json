@@ -1,7 +1,7 @@
 {
-  "name": "NoiseTexture",
-  "register_slot": 15,
-  "binding_slot": 15,
+  "name": "BlockCloudNoise",
+  "register_slot": 14,
+  "binding_slot": 14,
   "type": "texture2D",
   "precision": "lowp",
   "access": "readonly",
@@ -9,10 +9,10 @@
   "default_texture": "",
   "unordered_access": false,
   "slot_count": 1,
-  "texture_path": "textures/newb/noise_cloud",
+  "texture_path": "textures/newb/block_cloud_noise",
   "unknown": 0,
   "sampler_state": {
-    "filter": "Bilinear",
+    "filter": "Point",
     "wrapping": "Repeat"
   },
   "custom_type_info": {}
