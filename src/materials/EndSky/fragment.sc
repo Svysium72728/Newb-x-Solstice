@@ -48,7 +48,7 @@ $input v_texcoord0, v_posTime
   }
   #endif
 
-  //end ambient glow (soft nebula-style haze, brightest near horizon, sky-only)
+  //end ambient glow
 
   vec3 renderEndAmbientGlow(vec3 viewDir, float t) {
       float elevation = viewDir.y;
@@ -67,7 +67,7 @@ $input v_texcoord0, v_posTime
       return col * heightFade * haze * NL_ENDGLOW_STRENGTH;
   }
 
-  //end stars (procedural, layered over vanilla texture stars)
+  //end stars (dancing panda is tuff :)
 
   vec3 renderEndStarLayer(vec3 viewDir, float scale, float density, float brightness, float seed) {
     vec3 p = viewDir * scale;
@@ -86,7 +86,11 @@ $input v_texcoord0, v_posTime
     return tint * star * brightness * twinkle;
   }
 
-  //end clouds (equirectangular image, lower hemisphere only)
+  #ifdef NL_SHOOTING_STAR
+  color += NL_SHOOTING_STAR*nlRenderShootingStar(viewDir, vec3(0.5, 0.4, 0.8), t);
+#endif
+
+  //end clouds (tacos)
 
   #ifdef NL_END_CLOUDS
   vec4 renderEndClouds(vec3 vdir, float t) {
