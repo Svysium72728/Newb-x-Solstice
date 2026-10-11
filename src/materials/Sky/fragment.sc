@@ -11,6 +11,8 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
   uniform vec4 FogAndDistanceControl;
   uniform vec4 ViewPositionAndTime;
 
+  SAMPLER2D_AUTOREG(s_BlockCloudNoise);
+
   #ifdef NL_SKY_BLOCK_CLOUDS
     #ifndef NL_BLOCK_CLOUD_STEPS
       #define NL_BLOCK_CLOUD_STEPS 6
@@ -79,7 +81,8 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
         float h = (float(i) + jitter)/float(steps);
         float t = (NL_BLOCK_CLOUD_BASE + NL_BLOCK_CLOUD_THICK*h)*invY;
         highp vec2 p = sd.xz*t*NL_BLOCK_CLOUD_SCALE + wind;
-        vec3 fg = blockField(p, occThr, lo, hi);
+        vec4 cell = texture2D(s_BlockCloudNoise, (floor(p) + 0.5)*0.00390625);
+vec3    fg = blockField(cell, p, occThr, lo, hi);
 
         float e = abs(2.0*h - 1.0);
         float e2 = e*e;
