@@ -301,10 +301,11 @@ vec3    fg = blockField(cell, p, occThr, lo, hi);
                 float anim2 = cubicFollowNoise(planePos * 0.8 - ViewPosTime.w * 0.00);
                 noise *= mix(anim1, anim2, 0.5);
 
-                aurora += noise * currentM *
-                    mix(vec3(0.65, 0.48, 1.35),
-                        vec3(0.0, 5.55, 1.85),
-                        pow2(pow2(currentM)));
+                float tealW = pow2(pow2(pow2(currentM)));
+                vec3 purpleCol = vec3(0.8, 0.55, 1.8);
+                vec3 tealCol = vec3(0.1, 2.0, 1.9);
+                aurora += noise * (purpleCol * pow(max(currentM, 0.001), 0.4) * (1.0 - tealW)
+                 + tealCol * currentM * tealW);
             }
 
             aurora *= 0.5;
