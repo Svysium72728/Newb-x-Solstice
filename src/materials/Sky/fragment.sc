@@ -239,6 +239,7 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
             const int sampleCountP = sampleCount + 10;
 
             float ditherM = dither + 10.0;
+            float hz = 1.0 - smoothstep(0.1, 0.55, VdotU);
 
             for (int i = 0; i < sampleCount; i++) {
                 float current = pow2((float(i) + ditherM) / float(sampleCountP));
@@ -253,11 +254,10 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
                 float anim2 = smoothAuroraNoise(planePos * 0.8);
                 noise *= mix(anim1, anim2, 0.5);
 
-                float tealW = pow2(pow2(pow2(currentM)));
+                float tealW = clamp(currentM*currentM + 0.6*hz, 0.0, 1.0);
                 vec3 purpleCol = vec3(0.8, 0.55, 1.8);
-                vec3 tealCol = vec3(0.1, 2.0, 1.9);
-                aurora += noise * (purpleCol * pow(max(currentM, 0.001), 0.4) * (1.0 - tealW)
-                                 + tealCol * currentM * tealW);
+                vec3 tealCol = vec3(0.1, 3.0, 2.6);
+                aurora += noise * mix(purpleCol * pow(max(currentM, 0.001), 0.4), tealCol * currentM, tealW);
             }
 
             aurora *= 0.8;
@@ -287,6 +287,7 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
             const int sampleCountP = sampleCount + 10;
 
             float ditherM = dither + 10.0;
+            float hz = 1.0 - smoothstep(0.1, 0.55, VdotU);
 
             for (int i = 0; i < sampleCount; i++) {
                 float current = pow2((float(i) + ditherM) / float(sampleCountP));
@@ -301,11 +302,10 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
                 float anim2 = cubicFollowNoise(planePos * 0.8 - ViewPosTime.w * 0.00);
                 noise *= mix(anim1, anim2, 0.5);
 
-                float tealW = pow2(pow2(pow2(currentM)));
+                float tealW = clamp(currentM*currentM + 0.6*hz, 0.0, 1.0);
                 vec3 purpleCol = vec3(0.8, 0.55, 1.8);
-                vec3 tealCol = vec3(0.1, 2.0, 1.9);
-                aurora += noise * (purpleCol * pow(max(currentM, 0.001), 0.4) * (1.0 - tealW)
-                                 + tealCol * currentM * tealW);
+                vec3 tealCol = vec3(0.1, 3.0, 2.6);
+                aurora += noise * mix(purpleCol * pow(max(currentM, 0.001), 0.4), tealCol * currentM, tealW);
             }
 
             aurora *= 0.8;
