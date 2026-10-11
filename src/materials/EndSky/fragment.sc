@@ -181,12 +181,7 @@ void main() {
     color += renderEndStarLayer(viewDir, 900.0, 0.006, 0.5, 19.0);
 
     #ifdef NL_SHOOTING_STAR
-    color += NL_SHOOTING_STAR
-           * nlRenderShootingStar(
-               viewDir,
-               vec3(0.5, 0.4, 0.8),
-               t
-           );
+    color += NL_SHOOTING_STAR * nlRenderShootingStar(viewDir, vec3(0.5, 0.4, 0.8), t);
     #endif
 
     #ifdef NL_END_CLOUDS
