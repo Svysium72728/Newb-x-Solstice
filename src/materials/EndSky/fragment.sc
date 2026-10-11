@@ -157,6 +157,7 @@ vec4 renderEndClouds(vec3 vdir, float t) {
     return vec4(col, a);
 }
 #endif
+#endif
 
 void main() {
     #ifndef INSTANCING
