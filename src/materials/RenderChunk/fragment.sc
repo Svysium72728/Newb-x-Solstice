@@ -13,6 +13,7 @@ SAMPLER2D_AUTOREG(s_MatTexture);
 SAMPLER2D_AUTOREG(s_SeasonsTexture);
 SAMPLER2D_AUTOREG(s_LightMapTexture);
 SAMPLER2D_AUTOREG(s_SunRefl);
+SAMPLER2D_AUTOREG(s_BlockCloudNoise);
 
 #ifdef NL_CAUSTIC_ATLAS
   SAMPLER2D_AUTOREG(s_UnboundCausticTex);
@@ -218,7 +219,8 @@ vec4 nlSkyCloudReflection(vec3 r, vec3 pos, nl_skycolor skycol, nl_environment e
         float h = (float(i) + jitter)/float(NL_BLOCK_CLOUD_REFL_STEPS);
         float t = max(NL_BLOCK_CLOUD_BASE + NL_BLOCK_CLOUD_THICK*h - pu.y, 0.0)*invY;
         highp vec2 p = (sdr.xz*t - pu.xz)*NL_BLOCK_CLOUD_SCALE + wind;
-        vec3 fg = blockField(p, occThr, lo, hi);
+        vec4 cell = texture2D(s_BlockCloudNoise, (floor(p) + 0.5)*0.00390625);
+        vec3 fg = blockField(cell, p, occThr, lo, hi);
 
         float e = abs(2.0*h - 1.0);
         float e2 = e*e;
