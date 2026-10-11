@@ -308,7 +308,7 @@ vec3    fg = blockField(cell, p, occThr, lo, hi);
                         pow2(pow2(currentM)));
             }
 
-            aurora *= 0.8;
+            aurora *= 0.5;
             return aurora * visibility / float(sampleCount);
         }
       #endif
