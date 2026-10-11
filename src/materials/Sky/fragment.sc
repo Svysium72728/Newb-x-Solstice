@@ -340,6 +340,20 @@ void main() {
       skyColor += NL_GALAXY_STARS*nlRenderGalaxy(viewDir, env.fogCol, env, v_underwaterRainTimeDay.z);
     #endif
 
+    #ifdef NL_SKY_AURORA
+    if (!env.underwater && !env.end && !env.nether) {
+      #ifdef NL_SKY_AURORA_HEAVY
+        float dither2 = fract(sin(dot(viewDir.xy, vec2(12.9898,78.233))) * 43758.5453);
+        float mask = (1.0-1.0*env.rainFactor)*max(1.0 - 3.0*max(v_fogColor.b, v_fogColor.g), 0.0);
+        #ifdef NL_SKY_AURORA_SMOOTH
+          skyColor += GetAuroraSmooth(viewDir, ViewPositionAndTime.w, dither2) * mask;
+        #else
+          skyColor += GetAuroraHeavy(viewDir, ViewPositionAndTime, dither2) * mask;
+        #endif
+      #endif
+    }
+    #endif
+
     #ifdef NL_SUN_FOG_GLOW
       skyColor += nlSunLightColor(env)*nlSunFogGlow(-viewDir, env)*NL_SUN_FOG_GLOW*NL_SUN_FOG_SKY;
     #endif
@@ -359,20 +373,6 @@ void main() {
       vec3 sdv = vec3(-viewDir.x, viewDir.y, -viewDir.z);
       vec4 cv = VolumetricClouds(viewDir, sdv, skycol, env, v_underwaterRainTimeDay.z, cj);
       skyColor = skyColor*(1.0 - cv.a) + cv.rgb;
-    }
-    #endif
-
-    #ifdef NL_SKY_AURORA
-    if (!env.underwater && !env.end && !env.nether) {
-      #ifdef NL_SKY_AURORA_HEAVY
-        float dither2 = fract(sin(dot(viewDir.xy, vec2(12.9898,78.233))) * 43758.5453);
-        float mask = (1.0-1.0*env.rainFactor)*max(1.0 - 3.0*max(v_fogColor.b, v_fogColor.g), 0.0);
-        #ifdef NL_SKY_AURORA_SMOOTH
-          skyColor += GetAuroraSmooth(viewDir, ViewPositionAndTime.w, dither2) * mask;
-        #else
-          skyColor += GetAuroraHeavy(viewDir, ViewPositionAndTime, dither2) * mask;
-        #endif
-      #endif
     }
     #endif
 
