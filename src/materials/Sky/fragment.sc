@@ -255,8 +255,8 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
                 noise *= mix(anim1, anim2, 0.5);
 
                 float tealW = clamp(currentM*currentM + 0.6*hz, 0.0, 1.0);
-                vec3 purpleCol = vec3(0.8, 0.55, 1.8);
-                vec3 tealCol = vec3(0.1, 3.0, 2.6);
+                vec3 purpleCol = vec3(0.62, 0.55, 1.35);
+                vec3 tealCol = vec3(1.2, 3.0, 3.3);
                 aurora += noise * mix(purpleCol * pow(max(currentM, 0.001), 0.4), tealCol * currentM, tealW);
             }
 
@@ -303,8 +303,8 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
                 noise *= mix(anim1, anim2, 0.5);
 
                 float tealW = clamp(currentM*currentM + 0.6*hz, 0.0, 1.0);
-                vec3 purpleCol = vec3(0.8, 0.55, 1.8);
-                vec3 tealCol = vec3(0.1, 3.0, 2.6);
+                vec3 purpleCol = vec3(0.62, 0.55, 1.35);
+                vec3 tealCol = vec3(1.2, 3.0, 3.3);
                 aurora += noise * mix(purpleCol * pow(max(currentM, 0.001), 0.4), tealCol * currentM, tealW);
             }
 
