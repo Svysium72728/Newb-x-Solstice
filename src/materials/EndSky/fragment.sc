@@ -64,27 +64,25 @@ vec4 renderBlackhole(vec3 vdir, float t) {
 }
 #endif
 
-vec3 renderEndAmbientGlow(vec3 viewDir, float t) {
-    float elevation = viewDir.y;
+  vec3 renderEndAmbientGlow(vec3 viewDir, float t) {
+      float e = viewDir.y;
+      float up = clamp(e, 0.0, 1.0);
+      float a = atan2(viewDir.x, viewDir.z)*NL_ENDGLOW_STREAKS;
+      float drift = t*NL_ENDGLOW_SPEED;
 
-    float heightFade = 1.0 - smoothstep(-0.4, 0.5, elevation);
-    heightFade *= heightFade;
+      float s = 0.5*sin(a*5.0 + drift + 1.3)
+              + 0.3*sin(a*11.0 - 1.4*drift + 4.1)
+              + 0.2*sin(a*23.0 + 0.7*drift + 0.7 + 1.5*sin(a*3.0));
+      float streak = smoothstep(-0.7, 0.8, s);
 
-    float a = atan2(viewDir.x, viewDir.z);
-    float n1 = sin(a * 3.0 + viewDir.y * 4.0 + t * 0.01);
-    float n2 = sin(a * 7.0 - viewDir.y * 2.0 - t * 0.015 + n1);
+      float profile = pow(1.0 - up, NL_ENDGLOW_HEIGHT);
+      float valley = mix(NL_ENDGLOW_GAP, NL_ENDGLOW_GAP_TOP, smoothstep(0.0, 0.7, up));
+      float intensity = profile*mix(valley, 1.0, streak);
 
-    float haze = 0.5 + 0.3 * n1 + 0.2 * n2;
-    haze = 0.6 + 0.4 * haze;
+      vec3 col = mix(NL_ENDGLOW_COLOR, NL_ENDGLOW_COLOR2, smoothstep(0.0, 0.6, up));
 
-    vec3 col = mix(
-        NL_ENDGLOW_COLOR2,
-        NL_ENDGLOW_COLOR,
-        0.5 + 0.5 * sin(a * 2.0 + 0.3 * viewDir.y)
-    );
-
-    return col * heightFade * haze * NL_ENDGLOW_STRENGTH;
-}
+      return col*intensity*NL_ENDGLOW_STRENGTH;
+  }
 
 vec3 renderEndStarLayer(
     vec3 viewDir,
