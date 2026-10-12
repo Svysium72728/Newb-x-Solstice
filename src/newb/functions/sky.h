@@ -190,6 +190,11 @@ vec3 renderOverworldSky(nl_skycolor skyCol, nl_environment env, vec3 viewDir, bo
     return sky;
 }
 
+vec3 renderEndSky(vec3 horizonCol, vec3 zenithCol, vec3 viewDir, float t) {
+    float f = smoothstep(1.0, -0.5, viewDir.y);
+    return mix(zenithCol, horizonCol, f*f);
+}
+
 vec3 nlRenderSky(nl_skycolor skycol, nl_environment env, vec3 viewDir, float t, bool isSkyPlane) {
     vec3 sky;
     viewDir.y=-viewDir.y;
