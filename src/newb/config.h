@@ -42,11 +42,8 @@
 #define NL_BLOCK_CLOUD_SCALE 4.3
 #define NL_BLOCK_CLOUD_COVER 0.34
 #define NL_BLOCK_CLOUD_BASE 1.0
-#define NL_BLOCK_CLOUD_THICK 0.34
+#define NL_BLOCK_CLOUD_THICK 0.30
 #define NL_BLOCK_CLOUD_BEVEL 0.65
-#define NL_BLOCK_CLOUD_CLUSTER 0.2
-#define NL_BLOCK_CLOUD_WARP 2.0
-#define NL_BLOCK_CLOUD_VARIATION 0.7
 #define NL_BLOCK_CLOUD_SQUARE 0.75
 #define NL_BLOCK_CLOUD_SOFT 0.12
 #define NL_BLOCK_CLOUD_OPACITY 1.0
@@ -138,7 +135,7 @@
 #define NL_ENDGLOW_GAP      0.22
 #define NL_ENDGLOW_GAP_TOP  0.55
 #define NL_ENDGLOW_SPEED    0.01
-#define NL_ENDGLOW_STREAKS  1.0
+#define NL_ENDGLOW_STREAKS  5.0
 
 /* Ambient light for nether/end */
 #define NL_NETHER_AMBIENT vec3(0.102,0.0,0.0)
@@ -221,7 +218,6 @@
 #define NL_UNDERWATER_WAVE 0.1               // [toggle] 0.02 subtle ~ 0.6 trippy
 #define NL_UNDERWATER_STREAKS 0.7           // [toggle] 0.8 subtle - 2.0 bright streaks from top
 #define NL_UNDERWATER_TINT vec3(0.718,0.741,0.969) // fog tint color when underwater
-#define NL_WATER_LIGHT_STREAK_STRENGTH 0.0
 
 /* Cloud type */
 #define NL_CLOUD_TYPE 5 // 0:vanilla, 1:soft, 2:rounded, 3:realistic, 4:minmin's lightweight cloud, 5:Nothing :p
@@ -307,14 +303,12 @@
 //#define NL_SUN_BLOOM_SQUARE            // [toggle] square-shaped sun bloom
 #define NL_SUN_BLOOM_SIZE 0.03         // 0.05 tight ~ 0.5 large
 #define NL_SUN_BLOOM_SOFTNESS 1.0     // 0.0 hard edge ~ 0.3 very soft
-#define NL_SUN_BLOOM_COLOR vec3(1.0, 0.9, 0.7)
 #define NL_SUN_BLOOM_STRENGTH 2.1      // 0.5 subtle ~ 3.0 strong
 
 /* Fake godrays during sunrise/sunset */
 #define NL_GODRAY 0.0 // [toggle] 0.1 subtle ~ 0.8 strong
 #define NL_GODRAY_SPOKE_COUNT 1.0
 #define NL_GODRAY_SPOKE_SHARPNESS 0.5
-#define NL_GODRAY_COLOR vec3(1.0, 0.95, 0.8)
 
 /* Black hole value tuning (feature itself toggled per subpack tier below) */
 #define NL_BH_SPEED 0.3
