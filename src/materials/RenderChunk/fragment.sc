@@ -21,7 +21,7 @@ SAMPLER2D_AUTOREG(s_BlockCloudNoise);
   SAMPLER2D_AUTOREG(s_CausticTex);
 #endif
 
-#define DROP_NUMBER 5
+#define DROP_NUMBER 0
 
 float stickyRaindrop(vec2 uv, vec2 center, float baseSize, float stretch) {
     vec2 p = (uv - center);
