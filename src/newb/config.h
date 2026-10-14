@@ -379,7 +379,7 @@
   #undef NL_WATER_FOAM
   #undef NL_SKY_BLOCK_CLOUDS
   #undef NL_VOL_CLOUD_STEPS
-  #define NL_VOL_CLOUD_STEPS 16
+  #define NL_VOL_CLOUD_STEPS 10
   #define NL_END_CLOUDS
   #define NL_END_CLOUD_SPEED 0.0
   #define NL_END_CLOUD_LO 0.15
