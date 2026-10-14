@@ -235,7 +235,7 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
             highp vec2 wpos = viewDir.xz / max(viewDir.y, 0.1);
             highp vec2 cameraPosM = vec2(t * NL_SKY_AURORA_SPEED, 0.0);
 
-            const int sampleCount = 15;
+            const int sampleCount = 20;
             const int sampleCountP = sampleCount + 10;
 
             float ditherM = dither + 10.0;
@@ -283,7 +283,7 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
 
             vec2 cameraPosM = vec2(ViewPosTime.w * NL_SKY_AURORA_SPEED, 0.0);
 
-            const int sampleCount = 15;
+            const int sampleCount = 20;
             const int sampleCountP = sampleCount + 10;
 
             float ditherM = dither + 10.0;
