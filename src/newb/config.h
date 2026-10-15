@@ -1,6 +1,17 @@
 #ifndef NL_CONFIG_H
 #define NL_CONFIG_H
 
+  #define NL_SKY_EQUI_CLOUDS
+  #define NL_EQUI_CLOUD_COVER 0.50
+  #define NL_EQUI_CLOUD_SOFT 0.14
+  #define NL_EQUI_CLOUD_OPACITY 1.0
+  #define NL_EQUI_CLOUD_SHADE 1.8
+  #define NL_EQUI_CLOUD_BUMP 1.0
+  #define NL_EQUI_CLOUD_RIM 0.5
+  #define NL_EQUI_CLOUD_EDGE 0.25
+  #define NL_EQUI_CLOUD_SPEED 0.0004
+  #define NL_EQUI_CLOUD_NIGHT 0.30
+
 #define NL_SUN_FOG_GLOW 3.0
 #define NL_SUN_FOG_POWER 10.0
 #define NL_SUN_FOG_NOON 0.15
@@ -67,7 +78,7 @@
 #define NL_WATER_FOAM
 #define NL_WATER_FOAM_STRENGTH 1.0
 #define NL_WATER_FOAM_COLOR vec3(3.0, 3.0, 3.0)
-#define NL_SUN_CIRCLE_BLOOM 0.7
+#define NL_SUN_CIRCLE_BLOOM 1.0
 #define NL_CLOUD4_REFL_HEIGHT 187.0
 #define NL_CLOUD4_REFL_SCALE 0.02
 #define NL_SUN_REFL_SCALE  0.799
@@ -412,6 +423,7 @@
   #define NL_CAUSTIC_INTENSITY 0.5
   #define NL_CAUSTIC_FPS 10.0
   #define NL_CAUSTIC_BLEND 1
+  #undef NL_SKY_EQUI_CLOUDS
 #endif
 
 #endif
