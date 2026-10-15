@@ -1,0 +1,19 @@
+{
+  "name": "SkyCloudTex",
+  "register_slot": 12,
+  "binding_slot": 12,
+  "type": "texture2D",
+  "precision": "lowp",
+  "access": "readonly",
+  "texture_format": "",
+  "default_texture": "",
+  "unordered_access": false,
+  "slot_count": 1,
+  "texture_path": "textures/newb/sky_clouds",
+  "unknown": 0,
+  "sampler_state": {
+    "filter": "Bilinear",
+    "wrapping": "Repeat"
+  },
+  "custom_type_info": {}
+}
