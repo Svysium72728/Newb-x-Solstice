@@ -204,6 +204,73 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
     }
   #endif
 
+  #ifdef NL_SKY_EQUI_CLOUDS
+    #ifndef NL_EQUI_CLOUD_COVER
+      #define NL_EQUI_CLOUD_COVER 0.50
+    #endif
+    #ifndef NL_EQUI_CLOUD_SOFT
+      #define NL_EQUI_CLOUD_SOFT 0.14
+    #endif
+    #ifndef NL_EQUI_CLOUD_OPACITY
+      #define NL_EQUI_CLOUD_OPACITY 1.0
+    #endif
+    #ifndef NL_EQUI_CLOUD_SHADE
+      #define NL_EQUI_CLOUD_SHADE 1.8
+    #endif
+    #ifndef NL_EQUI_CLOUD_BUMP
+      #define NL_EQUI_CLOUD_BUMP 1.0
+    #endif
+    #ifndef NL_EQUI_CLOUD_RIM
+      #define NL_EQUI_CLOUD_RIM 0.5
+    #endif
+    #ifndef NL_EQUI_CLOUD_EDGE
+      #define NL_EQUI_CLOUD_EDGE 0.25
+    #endif
+    #ifndef NL_EQUI_CLOUD_SPEED
+      #define NL_EQUI_CLOUD_SPEED 0.0004
+    #endif
+    #ifndef NL_EQUI_CLOUD_NIGHT
+      #define NL_EQUI_CLOUD_NIGHT 0.30
+    #endif
+    #ifndef NL_EQUI_CLOUD_SHADOW_TINT
+      #define NL_EQUI_CLOUD_SHADOW_TINT vec3(0.78, 0.84, 1.0)
+    #endif
+
+    SAMPLER2D_AUTOREG(s_SkyCloudTex);
+
+    vec4 EquiClouds(vec3 viewDir, vec3 sd, nl_skycolor skycol, nl_environment env, highp float time) {
+      if (viewDir.y < 0.02) {
+        return vec4(0.0, 0.0, 0.0, 0.0);
+      }
+      highp float u = atan2(viewDir.x, viewDir.z)*0.15915494 + 0.5 + time*NL_EQUI_CLOUD_SPEED;
+      float v = clamp(1.0 - asin(min(viewDir.y, 1.0))*0.63661977, 0.002, 0.998);
+      vec3 tx = texture2DLod(s_SkyCloudTex, vec2(u, v), 0.0).rgb;
+
+      float cover = clamp(NL_EQUI_CLOUD_COVER + 0.30*env.rainFactor, 0.0, 1.0);
+      float thr = 1.0 - cover;
+      float a = smoothstep(thr, thr + NL_EQUI_CLOUD_SOFT, tx.r);
+      a = min(a*NL_EQUI_CLOUD_OPACITY, 1.0);
+      float edge = 1.0 - smoothstep(thr, thr + NL_EQUI_CLOUD_EDGE, tx.r);
+
+      vec3 L = mix(env.moonDir, env.sunDir, step(0.0, env.dayFactor));
+      float dawn = 1.0 - env.dayFactor*env.dayFactor;
+      dawn *= dawn*dawn;
+      vec3 sunCol = mix(mix(NL_NOON_SUNLIGHT_COL, vec3_splat(1.0), 0.45), NL_DAWN_SUNLIGHT_COL, dawn);
+      vec3 moonCol = NL_NIGHT_MOONLIGHT_COL/max(max(NL_NIGHT_MOONLIGHT_COL.r, NL_NIGHT_MOONLIGHT_COL.g), NL_NIGHT_MOONLIGHT_COL.b);
+      float dayK = smoothstep(-0.1, 0.15, env.dayFactor);
+      vec3 lightCol = mix(moonCol*NL_EQUI_CLOUD_NIGHT, sunCol, dayK)*(1.0 - 0.6*env.rainFactor);
+      vec3 shadowCol = mix(skycol.zenith, skycol.horizon, 0.5)*NL_EQUI_CLOUD_SHADOW_TINT*(1.0 - 0.4*env.rainFactor);
+      vec3 topAmb = mix(shadowCol, vec3_splat(1.0), 0.45)*mix(NL_EQUI_CLOUD_NIGHT*2.0, 1.0, dayK);
+
+      float lit = clamp(exp(-tx.g*NL_EQUI_CLOUD_SHADE) + (tx.b - 0.5)*NL_EQUI_CLOUD_BUMP + edge*NL_EQUI_CLOUD_RIM, 0.0, 1.0);
+      float silver = pow(max(dot(sd, L), 0.0), 8.0)*lit;
+      vec3 c = mix(shadowCol, topAmb, lit) + lightCol*(lit*0.9 + 2.0*silver);
+
+      float f = smoothstep(0.02, 0.2, viewDir.y);
+      return vec4(c*a*f, a*f);
+    }
+  #endif
+
   #ifdef NL_SKY_AURORA
     float pow2(float x){return x*x;}
     float clamp01(float x){return clamp(x,0.0,1.0);}
@@ -374,6 +441,14 @@ void main() {
       vec3 sdv = vec3(-viewDir.x, viewDir.y, -viewDir.z);
       vec4 cv = VolumetricClouds(viewDir, sdv, skycol, env, v_underwaterRainTimeDay.z, cj);
       skyColor = skyColor*(1.0 - cv.a) + cv.rgb;
+    }
+    #endif
+
+    #ifdef NL_SKY_EQUI_CLOUDS
+    if (!env.underwater) {
+      vec3 sde = vec3(-viewDir.x, viewDir.y, -viewDir.z);
+      vec4 ce = EquiClouds(viewDir, sde, skycol, env, v_underwaterRainTimeDay.z);
+      skyColor = skyColor*(1.0 - ce.a) + ce.rgb;
     }
     #endif
 
