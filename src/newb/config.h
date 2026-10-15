@@ -1,7 +1,7 @@
 #ifndef NL_CONFIG_H
 #define NL_CONFIG_H
 
-  #define NL_SKY_EQUI_CLOUDS
+ //#define NL_SKY_EQUI_CLOUDS
   #define NL_EQUI_CLOUD_COVER 0.50
   #define NL_EQUI_CLOUD_SOFT 0.14
   #define NL_EQUI_CLOUD_OPACITY 1.0
