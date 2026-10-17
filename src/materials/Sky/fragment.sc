@@ -176,20 +176,25 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
         float t = (cloudBase + thick*h)*invY;
         vec2 p = sd.xz*t*NL_VOL_CLOUD_SCALE + wind;
         float b = texture2D(s_VolCloudNoise, p).r;
-        float prof = smoothstep(0.0, 0.15, h)*(1.0 - smoothstep(0.35, 1.0, h - (b - 0.5)*0.9));
-        float tp = thr + 0.25*(1.0 - prof);
+        float prof = smoothstep(0.0, 0.1, h)*(1.0 - smoothstep(0.25, 0.9, h - (b - 0.5)*1.2));
+        float tp = thr + 0.28*(1.0 - prof);
         if (b > tp - 0.12) {
           float dt = texture2D(s_VolCloudNoise, p*3.7 + 0.31).g;
-          float n = b + (dt - 0.5)*(0.18 + 0.25*(1.0 - prof));
-          float d = smoothstep(0.0, 1.0, clamp((n - tp)*3.0, 0.0, 1.0));
+          float dt2 = texture2D(s_VolCloudNoise, p*9.1 + 0.67).b;
+          float billow = (dt - 0.5)*0.2 + (dt2 - 0.5)*0.08;
+          float n = b + billow*(0.6 + 0.8*(1.0 - prof));
+          float core = clamp((n - tp)*5.0, 0.0, 1.0);
+          float d = core*core*(3.0 - 2.0*core);
           if (d > 0.0) {
             vec2 pl = p + toLight*(1.0 - h)*thick*NL_VOL_CLOUD_SCALE;
             float ld = clamp((texture2D(s_VolCloudNoise, pl).r - thr)*3.0, 0.0, 1.0);
             float lit = exp(-ld*1.6);
             float bs = texture2D(s_VolCloudNoise, p + sdir).r;
             float shade = clamp(1.0 + (b - bs)*NL_VOL_CLOUD_SHADE, 0.4, 1.5);
-            float silver = pow(cosv, 8.0)*lit;
-            vec3 c = mix(shadowCol, topAmb, h) + lightCol*(lit*0.9 + 2.0*silver)*shade;
+            float rim = smoothstep(0.0, 0.5, core);
+            float belly = mix(0.35, 1.0, smoothstep(0.0, 0.8, h));
+            float silver = pow(cosv, 6.0)*lit;
+            vec3 c = mix(shadowCol*0.6, topAmb, belly*rim) + lightCol*(lit*0.9*belly + 2.5*silver)*shade*mix(0.55, 1.0, rim);
             float a = 1.0 - exp(-d*NL_VOL_CLOUD_DENSITY/float(steps));
             col += T*a*c;
             T *= 1.0 - a;
