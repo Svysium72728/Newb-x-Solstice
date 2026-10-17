@@ -260,7 +260,7 @@ vec4 nlSkyCloudReflection(vec3 r, vec3 pos, nl_skycolor skycol, nl_environment e
       vec3 lightCol = mix(moonCol*NL_VOL_CLOUD_NIGHT, sunCol, dayK)*(1.0 - 0.6*env.rainFactor);
       vec3 shadowCol = mix(skycol.zenith, skycol.horizon, 0.5)*NL_VOL_CLOUD_SHADOW_TINT*(1.0 - 0.4*env.rainFactor);
       vec3 topAmb = mix(shadowCol, vec3_splat(1.0), 0.45)*mix(NL_VOL_CLOUD_NIGHT*2.0, 1.0, dayK);
-      float silver = pow(max(dot(sdr, L), 0.0), 8.0);
+      float silver = pow(max(dot(sdr, L), 0.0), 6.0);
       vec2 base = -pu.xz*NL_VOL_CLOUD_SCALE + vec2(time*NL_VOL_CLOUD_SPEED, time*NL_VOL_CLOUD_SPEED*0.4);
       vec2 stepXZ = -r.xz*invY*NL_VOL_CLOUD_SCALE;
 
@@ -270,15 +270,20 @@ vec4 nlSkyCloudReflection(vec3 r, vec3 pos, nl_skycolor skycol, nl_environment e
         float h = (float(i) + jitter)/float(NL_VOL_CLOUD_REFL_STEPS);
         vec2 p = base + stepXZ*max(1.0 + 0.6*h - pu.y, 0.0);
         float b = texture2DLod(s_VolCloudNoise, p, 0.0).r;
-        float prof = smoothstep(0.0, 0.15, h)*(1.0 - smoothstep(0.35, 1.0, h - (b - 0.5)*0.9));
-        float tp = thr + 0.25*(1.0 - prof);
+        float prof = smoothstep(0.0, 0.1, h)*(1.0 - smoothstep(0.25, 0.9, h - (b - 0.5)*1.2));
+        float tp = thr + 0.28*(1.0 - prof);
         if (b > tp - 0.12) {
           float dt = texture2DLod(s_VolCloudNoise, p*3.7 + 0.31, 0.0).g;
-          float n = b + (dt - 0.5)*(0.18 + 0.25*(1.0 - prof));
-          float d = smoothstep(0.0, 1.0, clamp((n - tp)*3.0, 0.0, 1.0));
+          float dt2 = texture2DLod(s_VolCloudNoise, p*9.1 + 0.67, 0.0).b;
+          float billow = (dt - 0.5)*0.2 + (dt2 - 0.5)*0.08;
+          float n = b + billow*(0.6 + 0.8*(1.0 - prof));
+          float core = clamp((n - tp)*5.0, 0.0, 1.0);
+          float d = core*core*(3.0 - 2.0*core);
           if (d > 0.0) {
-            float lit = mix(0.3, 1.0, h)*exp(-d*0.9);
-            vec3 c = mix(shadowCol, topAmb, h) + lightCol*lit*(0.9 + 2.0*silver);
+            float rim = smoothstep(0.0, 0.5, core);
+            float belly = mix(0.35, 1.0, smoothstep(0.0, 0.8, h));
+            float lit = belly*exp(-d*0.9);
+            vec3 c = mix(shadowCol*0.6, topAmb, belly*rim) + lightCol*(lit*0.9 + 2.5*silver)*mix(0.55, 1.0, rim);
             float a = 1.0 - exp(-d*NL_VOL_CLOUD_DENSITY/float(NL_VOL_CLOUD_REFL_STEPS));
             cv += Tv*a*c;
             Tv *= 1.0 - a;
