@@ -304,6 +304,33 @@ vec4 nlSkyCloudReflection(vec3 r, vec3 pos, nl_skycolor skycol, nl_environment e
 
 #endif
 
+#if defined(NL_BLACKHOLE) && defined(NL_BLACKHOLE_REFL)
+vec4 nlBlackholeReflection(vec3 vdir, highp float time) {
+  float t = time*NL_BH_SPEED;
+  float cr = cos(NL_BH_AZIMUTH);
+  float sr = sin(NL_BH_AZIMUTH);
+  vec3 baseDir = normalize(vec3(0.0, NL_BH_HEIGHT, 1.0));
+  vec3 center = vec3(baseDir.x*cr - baseDir.z*sr, baseDir.y, baseDir.x*sr + baseDir.z*cr);
+
+  vec3 vd = vdir - center;
+  float nl = sin(15.0*vd.x + t)*sin(15.0*vd.y - t)*sin(15.0*vd.z + t);
+  float a = atan2(vd.z, vd.x);
+  float d = NL_BH_DIST*length(vd + 0.003*nl);
+  float d0 = (0.6 - d)/0.6;
+  float dm0 = 1.0 - max(d0, 0.0);
+  float gl = 1.0 - clamp(-0.3*d0, 0.0, 1.0);
+  float gla = pow(1.0 - min(abs(d0), 1.0), 8.0);
+  float gl8 = pow(gl, 8.0);
+  float hole = 0.9*pow(dm0, 32.0) + 0.1*pow(dm0, 3.0);
+  float bh = (gla + 0.8*gl8 + 0.2*gl8*gl8)*hole;
+  float df = sin(3.0*a - 4.0*d + 24.0*pow(abs(1.4 - d), 4.0) + t);
+  df *= 0.9 + 0.1*sin(8.0*a + d + 4.0*t - 4.0*df);
+  bh *= 1.0 + pow(df, 4.0)*hole*max(1.0 - bh, 0.0);
+  vec3 col = bh*4.0*mix(NL_BH_COL_LOW, NL_BH_COL_HIGH, min(bh, 1.0));
+  return vec4(col, hole);
+}
+#endif
+
 void main() {
   #if defined(DEPTH_ONLY_OPAQUE) || defined(DEPTH_ONLY) || defined(INSTANCING)
     gl_FragColor = vec4(1.0,1.0,1.0,1.0);
@@ -406,6 +433,19 @@ void main() {
       diffuse.rgb += v_refl.rgb*mask;
     }
   }
+
+  #if defined(NL_BLACKHOLE) && defined(NL_BLACKHOLE_REFL)
+    if (env.end && v_extra.b < 0.9 && abs(dFdy(v_extra.g)) < 0.0002) {
+      highp vec3 wpb = vec3(v_causticData.x - CameraPosition.x, v_extra.g, v_causticData.y - CameraPosition.z);
+      vec3 vdb = normalize(ViewPositionAndTime.xyz - wpb);
+      vec3 rb = vec3(mix(vdb.x, -vdb.x, NL_BH_REFL_MIRROR), vdb.y, mix(vdb.z, -vdb.z, NL_BH_REFL_MIRROR));
+      if (rb.y > 0.02) {
+        vec4 bhr = nlBlackholeReflection(rb, ViewPositionAndTime.w);
+        float fres = pow(1.0 - rb.y, 3.0)*smoothstep(0.02, 0.2, rb.y)*NL_BH_REFL_TERRAIN;
+        diffuse.rgb = diffuse.rgb*mix(1.0, bhr.a, fres) + bhr.rgb*fres;
+      }
+    }
+  #endif
 
   #if defined(NL_CAUSTIC_INTENSITY) && !(defined(RENDER_AS_BILLBOARDS) || defined(SEASONS))
     if (v_causticData.z > 0.5 && v_extra.b < 0.9) {
