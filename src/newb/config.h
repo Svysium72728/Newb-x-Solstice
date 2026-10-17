@@ -1,6 +1,10 @@
 #ifndef NL_CONFIG_H
 #define NL_CONFIG_H
 
+#define NL_BLACKHOLE_REFL
+#define NL_BH_REFL_TERRAIN 0.6
+#define NL_BH_REFL_MIRROR 0.0
+
  //#define NL_SKY_EQUI_CLOUDS
   #define NL_EQUI_CLOUD_COVER 0.50
   #define NL_EQUI_CLOUD_SOFT 0.14
