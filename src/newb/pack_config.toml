@@ -1,6 +1,6 @@
 name = "Newb x Solstice"
 version = [0, 1, 0]
-min_supported_mc_version = [1, 26, 50]
+min_supported_mc_version = [1, 26, 60]
 description = '''
 §c%w
 §7Newb x Solstice, an enhanced vanilla shader for Minecraft Bedrock
