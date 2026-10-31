@@ -1,9 +1,9 @@
-name = "Newb x Krispy"
+name = "Newb x Solstice"
 version = [0, 1, 0]
 min_supported_mc_version = [1, 26, 50]
 description = '''
 §c%w
-§7Newb x Krispy, an enhanced vanilla shader for Minecraft Bedrock
+§7Newb x Solstice, an enhanced vanilla shader for Minecraft Bedrock
 
 A modified fork of the original Newb shader, inspired by:
 • §sComplementary Shaders §dReimagined
@@ -14,7 +14,7 @@ A modified fork of the original Newb shader, inspired by:
 %v
 §3https://newb-shader.devendrn.com/
 ''' # %w = patch warning, %v = version
-authors = ["KrispyBRN", "devendrn"]
+authors = ["Coolguyhehe2515", "devendrn"]
 url = "https://newb-shader.devendrn.com/"
 uuid = "4e0898ed-a57c-426d-a45b-4f909d1a76b6" # Use https://www.uuidgenerator.net/version4
 materials = ["Actor", "ActorGlint", "ActorMultiTexture", "Clouds", "EndSky", "ItemInHandColor", "ItemInHandColorGlint", "ItemInHandTextured", "RenderChunk","Sky", "Stars", "SunMoon", "Weather"]
