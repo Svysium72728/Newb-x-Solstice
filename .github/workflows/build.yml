@@ -62,7 +62,7 @@ jobs:
         ./build.sh pack -p android -v ${{ inputs.subversion }} --no-zip
     - uses: actions/upload-artifact@v4
       with:
-        name: newb-x-krispy
+        name: nxs-android
         path: ./build/pack-android
   ios:
     runs-on: ubuntu-latest
