@@ -209,6 +209,28 @@ vec3 nlRenderSky(nl_skycolor skycol, nl_environment env, vec3 viewDir, float t, 
     return sky;
 }
 
+vec3 nlUnderwaterLightDir(nl_environment env) {
+  return normalize(vec3(env.sunDir.x*0.35, 0.65 + 0.35*max(env.sunDir.y, 0.0), env.sunDir.z*0.35));
+}
+
+float nlUnderwaterRayMask(nl_environment env) {
+  return mix(0.1, 1.0, smoothstep(-0.1, 0.3, env.dayFactor));
+}
+
+float nlUnderwaterRays(vec3 d, vec3 L, highp float t) {
+  float c = clamp(dot(d, L), -1.0, 1.0);
+  vec3 sr = normalize(vec3(0.0, 0.0, 1.0) - L*L.z);
+  vec3 su = cross(L, sr);
+  float a = atan2(dot(d, su), dot(d, sr));
+  float w1 = 0.5 + 0.5*sin(7.0*a + 1.3*sin(3.0*a + 0.12*t) + 0.18*t);
+  float w2 = 0.5 + 0.5*sin(17.0*a - 0.27*t + 2.0*sin(5.0*a + 0.09*t));
+  float w3 = 0.5 + 0.5*sin(31.0*a + 0.4*t + 1.7*sin(11.0*a - 0.2*t));
+  float beams = smoothstep(0.2, 1.0, 0.55*w1 + 0.3*w2 + 0.15*w3);
+  float fall = 0.3 + 0.7*exp(-1.4*acos(c));
+  float glow = pow(max(c, 0.0), 6.0);
+  return beams*fall*smoothstep(-0.35, 0.45, c) + 0.5*glow;
+}
+
 vec3 nlRenderShootingStar(vec3 viewDir, vec3 FOG_COLOR, float t) {
     float h = t / (NL_SHOOTING_STAR_DELAY+NL_SHOOTING_STAR_PERIOD);
     float h0 = floor(h);
