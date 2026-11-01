@@ -386,15 +386,11 @@
   #undef NL_WATER_TEX_OPACITY
   #define NL_WATER_TEX_OPACITY 0.0
   #define NL_SKY_VOLUME_CLOUDS
-  #define NL_SKY_AURORA
-  #define NL_SKY_AURORA_HEAVY
-  #define NL_SKY_AURORA_SMOOTH
-  #define NL_SKY_AURORA_SPEED 4.0
   #define NL_BLINKING_TORCH
   #undef NL_WATER_FOAM
   #undef NL_SKY_BLOCK_CLOUDS
   #undef NL_VOL_CLOUD_STEPS
-  #define NL_VOL_CLOUD_STEPS 10
+  #define NL_VOL_CLOUD_STEPS 6
   #define NL_END_CLOUDS
   #define NL_END_CLOUD_SPEED 0.0
   #define NL_END_CLOUD_LO 0.15
@@ -416,9 +412,6 @@
 #endif
 
 #ifdef NL_REIMAGINED
-  #define NL_SKY_AURORA
-  #define NL_SKY_AURORA_HEAVY
-  #define NL_SKY_AURORA_SPEED 4.0
   #define NL_SKY_BLOCK_CLOUDS
   #undef NL_WATER_RESOLUTE_WAVES
   #undef NL_WATER_REFL_MASK
