@@ -457,6 +457,13 @@ void main() {
     }
     #endif
 
+    #ifdef NL_UNDERWATER_STREAKS
+    if (env.underwater) {
+      vec3 sdu = vec3(-viewDir.x, viewDir.y, -viewDir.z);
+      skyColor += NL_UNDERWATER_RAY_COL*nlUnderwaterRays(sdu, nlUnderwaterLightDir(env), v_underwaterRainTimeDay.z)*nlUnderwaterRayMask(env)*NL_UNDERWATER_STREAKS;
+    }
+    #endif
+
     skyColor = colorCorrection(skyColor);
 
     gl_FragColor = vec4(skyColor, 1.0);
