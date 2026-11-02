@@ -45,6 +45,15 @@
 #define NL_END_CLOUD_COL_LIGHT vec3(0.70,0.55,0.94)
 #define NL_END_CLOUD_COL_DARK  vec3(0.22,0.13,0.40)
 #define NL_END_CLOUD_FOG_COL   vec3(0.30,0.18,0.48)
+#define NL_END_NEBULA
+#define NL_END_NEBULA_STRENGTH 1.1
+#define NL_END_NEBULA_SCALE 2.2
+#define NL_END_NEBULA_SPEED 0.02
+#define NL_END_NEBULA_PATCH 1.8
+#define NL_END_NEBULA_AMOUNT 0.5
+#define NL_END_NEBULA_COL_A vec3(0.20, 0.07, 0.40)
+#define NL_END_NEBULA_COL_B vec3(0.78, 0.32, 0.88)
+#define NL_END_NEBULA_COL_C vec3(0.30, 0.42, 0.95)
 
 #define NL_OCEAN_DEPTH
 #define NL_OCEAN_SEA_LEVEL 62.89
@@ -333,7 +342,7 @@
 
 /* Black hole value tuning (feature itself toggled per subpack tier below) */
 #define NL_BH_SPEED 0.3
-#define NL_BH_DIST 1.0
+#define NL_BH_DIST 1.5
 #define NL_BH_AZIMUTH 2.4
 #define NL_BH_HEIGHT 0.5
 #define NL_BH_COL_LOW      vec3(0.85, 0.70, 0.95)
