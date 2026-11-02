@@ -384,7 +384,7 @@
 /* Effects tiers - aurora & black hole */
 #ifdef NL_UNBOUND
   #undef NL_SUN_CIRCLE_BLOOM
-  #define NL_SUN_CIRCLE_BLOOM 1.0
+  #define NL_SUN_CIRCLE_BLOOM 2.7
   #undef NL_WATER_TEX_OPACITY
   #define NL_WATER_TEX_OPACITY 0.0
   #define NL_SKY_VOLUME_CLOUDS
