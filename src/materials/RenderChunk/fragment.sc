@@ -498,6 +498,32 @@ void main() {
 
   diffuse.rgb = mix(diffuse.rgb, v_fog.rgb, v_fog.a);
 
+  #ifdef NL_SUN_SHAFTS
+    if (!env.underwater && !env.end && !env.nether) {
+      float shm = nlSunShaftMask(env);
+      if (shm > 0.01) {
+        highp vec3 wpq = vec3(v_causticData.x - CameraPosition.x, v_extra.g, v_causticData.y - CameraPosition.z);
+        float dq = length(wpq);
+        vec3 dlq = vec3(-wpq.x, wpq.y, -wpq.z)/max(dq, 0.001);
+        float shafts = nlSunShafts(dlq, env.sunDir, ViewPositionAndTime.w);
+        float scq = 1.0 - exp(-dq*NL_SUN_SHAFTS_DENSITY);
+        diffuse.rgb += NL_SUN_SHAFTS_COL*shafts*scq*smoothstep(0.5, 0.95, v_lightmapUV.y)*shm*NL_SUN_SHAFTS;
+      }
+    }
+  #endif
+
+  #ifdef NL_UNDERWATER_STREAKS
+    if (env.underwater) {
+      highp vec3 wpu = vec3(v_causticData.x - CameraPosition.x, v_extra.g, v_causticData.y - CameraPosition.z);
+      float du = length(wpu);
+      vec3 dl = vec3(-wpu.x, wpu.y, -wpu.z)/max(du, 0.001);
+      float rays = nlUnderwaterRays(dl, nlUnderwaterLightDir(env), ViewPositionAndTime.w);
+      float sc = 1.0 - exp(-du*NL_UNDERWATER_RAY_DENSITY);
+      float skyM = smoothstep(0.3, 0.85, v_lightmapUV.y);
+      diffuse.rgb += NL_UNDERWATER_RAY_COL*rays*sc*skyM*nlUnderwaterRayMask(env)*NL_UNDERWATER_STREAKS;
+    }
+  #endif
+
   float rain = mix(smoothstep(0.66, 0.3, FogAndDistanceControl.x), 0.0, step(FogAndDistanceControl.x, 0.0));
   float dropStrength = (env.nether || env.end) ? 0.0 : (env.underwater ? 1.0 : rain);
 

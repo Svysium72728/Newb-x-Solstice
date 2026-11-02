@@ -5,6 +5,10 @@
 #define NL_BH_REFL_TERRAIN 0.6
 #define NL_BH_REFL_MIRROR 0.0
 
+#define NL_SUN_SHAFTS 0.8
+#define NL_SUN_SHAFTS_COL mix(NL_DAWN_SUNLIGHT_COL, vec3(1.0, 1.0, 1.0), 0.15)
+#define NL_SUN_SHAFTS_DENSITY 0.012
+
  //#define NL_SKY_EQUI_CLOUDS
   #define NL_EQUI_CLOUD_COVER 0.50
   #define NL_EQUI_CLOUD_SOFT 0.14
@@ -41,6 +45,15 @@
 #define NL_END_CLOUD_COL_LIGHT vec3(0.70,0.55,0.94)
 #define NL_END_CLOUD_COL_DARK  vec3(0.22,0.13,0.40)
 #define NL_END_CLOUD_FOG_COL   vec3(0.30,0.18,0.48)
+#define NL_END_NEBULA
+#define NL_END_NEBULA_STRENGTH 1.1
+#define NL_END_NEBULA_SCALE 2.2
+#define NL_END_NEBULA_SPEED 0.02
+#define NL_END_NEBULA_PATCH 1.8
+#define NL_END_NEBULA_AMOUNT 0.5
+#define NL_END_NEBULA_COL_A vec3(0.20, 0.07, 0.40)
+#define NL_END_NEBULA_COL_B vec3(0.78, 0.32, 0.88)
+#define NL_END_NEBULA_COL_C vec3(0.30, 0.42, 0.95)
 
 #define NL_OCEAN_DEPTH
 #define NL_OCEAN_SEA_LEVEL 62.89
@@ -231,7 +244,9 @@
 #define NL_UNDERWATER_BRIGHTNESS 0.6         // 0.0 dark ~ 3.0 bright
 #define NL_CAUSTIC_INTENSITY 0.8             // 0.5 weak ~ 5.0 bright
 #define NL_UNDERWATER_WAVE 0.1               // [toggle] 0.02 subtle ~ 0.6 trippy
-#define NL_UNDERWATER_STREAKS 0.7           // [toggle] 0.8 subtle - 2.0 bright streaks from top
+#define NL_UNDERWATER_STREAKS 0.6
+#define NL_UNDERWATER_RAY_COL vec3(0.45, 0.78, 1.0)
+#define NL_UNDERWATER_RAY_DENSITY 0.06
 #define NL_UNDERWATER_TINT vec3(0.718,0.741,0.969) // fog tint color when underwater
 
 /* Cloud type */
@@ -327,7 +342,7 @@
 
 /* Black hole value tuning (feature itself toggled per subpack tier below) */
 #define NL_BH_SPEED 0.3
-#define NL_BH_DIST 1.0
+#define NL_BH_DIST 1.5
 #define NL_BH_AZIMUTH 2.4
 #define NL_BH_HEIGHT 0.5
 #define NL_BH_COL_LOW      vec3(0.85, 0.70, 0.95)
@@ -382,7 +397,7 @@
 /* Effects tiers - aurora & black hole */
 #ifdef NL_UNBOUND
   #undef NL_SUN_CIRCLE_BLOOM
-  #define NL_SUN_CIRCLE_BLOOM 1.0
+  #define NL_SUN_CIRCLE_BLOOM 2.7
   #undef NL_WATER_TEX_OPACITY
   #define NL_WATER_TEX_OPACITY 0.0
   #define NL_SKY_VOLUME_CLOUDS
