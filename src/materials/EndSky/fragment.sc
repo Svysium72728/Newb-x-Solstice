@@ -155,6 +155,46 @@ vec4 renderEndClouds(vec3 vdir, float t) {
     return vec4(col, a);
 }
 #endif
+
+#ifdef NL_END_NEBULA
+vec3 renderEndNebula(vec3 vdir, float t) {
+    float ts = t * NL_END_NEBULA_SPEED;
+
+    float cr = cos(NL_BH_AZIMUTH);
+    float sr = sin(NL_BH_AZIMUTH);
+    vec3 bb = normalize(vec3(0.0, NL_BH_HEIGHT, 1.0));
+    vec3 bhc = vec3(bb.x * cr - bb.z * sr, bb.y, bb.x * sr + bb.z * cr);
+
+    float ca = cos(NL_END_NEBULA_AZIMUTH);
+    float sa = sin(NL_END_NEBULA_AZIMUTH);
+    vec3 nb = normalize(vec3(0.0, NL_END_NEBULA_HEIGHT, 1.0));
+    vec3 axis = vec3(nb.x * ca - nb.z * sa, nb.y, nb.x * sa + nb.z * ca);
+
+    float mask = smoothstep(-0.1, 0.6, dot(vdir, axis));
+    mask *= smoothstep(0.55, 1.1, length(vdir - bhc));
+    if (mask < 0.01) {
+        return vec3(0.0, 0.0, 0.0);
+    }
+
+    vec3 p = vdir * NL_END_NEBULA_SCALE;
+    float w = noise3D(p * 0.7 + vec3(0.0, 0.0, 0.1 * ts));
+    float n1 = noise3D(p + 1.8 * w + vec3(0.06 * ts, 0.0, 0.0));
+    float n2 = noise3D(p * 2.3 - 1.4 * w + vec3(0.0, 0.08 * ts, 0.0));
+    float n3 = noise3D(p * 5.0 + 1.2 * n1);
+    float f = 0.5 * n1 + 0.3 * n2 + 0.2 * n3;
+
+    float dens = smoothstep(0.38, 0.85, f) * mask;
+    float fil = pow(1.0 - abs(2.0 * n3 - 1.0), 5.0);
+
+    vec3 col = mix(NL_END_NEBULA_COL_A, NL_END_NEBULA_COL_B, smoothstep(0.35, 0.9, n2));
+    col = mix(col, NL_END_NEBULA_COL_C, fil * 0.5 * dens);
+
+    vec3 neb = col * (dens * dens * 1.4 + 0.5 * fil * dens) * NL_END_NEBULA_STRENGTH;
+    vec3 sp = renderEndStarLayer(vdir, 650.0, 0.03, 2.2, 41.0) * (0.15 + 1.5 * dens);
+    return neb + sp * mask;
+}
+#endif
+
 #endif
 
 void main() {
@@ -178,6 +218,10 @@ void main() {
     color += renderEndStarLayer(viewDir, 300.0, 0.002, 1.2, 0.0);
     color += renderEndStarLayer(viewDir, 550.0, 0.004, 0.8, 7.0);
     color += renderEndStarLayer(viewDir, 900.0, 0.006, 0.5, 19.0);
+
+    #ifdef NL_END_NEBULA
+    color += renderEndNebula(viewDir, t);
+    #endif
 
     #ifdef NL_SHOOTING_STAR
     color += NL_SHOOTING_STAR * nlRenderShootingStar(viewDir, vec3(0.5, 0.4, 0.8), t);
