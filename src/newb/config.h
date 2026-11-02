@@ -46,14 +46,14 @@
 #define NL_END_CLOUD_COL_DARK  vec3(0.22,0.13,0.40)
 #define NL_END_CLOUD_FOG_COL   vec3(0.30,0.18,0.48)
 #define NL_END_NEBULA
-#define NL_END_NEBULA_STRENGTH 1.1
 #define NL_END_NEBULA_SCALE 2.2
 #define NL_END_NEBULA_SPEED 0.02
 #define NL_END_NEBULA_PATCH 1.8
 #define NL_END_NEBULA_AMOUNT 0.5
-#define NL_END_NEBULA_COL_A vec3(0.20, 0.07, 0.40)
-#define NL_END_NEBULA_COL_B vec3(0.78, 0.32, 0.88)
-#define NL_END_NEBULA_COL_C vec3(0.30, 0.42, 0.95)
+#define NL_END_NEBULA_COL_A vec3(0.12, 0.075, 0.16)
+#define NL_END_NEBULA_COL_B vec3(0.17, 0.105, 0.22)
+#define NL_END_NEBULA_COL_C vec3(0.38, 0.26, 0.56)
+#define NL_END_NEBULA_STRENGTH 1.0
 
 #define NL_OCEAN_DEPTH
 #define NL_OCEAN_SEA_LEVEL 62.89
@@ -204,7 +204,7 @@
 #define NL_RAIN_ZENITH_COL   vec3(0.47,0.51,0.56)
 #define NL_RAIN_HORIZON_COL  vec3(0.6,0.6,0.6)
 
-#define NL_END_ZENITH_COL  vec3(0.08, 0.04, 0.11)
+#define NL_END_ZENITH_COL vec3(0.053, 0.033, 0.073)
 #define NL_END_HORIZON_COL vec3(0.36, 0.26, 0.46)
 
 /* Rainbow */
@@ -345,8 +345,8 @@
 #define NL_BH_DIST 1.5
 #define NL_BH_AZIMUTH 2.4
 #define NL_BH_HEIGHT 0.5
-#define NL_BH_COL_LOW      vec3(0.85, 0.70, 0.95)
-#define NL_BH_COL_HIGH     vec3(0.48, 0.36, 0.62)
+#define NL_BH_COL_LOW  vec3(0.30, 0.21, 0.47)
+#define NL_BH_COL_HIGH vec3(0.49, 0.33, 0.57)
 #define NL_BH_REFLECT_STRENGTH 6.0
 
 /* Sky reflection */
