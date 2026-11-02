@@ -165,12 +165,8 @@ vec3 renderEndNebula(vec3 vdir, float t) {
     vec3 bb = normalize(vec3(0.0, NL_BH_HEIGHT, 1.0));
     vec3 bhc = vec3(bb.x * cr - bb.z * sr, bb.y, bb.x * sr + bb.z * cr);
 
-    float ca = cos(NL_END_NEBULA_AZIMUTH);
-    float sa = sin(NL_END_NEBULA_AZIMUTH);
-    vec3 nb = normalize(vec3(0.0, NL_END_NEBULA_HEIGHT, 1.0));
-    vec3 axis = vec3(nb.x * ca - nb.z * sa, nb.y, nb.x * sa + nb.z * ca);
-
-    float mask = smoothstep(-0.1, 0.6, dot(vdir, axis));
+    float pn = noise3D(vdir * NL_END_NEBULA_PATCH + vec3(7.3 + 0.03 * ts, 2.1, 4.7));
+    float mask = smoothstep(NL_END_NEBULA_AMOUNT, NL_END_NEBULA_AMOUNT + 0.3, pn);
     mask *= smoothstep(0.55, 1.1, length(vdir - bhc));
     if (mask < 0.01) {
         return vec3(0.0, 0.0, 0.0);
