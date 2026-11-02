@@ -417,6 +417,16 @@ void main() {
       skyColor += nlSunLightColor(env)*nlSunFogGlow(-viewDir, env)*NL_SUN_FOG_GLOW*NL_SUN_FOG_SKY;
     #endif
 
+    #ifdef NL_SUN_SHAFTS
+    if (!env.underwater && !env.end && !env.nether) {
+      float shm = nlSunShaftMask(env);
+      if (shm > 0.01) {
+        vec3 sds = vec3(-viewDir.x, viewDir.y, -viewDir.z);
+        skyColor += NL_SUN_SHAFTS_COL*nlSunShafts(sds, env.sunDir, v_underwaterRainTimeDay.z)*shm*NL_SUN_SHAFTS;
+      }
+    }
+    #endif
+
     #ifdef NL_SKY_AURORA
     if (!env.underwater && !env.end && !env.nether) {
       #ifdef NL_SKY_AURORA_HEAVY
