@@ -165,7 +165,11 @@ void main() {
     nlUnderwaterLighting(light, pos.xyz, lit, uv1, tiledCpos, cPos, t, skycol.horizon);
   }
 
-  color.rgb *= light;
+    #if defined(NL_WATER_RESOLUTE_WAVES) && defined(NL_WAVE_NEUTRAL_LIGHT)
+    color.rgb *= mix(light, vec3_splat(luminance(light)), water*NL_WAVE_NEUTRAL_LIGHT);
+  #else
+    color.rgb *= light;
+  #endif
 
   #if defined(NL_GLOW_SHIMMER) && !(defined(RENDER_AS_BILLBOARDS) || defined(SEASONS))
     float shimmer = nlGlowShimmer(cPos, t);
