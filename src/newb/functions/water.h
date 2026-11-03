@@ -83,6 +83,12 @@ vec4 nlWater(
     }
   #endif
 
+    #if defined(NL_WATER_RESOLUTE_WAVES) && defined(NL_WAVE_REFL_COL)
+    float rlum = luminance(waterRefl);
+    vec3 blueRefl = (NL_WAVE_REFL_COL/luminance(NL_WAVE_REFL_COL))*rlum;
+    waterRefl = mix(blueRefl, waterRefl, NL_WAVE_SKY_MIX);
+  #endif
+
   // torch light reflection
   float tc = 0.5+0.5*sin(16.0*viewDir.x)*sin(16.0*viewDir.z);
   waterRefl += torchColor*NL_TORCHLIGHT_INTENSITY*lit.x*tc*tc;
