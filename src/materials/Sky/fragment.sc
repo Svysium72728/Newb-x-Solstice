@@ -149,10 +149,7 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
       if (viewDir.y < 0.04) {
         return vec4(0.0, 0.0, 0.0, 0.0);
       }
-      const int steps = NL_VOL_CLOUD_STEPS;
-      const float cloudBase = 1.0;
-      const float thick = 0.6;
-      float invY = 1.0/viewDir.y;
+      const int layers = NL_VOL_CLOUD_STEPS;
       float cover = clamp(NL_VOL_CLOUD_COVER + 0.35*env.rainFactor, 0.0, 1.0);
       float thr = mix(0.62, 0.40, cover);
 
@@ -167,40 +164,33 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
       float cosv = max(dot(sd, L), 0.0);
       vec2 wind = vec2(time*NL_VOL_CLOUD_SPEED, time*NL_VOL_CLOUD_SPEED*0.4);
       vec2 toLight = L.xz/max(L.y, 0.25);
-      vec2 sdir = normalize(L.xz + vec2(0.0001, 0.0001))*NL_VOL_CLOUD_SHADE_DIST;
+
+      vec2 cp = sd.xz/viewDir.y*NL_VOL_CLOUD_SCALE + wind;
+      float dt = texture2D(s_VolCloudNoise, cp*3.7 + 0.31).g;
+      float lb = texture2D(s_VolCloudNoise, cp + toLight*0.09).r;
+      float lshade = clamp((lb - thr)*3.0, 0.0, 1.0);
 
       float T = 1.0;
       vec3 col = vec3(0.0, 0.0, 0.0);
-      for (int i = 0; i < steps; i++) {
-        float h = (float(i) + jitter)/float(steps);
-        float t = (cloudBase + thick*h)*invY;
-        vec2 p = sd.xz*t*NL_VOL_CLOUD_SCALE + wind;
+      for (int i = 0; i < layers; i++) {
+        float h = (float(i) + 0.5 + 0.35*(jitter - 0.5))/float(layers);
+        vec2 p = cp*(1.0 - 0.12*h) + toLight*0.04*h;
         float b = texture2D(s_VolCloudNoise, p).r;
-        float prof = smoothstep(0.0, 0.1, h)*(1.0 - smoothstep(0.25, 0.9, h - (b - 0.5)*1.2));
-        float tp = thr + 0.28*(1.0 - prof);
-        if (b > tp - 0.12) {
-          float dt = texture2D(s_VolCloudNoise, p*3.7 + 0.31).g;
-          float dt2 = texture2D(s_VolCloudNoise, p*9.1 + 0.67).b;
-          float billow = (dt - 0.5)*0.2 + (dt2 - 0.5)*0.08;
-          float n = b + billow*(0.6 + 0.8*(1.0 - prof));
-          float core = clamp((n - tp)*5.0, 0.0, 1.0);
-          float d = core*core*(3.0 - 2.0*core);
-          if (d > 0.0) {
-            vec2 pl = p + toLight*(1.0 - h)*thick*NL_VOL_CLOUD_SCALE;
-            float ld = clamp((texture2D(s_VolCloudNoise, pl).r - thr)*3.0, 0.0, 1.0);
-            float lit = exp(-ld*1.6);
-            float bs = texture2D(s_VolCloudNoise, p + sdir).r;
-            float shade = clamp(1.0 + (b - bs)*NL_VOL_CLOUD_SHADE, 0.4, 1.5);
-            float rim = smoothstep(0.0, 0.5, core);
-            float belly = mix(0.35, 1.0, smoothstep(0.0, 0.8, h));
-            float silver = pow(cosv, 6.0)*lit;
-            vec3 c = mix(shadowCol*0.6, topAmb, belly*rim) + lightCol*(lit*0.9*belly + 2.5*silver)*shade*mix(0.55, 1.0, rim);
-            float a = 1.0 - exp(-d*NL_VOL_CLOUD_DENSITY/float(steps));
-            col += T*a*c;
-            T *= 1.0 - a;
-            if (T < 0.03) {
-              break;
-            }
+        float prof = smoothstep(0.0, 0.18, h)*(1.0 - smoothstep(0.35, 1.0, h - (b - 0.5)*1.1));
+        float tp = thr + 0.25*(1.0 - prof);
+        float n = b + (dt - 0.5)*0.22*(1.0 - 0.5*prof);
+        float d = smoothstep(tp - 0.02, tp + 0.2, n);
+        if (d > 0.002) {
+          float lit = exp(-lshade*(1.0 - h)*1.8);
+          float rim = smoothstep(0.0, 0.6, d);
+          float belly = mix(0.4, 1.0, h);
+          float silver = pow(cosv, 6.0)*lit;
+          vec3 c = mix(shadowCol*0.6, topAmb, belly*rim) + lightCol*(lit*0.9*belly + 2.5*silver)*mix(0.6, 1.0, rim);
+          float a = 1.0 - exp(-d*NL_VOL_CLOUD_DENSITY/float(layers));
+          col += T*a*c;
+          T *= 1.0 - a;
+          if (T < 0.1) {
+            break;
           }
         }
       }
