@@ -368,11 +368,12 @@ void main() {
   float waterPat = 0.0;
   #if defined(TRANSPARENT) && !(defined(SEASONS) || defined(RENDER_AS_BILLBOARDS))
     if (v_extra.b > 0.9) {
-      float texPattern = NL_WATER_TEX_OPACITY*(diffuse.b*1.8 - 1.0);
+      float texStretch = NL_WATER_TEX_CENTER + (diffuse.b - NL_WATER_TEX_CENTER)*NL_WATER_TEX_CONTRAST;
+      float texPattern = NL_WATER_TEX_OPACITY*(texStretch*1.8 - 1.0);
       texPattern = texPattern/(1.0 + abs(texPattern)/(texPattern < 0.0 ? 0.75 : 1.5));
       waterPat = texPattern;
       diffuse.rgb = vec3_splat(1.0 + texPattern);
-      diffuse.a = color.a;
+      diffuse.a = min(color.a*(1.0 + max(texPattern, 0.0)*NL_WATER_TEX_ALPHA), 1.0);
     }
   #else
     diffuse.a = 1.0;
