@@ -366,10 +366,13 @@ void main() {
 
   diffuse.rgb *= diffuse.rgb;
 
+  float waterPat = 0.0;
+
   #if defined(TRANSPARENT) && !(defined(SEASONS) || defined(RENDER_AS_BILLBOARDS))
     if (v_extra.b > 0.9) {
       float texPattern = NL_WATER_TEX_OPACITY*(diffuse.b*1.8 - 1.0);
       texPattern = texPattern/(1.0 + abs(texPattern)/(texPattern < 0.0 ? 0.75 : 1.5));
+      waterPat = texPattern;
       diffuse.rgb = vec3_splat(1.0 + texPattern);
       diffuse.a = color.a;
     }
@@ -423,6 +426,19 @@ void main() {
       vec3 sunCol = mix(mix(NL_NOON_SUNLIGHT_COL, vec3_splat(1.0), 0.45), NL_DAWN_SUNLIGHT_COL, pow(1.0 - env.dayFactor*env.dayFactor, 3.0));
       vec3 sunRefl = texture2D(s_SunRefl, suv).rgb*sunCol*inside*sunVis*NL_SUN_REFL_STRENGTH;
       diffuse.rgb += sunRefl;
+      vec2 gp = v_causticData.xy*NL_SUN_GLINT_SCALE;
+      float gtm = ViewPositionAndTime.w*NL_SUN_GLINT_SPEED;
+      vec3 gn = vec3(
+        sin(gp.x*1.7 + gtm*1.3) + sin(gp.y*2.9 - gtm*1.1) + sin((gp.x + gp.y)*4.1 + gtm*2.0),
+        sin(gp.x*2.3 - gtm*0.9) + sin(gp.y*1.9 + gtm*1.4),
+        cos(gp.y*1.5 + gtm*1.2) + sin((gp.x - gp.y)*3.7 - gtm*1.7)
+      );
+      vec3 gR = normalize(vds + gn*NL_SUN_GLINT_ROUGH);
+      float gd = max(dot(gR, sd), 0.0);
+      float glint = pow(gd, NL_SUN_GLINT_POWER) + 0.25*pow(gd, NL_SUN_GLINT_POWER*0.12);
+      float gtex = clamp(1.0 + waterPat*NL_SUN_GLINT_TEX, 0.0, 3.0);
+      float gfres = mix(0.15, 1.0, pow(1.0 - clamp(vds.y, 0.0, 1.0), 3.0));
+      diffuse.rgb += sunCol*glint*gtex*gfres*sunVis*NL_SUN_GLINT;
     }
 
   } else if (v_refl.a > 0.0) {
