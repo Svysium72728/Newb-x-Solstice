@@ -512,6 +512,40 @@ void main() {
   }
   #endif
 
+  #ifdef NL_LAVA_FOAM
+  float ldy = abs(dFdy(v_extra.g));
+  if (env.nether) {
+    highp float lcY = v_extra.g + CameraPosition.y;
+    highp vec3 lwp = vec3(v_causticData.x - CameraPosition.x, v_extra.g, v_causticData.y - CameraPosition.z);
+    vec3 lvd = normalize(ViewPositionAndTime.xyz - lwp);
+
+    if (lcY <= NL_LAVA_FOAM_LEVEL && lcY > NL_LAVA_FOAM_LEVEL - 0.89
+        && v_extra.b < 0.9
+        && ldy >= 0.0002
+        && lvd.y > 0.02
+        && v_lightmapUV.x > NL_LAVA_FOAM_LIGHT) {
+      float ld = fract(NL_LAVA_FOAM_LEVEL) - 0.025;
+      float lby = fract(lcY);
+      vec2 loff = (ld - lby)*lvd.xz/lvd.y;
+      vec2 lpos = v_causticData.xy + loff;
+      float lfade = 1.0 - clamp((ld - lby)/abs(lvd.y), 0.0, 1.0);
+
+      float lt = NL_LAVA_FOAM_SPEED*ViewPositionAndTime.w;
+      float ln = sin(lpos.x + 3.0*sin(0.5*lpos.y) + lt)*sin(lpos.y + 3.0*sin(0.5*lpos.x) - lt);
+      ln = 0.5 + 0.5*sin(lpos.x + 2.0*ln + 0.2*lt)*sin(lpos.y - 4.0*ln + 0.1*lt);
+      lfade = pow(lfade, 1.0 + 4.0*ln);
+
+      float lfoam = fract(238.084*sin(dot(floor(16.0*lpos), vec2(1.32, 141.3))));
+      lfoam *= lfade;
+      lfoam = mix(lfoam, 1.0, lfade*lfade*lfade);
+
+      float lglow = 0.85 + 0.15*sin(ViewPositionAndTime.w*1.5 + lpos.x*2.0 + lpos.y*1.7);
+      vec3 lcol = mix(NL_LAVA_FOAM_COLOR_LOW, NL_LAVA_FOAM_COLOR_HIGH, lfoam)*lglow;
+      diffuse.rgb = mix(diffuse.rgb, lcol, clamp(lfoam*NL_LAVA_FOAM_STRENGTH, 0.0, 1.0));
+    }
+  }
+  #endif
+
   diffuse.rgb = mix(diffuse.rgb, v_fog.rgb, v_fog.a);
 
   #ifdef NL_SUN_SHAFTS
