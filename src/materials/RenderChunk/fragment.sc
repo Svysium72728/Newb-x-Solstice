@@ -261,35 +261,34 @@ vec4 nlSkyCloudReflection(vec3 r, vec3 pos, nl_skycolor skycol, nl_environment e
       vec3 shadowCol = mix(skycol.zenith, skycol.horizon, 0.5)*NL_VOL_CLOUD_SHADOW_TINT*(1.0 - 0.4*env.rainFactor);
       vec3 topAmb = mix(shadowCol, vec3_splat(1.0), 0.45)*mix(NL_VOL_CLOUD_NIGHT*2.0, 1.0, dayK);
       float silver = pow(max(dot(sdr, L), 0.0), 6.0);
+      vec2 toLight = L.xz/max(L.y, 0.25);
       vec2 base = -pu.xz*NL_VOL_CLOUD_SCALE + vec2(time*NL_VOL_CLOUD_SPEED, time*NL_VOL_CLOUD_SPEED*0.4);
       vec2 stepXZ = -r.xz*invY*NL_VOL_CLOUD_SCALE;
+      vec2 cp = base + stepXZ*max(1.0 - pu.y, 0.0);
+      float dt = texture2DLod(s_VolCloudNoise, cp*3.7 + 0.31, 0.0).g;
+      float lb = texture2DLod(s_VolCloudNoise, cp + toLight*0.09, 0.0).r;
+      float lshade = clamp((lb - thr)*3.0, 0.0, 1.0);
 
       float Tv = 1.0;
       vec3 cv = vec3(0.0, 0.0, 0.0);
       for (int i = 0; i < NL_VOL_CLOUD_REFL_STEPS; i++) {
-        float h = (float(i) + jitter)/float(NL_VOL_CLOUD_REFL_STEPS);
-        vec2 p = base + stepXZ*max(1.0 + 0.6*h - pu.y, 0.0);
+        float h = (float(i) + 0.5 + 0.35*(jitter - 0.5))/float(NL_VOL_CLOUD_REFL_STEPS);
+        vec2 p = cp*(1.0 - 0.12*h) + toLight*0.04*h;
         float b = texture2DLod(s_VolCloudNoise, p, 0.0).r;
-        float prof = smoothstep(0.0, 0.1, h)*(1.0 - smoothstep(0.25, 0.9, h - (b - 0.5)*1.2));
-        float tp = thr + 0.28*(1.0 - prof);
-        if (b > tp - 0.12) {
-          float dt = texture2DLod(s_VolCloudNoise, p*3.7 + 0.31, 0.0).g;
-          float dt2 = texture2DLod(s_VolCloudNoise, p*9.1 + 0.67, 0.0).b;
-          float billow = (dt - 0.5)*0.2 + (dt2 - 0.5)*0.08;
-          float n = b + billow*(0.6 + 0.8*(1.0 - prof));
-          float core = clamp((n - tp)*5.0, 0.0, 1.0);
-          float d = core*core*(3.0 - 2.0*core);
-          if (d > 0.0) {
-            float rim = smoothstep(0.0, 0.5, core);
-            float belly = mix(0.35, 1.0, smoothstep(0.0, 0.8, h));
-            float lit = belly*exp(-d*0.9);
-            vec3 c = mix(shadowCol*0.6, topAmb, belly*rim) + lightCol*(lit*0.9 + 2.5*silver)*mix(0.55, 1.0, rim);
-            float a = 1.0 - exp(-d*NL_VOL_CLOUD_DENSITY/float(NL_VOL_CLOUD_REFL_STEPS));
-            cv += Tv*a*c;
-            Tv *= 1.0 - a;
-            if (Tv < 0.04) {
-              break;
-            }
+        float prof = smoothstep(0.0, 0.18, h)*(1.0 - smoothstep(0.35, 1.0, h - (b - 0.5)*1.1));
+        float tp = thr + 0.25*(1.0 - prof);
+        float n = b + (dt - 0.5)*0.22*(1.0 - 0.5*prof);
+        float d = smoothstep(tp - 0.02, tp + 0.2, n);
+        if (d > 0.002) {
+          float lit = exp(-lshade*(1.0 - h)*1.8);
+          float rim = smoothstep(0.0, 0.6, d);
+          float belly = mix(0.4, 1.0, h);
+          vec3 c = mix(shadowCol*0.6, topAmb, belly*rim) + lightCol*(lit*0.9*belly + 2.5*silver*lit)*mix(0.6, 1.0, rim);
+          float a = 1.0 - exp(-d*NL_VOL_CLOUD_DENSITY/float(NL_VOL_CLOUD_REFL_STEPS));
+          cv += Tv*a*c;
+          Tv *= 1.0 - a;
+          if (Tv < 0.1) {
+            break;
           }
         }
       }
@@ -367,7 +366,6 @@ void main() {
   diffuse.rgb *= diffuse.rgb;
 
   float waterPat = 0.0;
-
   #if defined(TRANSPARENT) && !(defined(SEASONS) || defined(RENDER_AS_BILLBOARDS))
     if (v_extra.b > 0.9) {
       float texPattern = NL_WATER_TEX_OPACITY*(diffuse.b*1.8 - 1.0);
@@ -426,6 +424,7 @@ void main() {
       vec3 sunCol = mix(mix(NL_NOON_SUNLIGHT_COL, vec3_splat(1.0), 0.45), NL_DAWN_SUNLIGHT_COL, pow(1.0 - env.dayFactor*env.dayFactor, 3.0));
       vec3 sunRefl = texture2D(s_SunRefl, suv).rgb*sunCol*inside*sunVis*NL_SUN_REFL_STRENGTH;
       diffuse.rgb += sunRefl;
+      #ifdef NL_SUN_GLINT
       vec2 gp = v_causticData.xy*NL_SUN_GLINT_SCALE;
       float gtm = ViewPositionAndTime.w*NL_SUN_GLINT_SPEED;
       vec3 gn = vec3(
@@ -439,6 +438,7 @@ void main() {
       float gtex = clamp(1.0 + waterPat*NL_SUN_GLINT_TEX, 0.0, 3.0);
       float gfres = mix(0.15, 1.0, pow(1.0 - clamp(vds.y, 0.0, 1.0), 3.0));
       diffuse.rgb += sunCol*glint*gtex*gfres*sunVis*NL_SUN_GLINT;
+      #endif
     }
 
   } else if (v_refl.a > 0.0) {
@@ -514,35 +514,26 @@ void main() {
 
   #ifdef NL_LAVA_FOAM
   float ldy = abs(dFdy(v_extra.g));
-  if (env.nether) {
-    highp float lcY = v_extra.g + CameraPosition.y;
-    highp vec3 lwp = vec3(v_causticData.x - CameraPosition.x, v_extra.g, v_causticData.y - CameraPosition.z);
-    vec3 lvd = normalize(ViewPositionAndTime.xyz - lwp);
-
-    if (lcY <= NL_LAVA_FOAM_LEVEL && lcY > NL_LAVA_FOAM_LEVEL - 0.89
-        && v_extra.b < 0.9
-        && ldy >= 0.0002
-        && lvd.y > 0.02
-        && v_lightmapUV.x > NL_LAVA_FOAM_LIGHT) {
-      float ld = fract(NL_LAVA_FOAM_LEVEL) - 0.025;
-      float lby = fract(lcY);
-      vec2 loff = (ld - lby)*lvd.xz/lvd.y;
-      vec2 lpos = v_causticData.xy + loff;
-      float lfade = 1.0 - clamp((ld - lby)/abs(lvd.y), 0.0, 1.0);
-
-      float lt = NL_LAVA_FOAM_SPEED*ViewPositionAndTime.w;
-      float ln = sin(lpos.x + 3.0*sin(0.5*lpos.y) + lt)*sin(lpos.y + 3.0*sin(0.5*lpos.x) - lt);
-      ln = 0.5 + 0.5*sin(lpos.x + 2.0*ln + 0.2*lt)*sin(lpos.y - 4.0*ln + 0.1*lt);
-      lfade = pow(lfade, 1.0 + 4.0*ln);
-
-      float lfoam = fract(238.084*sin(dot(floor(16.0*lpos), vec2(1.32, 141.3))));
-      lfoam *= lfade;
-      lfoam = mix(lfoam, 1.0, lfade*lfade*lfade);
-
-      float lglow = 0.85 + 0.15*sin(ViewPositionAndTime.w*1.5 + lpos.x*2.0 + lpos.y*1.7);
-      vec3 lcol = mix(NL_LAVA_FOAM_COLOR_LOW, NL_LAVA_FOAM_COLOR_HIGH, lfoam)*lglow;
+  highp float lwy = v_extra.g + CameraPosition.y;
+  if ((v_color1.r + v_color1.g + v_color1.b) > 2.999
+      && abs(fract(lwy) - 0.89) < 0.012
+      && ldy < 0.0002
+      && v_lightmapUV.x > 0.81 && v_lightmapUV.x < 0.876
+      && v_texcoord0.y > 0.5
+      && !env.underwater) {
+    vec2 lp = v_causticData.xy;
+    float lt = NL_LAVA_FOAM_SPEED*ViewPositionAndTime.w;
+    float ln = sin(lp.x*0.9 + 3.0*sin(0.5*lp.y) + lt)*sin(lp.y*0.9 + 3.0*sin(0.5*lp.x) - lt);
+    ln = 0.5 + 0.5*sin(lp.x*0.9 + 2.0*ln + 0.2*lt)*sin(lp.y*0.9 - 4.0*ln + 0.1*lt);
+    float lpatch = smoothstep(0.42, 0.8, ln);
+    float lcell = fract(238.084*sin(dot(floor(NL_LAVA_FOAM_SCALE*lp + vec2(lt*0.4, 0.0)), vec2(1.32, 141.3))));
+    float lfoam = lpatch*smoothstep(0.3, 0.9, lcell + 0.45*lpatch);
+    vec3 lcol = mix(NL_LAVA_FOAM_COLOR_LOW, NL_LAVA_FOAM_COLOR_HIGH, lcell);
+    #ifdef NL_LAVA_FOAM_DEBUG
+      diffuse.rgb = vec3(3.0, 0.0, 3.0);
+    #else
       diffuse.rgb = mix(diffuse.rgb, lcol, clamp(lfoam*NL_LAVA_FOAM_STRENGTH, 0.0, 1.0));
-    }
+    #endif
   }
   #endif
 
