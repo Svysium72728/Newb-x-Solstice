@@ -445,6 +445,7 @@
   #define NL_CAUSTIC_LO 0.68
   #define NL_CAUSTIC_HI 1.0
   #define NL_CAUSTIC_GAIN 0.6
+  #define NL_LAVA_NOISE
 #endif
 
 #ifdef NL_REIMAGINED
