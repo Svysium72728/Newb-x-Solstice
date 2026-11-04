@@ -162,10 +162,10 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
       vec3 shadowCol = mix(skycol.zenith, skycol.horizon, 0.5)*NL_VOL_CLOUD_SHADOW_TINT*(1.0 - 0.4*env.rainFactor);
       vec3 topAmb = mix(shadowCol, vec3_splat(1.0), 0.45)*mix(NL_VOL_CLOUD_NIGHT*2.0, 1.0, smoothstep(-0.1, 0.15, env.dayFactor));
       float cosv = max(dot(sd, L), 0.0);
-      vec2 wind = vec2(time*NL_VOL_CLOUD_SPEED, time*NL_VOL_CLOUD_SPEED*0.4);
+      highp vec2 wind = vec2(time*NL_VOL_CLOUD_SPEED, time*NL_VOL_CLOUD_SPEED*0.4);
       vec2 toLight = L.xz/max(L.y, 0.25);
 
-      vec2 cp = sd.xz/viewDir.y*NL_VOL_CLOUD_SCALE + wind;
+      highp vec2 cp = sd.xz/viewDir.y*NL_VOL_CLOUD_SCALE + wind;
       float dt = texture2D(s_VolCloudNoise, cp*3.7 + 0.31).g;
       float lb = texture2D(s_VolCloudNoise, cp + toLight*0.09).r;
       float lshade = clamp((lb - thr)*3.0, 0.0, 1.0);
@@ -174,7 +174,7 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
       vec3 col = vec3(0.0, 0.0, 0.0);
       for (int i = 0; i < layers; i++) {
         float h = (float(i) + 0.5 + 0.35*(jitter - 0.5))/float(layers);
-        vec2 p = cp*(1.0 - 0.12*h) + toLight*0.04*h;
+        highp vec2 p = cp*(1.0 - 0.12*h) + toLight*0.04*h;
         float b = texture2D(s_VolCloudNoise, p).r;
         float prof = smoothstep(0.0, 0.18, h)*(1.0 - smoothstep(0.35, 1.0, h - (b - 0.5)*1.1));
         float tp = thr + 0.25*(1.0 - prof);
