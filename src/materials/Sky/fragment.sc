@@ -145,7 +145,7 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
 
     SAMPLER2D_AUTOREG(s_VolCloudNoise);
 
-    vec4 VolumetricClouds(vec3 viewDir, vec3 sd, nl_skycolor skycol, nl_environment env, float time, float jitter) {
+      vec4 VolumetricClouds(vec3 viewDir, vec3 sd, nl_skycolor skycol, nl_environment env, highp float time, float jitter) {
       if (viewDir.y < 0.04) {
         return vec4(0.0, 0.0, 0.0, 0.0);
       }
