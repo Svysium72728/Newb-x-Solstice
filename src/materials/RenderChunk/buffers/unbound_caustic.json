@@ -1,7 +1,7 @@
 {
   "name": "UnboundCausticTex",
-  "register_slot": 4,
-  "binding_slot": 4,
+  "register_slot": 8,
+  "binding_slot": 8,
   "type": "texture2D",
   "precision": "lowp",
   "access": "readonly",
