@@ -89,6 +89,16 @@ void main() {
   vec2 uv0 = 2.0*a_texcoord0.xy;
   uv0 = fract(uv0) + ((floor(uv0)-0.5)/16384.0);
 
+  #ifdef NL_SHADOW_CAST
+    if (ShadowPass.x > 0.5) {
+      nl_environment envs = nlDetectEnvironment(TimeOfDay.x, FogColor.rgb, FogAndDistanceControl.xyz);
+      v_texcoord0 = uv0;
+      v_color0 = color;
+      gl_Position = nlShadowCaster(worldPos, nlShadowLight(envs), ShadowPass.y);
+      return;
+    }
+  #endif
+
   // bit 16 for dithering / mask tint
   // bits 15-9 for ??
   // bits 8-5 for x, bits 4-1 for y
