@@ -11,6 +11,6 @@
   "slot_count": 1,
   "texture_path": "",
   "unknown": 0,
-  "sampler_state": { "filter": "point", "wrapping": "Clamp" },
+  "sampler_state": { "filter": "Point", "wrapping": "Clamp" },
   "custom_type_info": {}
 }
