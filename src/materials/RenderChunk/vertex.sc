@@ -14,6 +14,28 @@ uniform vec4 FogColor;
 uniform vec4 TimeOfDay;
 uniform vec4 CameraPosition;
 
+#if defined(NL_CUSTOM_SHADOWS) && (defined(OPAQUE) || defined(ALPHA_TEST)) && !(defined(DEPTH_ONLY) || defined(DEPTH_ONLY_OPAQUE) || defined(INSTANCING))
+  #define NL_SHADOW_CAST
+
+  uniform vec4 ShadowPass;
+  uniform vec4 ShadowRes;
+
+  vec3 nlShadowLight(nl_environment env) {
+    vec3 L = env.sunDir.y > 0.0 ? env.sunDir : env.moonDir;
+    return normalize(floor(L*NL_SHADOW_QUANT + 0.5)/NL_SHADOW_QUANT);
+  }
+
+  vec4 nlShadowCaster(vec3 q, vec3 L, float c) {
+    vec3 r = normalize(vec3(L.y, -L.x, 0.0));
+    vec3 u = cross(L, r);
+    float R = c < 0.5 ? NL_SHADOW_R0 : (c < 1.5 ? NL_SHADOW_R1 : NL_SHADOW_R2);
+    float texel = 2.0*NL_SHADOW_R2/ShadowRes.x;
+    vec2 snap = fract(vec2(dot(CameraPosition.xyz, r), dot(CameraPosition.xyz, u))/texel)*texel;
+    vec2 xy = vec2(dot(q, r), dot(q, u)) + snap;
+    return vec4(xy/R, -dot(q, L)/NL_SHADOW_DEPTH, 1.0);
+  }
+#endif
+
 SAMPLER2D_AUTOREG(s_MatTexture);
 SAMPLER2D_AUTOREG(s_LightMapTexture);
 
