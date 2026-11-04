@@ -15,6 +15,70 @@ SAMPLER2D_AUTOREG(s_LightMapTexture);
 SAMPLER2D_AUTOREG(s_SunRefl);
 SAMPLER2D_AUTOREG(s_BlockCloudNoise);
 
+#if defined(NL_CUSTOM_SHADOWS) && (defined(OPAQUE) || defined(ALPHA_TEST)) && !(defined(DEPTH_ONLY) || defined(DEPTH_ONLY_OPAQUE) || defined(INSTANCING))
+  #define NL_SHADOW_CAST
+  #define NL_SHADOW_RECV
+
+  uniform vec4 ShadowPass;
+  uniform vec4 ShadowRes;
+  uniform vec4 LastCameraPosition;
+  SAMPLER2D_AUTOREG(s_ShadowMap);
+
+  vec3 nlShadowLight(nl_environment env) {
+    vec3 L = env.sunDir.y > 0.0 ? env.sunDir : env.moonDir;
+    return normalize(floor(L*NL_SHADOW_QUANT + 0.5)/NL_SHADOW_QUANT);
+  }
+
+  void nlShadowBasis(vec3 L, out vec3 right, out vec3 up) {
+    right = normalize(vec3(L.y, -L.x, 0.0));
+    up = cross(L, right);
+  }
+
+  float nlShadowRadius(float c) {
+    return c < 0.5 ? NL_SHADOW_R0 : (c < 1.5 ? NL_SHADOW_R1 : NL_SHADOW_R2);
+  }
+
+  vec2 nlShadowSnap(vec3 camAbs, vec3 right, vec3 up) {
+    float texel = 2.0*NL_SHADOW_R2/ShadowRes.x;
+    return fract(vec2(dot(camAbs, right), dot(camAbs, up))/texel)*texel;
+  }
+
+  float nlShadowLit(highp vec3 rel, vec3 L, vec3 n) {
+    float ndl = dot(n, L);
+    float face = smoothstep(0.0, 0.15, ndl);
+    if (face <= 0.0) { return 0.0; }
+    vec2 sz = vec2(textureSize(s_ShadowMap, 0));
+    float tiles = clamp(floor(sz.x/sz.y + 0.5), 1.0, 3.0);
+    vec3 r;
+    vec3 u;
+    nlShadowBasis(L, r, u);
+    vec2 snap = nlShadowSnap(LastCameraPosition.xyz, r, u);
+    highp vec3 q = rel + (CameraPosition.xyz - LastCameraPosition.xyz);
+    float slope = clamp(sqrt(max(1.0 - ndl*ndl, 0.0))/max(ndl, 0.1), 0.0, 5.0);
+    vec2 st = 0.5/sz;
+    for (int c = 0; c < 3; c++) {
+      if (float(c) >= tiles) { break; }
+      float R = nlShadowRadius(float(c));
+      float texel = 2.0*R/ShadowRes.x;
+      highp vec3 qo = q + n*texel*1.5;
+      vec2 xy = (vec2(dot(qo, r), dot(qo, u)) + snap)/R;
+      float m = max(abs(xy.x), abs(xy.y));
+      if (m < 0.94) {
+        vec2 uv = vec2((xy.x*0.5 + 0.5 + float(c))/tiles, xy.y*0.5 + 0.5);
+        float z = -dot(qo, L)/NL_SHADOW_DEPTH*0.5 + 0.5 - (NL_SHADOW_BIAS + texel*slope*NL_SHADOW_SLOPE)/(2.0*NL_SHADOW_DEPTH);
+        float s = step(z, texture2D(s_ShadowMap, uv + vec2(-st.x, st.y)).r);
+        s += step(z, texture2D(s_ShadowMap, uv + vec2(st.x, -st.y)).r);
+        s += step(z, texture2D(s_ShadowMap, uv + vec2(-st.x, -st.y)).r);
+        s += step(z, texture2D(s_ShadowMap, uv + vec2(st.x, st.y)).r);
+        float lit = s*0.25;
+        if (float(c) > tiles - 1.5) { lit = mix(1.0, lit, 1.0 - smoothstep(0.8, 0.94, m)); }
+        return lit*face;
+      }
+    }
+    return face;
+  }
+#endif
+
 #ifdef NL_CAUSTIC_ATLAS
   SAMPLER2D_AUTOREG(s_UnboundCausticTex);
 #else
