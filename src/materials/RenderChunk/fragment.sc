@@ -262,9 +262,9 @@ vec4 nlSkyCloudReflection(vec3 r, vec3 pos, nl_skycolor skycol, nl_environment e
       vec3 topAmb = mix(shadowCol, vec3_splat(1.0), 0.45)*mix(NL_VOL_CLOUD_NIGHT*2.0, 1.0, dayK);
       float silver = pow(max(dot(sdr, L), 0.0), 6.0);
       vec2 toLight = L.xz/max(L.y, 0.25);
-      vec2 base = -pu.xz*NL_VOL_CLOUD_SCALE + vec2(time*NL_VOL_CLOUD_SPEED, time*NL_VOL_CLOUD_SPEED*0.4);
-      vec2 stepXZ = -r.xz*invY*NL_VOL_CLOUD_SCALE;
-      vec2 cp = base + stepXZ*max(1.0 - pu.y, 0.0);
+      highp vec2 base = -pu.xz*NL_VOL_CLOUD_SCALE + vec2(time*NL_VOL_CLOUD_SPEED, time*NL_VOL_CLOUD_SPEED*0.4);
+      highp vec2 stepXZ = -r.xz*invY*NL_VOL_CLOUD_SCALE;
+      highp vec2 cp = base + stepXZ*max(1.0 - pu.y, 0.0);
       float dt = texture2DLod(s_VolCloudNoise, cp*3.7 + 0.31, 0.0).g;
       float lb = texture2DLod(s_VolCloudNoise, cp + toLight*0.09, 0.0).r;
       float lshade = clamp((lb - thr)*3.0, 0.0, 1.0);
@@ -273,7 +273,7 @@ vec4 nlSkyCloudReflection(vec3 r, vec3 pos, nl_skycolor skycol, nl_environment e
       vec3 cv = vec3(0.0, 0.0, 0.0);
       for (int i = 0; i < NL_VOL_CLOUD_REFL_STEPS; i++) {
         float h = (float(i) + 0.5 + 0.35*(jitter - 0.5))/float(NL_VOL_CLOUD_REFL_STEPS);
-        vec2 p = cp*(1.0 - 0.12*h) + toLight*0.04*h;
+        highp vec2 p = cp*(1.0 - 0.12*h) + toLight*0.04*h;
         float b = texture2DLod(s_VolCloudNoise, p, 0.0).r;
         float prof = smoothstep(0.0, 0.18, h)*(1.0 - smoothstep(0.35, 1.0, h - (b - 0.5)*1.1));
         float tp = thr + 0.25*(1.0 - prof);
