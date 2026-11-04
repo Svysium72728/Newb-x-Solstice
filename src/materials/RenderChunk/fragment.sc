@@ -411,6 +411,13 @@ void main() {
     }
   #endif
 
+  #ifdef NL_SHADOW_CAST
+    if (ShadowPass.x > 0.5) {
+      gl_FragColor = vec4(1.0, 1.0, 1.0, 0.0);
+      return;
+    }
+  #endif
+
   #if defined(SEASONS) && (defined(OPAQUE) || defined(ALPHA_TEST))
     diffuse.rgb *= mix(vec3(1.0,1.0,1.0), texture2D(s_SeasonsTexture, v_color1.xy).rgb * 2.0, v_color1.z);
   #endif
@@ -655,6 +662,7 @@ void main() {
   #endif
 
   diffuse.rgb = colorCorrection(diffuse.rgb);
+  diffuse.rgb = mix(diffuse.rgb, v_fog.rgb, v_fog.a);
 
   gl_FragColor = diffuse;
 }
