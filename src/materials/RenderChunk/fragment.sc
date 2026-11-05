@@ -351,9 +351,9 @@ void main() {
     diffuse.rgb *= mix(vec3(1.0,1.0,1.0), texture2D(s_SeasonsTexture, v_color1.xy).rgb * 2.0, v_color1.z);
   #endif
 
-  float xd = abs(dFdx(v_color1.a)) + abs(dFdy(v_color1.a));
-  float yd = abs(dFdx(v_extra.g)) + abs(dFdy(v_extra.g));
-  float eastWest = 1.0 - smoothstep(0.02, 0.08, xd/(xd + yd + 0.0001));
+  highp vec3 spos = vec3(v_causticData.x, v_extra.g, v_causticData.y);
+  highp vec3 scr = cross(dFdx(spos), dFdy(spos));
+  float eastWest = smoothstep(0.5, 0.8, abs(scr.x)/max(length(scr), 0.000000000001));
   float sideshadow = eastWest * max(v_lightmapUV.x, v_lightmapUV.y);
   diffuse.rgb *= 1.0-0.25*sideshadow;
 
