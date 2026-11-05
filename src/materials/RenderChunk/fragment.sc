@@ -351,6 +351,19 @@ void main() {
     diffuse.rgb *= mix(vec3(1.0,1.0,1.0), texture2D(s_SeasonsTexture, v_color1.xy).rgb * 2.0, v_color1.z);
   #endif
 
+  float lavaBlue = 0.0;
+  #ifdef NL_LAVA_BLUE
+    if (env.nether) {
+      vec3 fcn = FogColor.rgb;
+      float ssvB = smoothstep(0.6, 0.35, fcn.r/max(fcn.g, 0.001))*smoothstep(0.1, 0.18, fcn.g);
+      float warpB = smoothstep(2.0, 4.0, fcn.b/max(fcn.g, 0.005))*smoothstep(0.04, 0.08, fcn.b);
+      vec3 tc = diffuse.rgb;
+      bool whiteVC = (v_color1.r + v_color1.g + v_color1.b) > 2.999;
+      float lavaLike = step(tc.b, 0.12*tc.r)*step(tc.g, 0.8*tc.r)*step(0.4, tc.r);
+      lavaBlue = max(ssvB, warpB)*lavaLike*step(0.8, v_lightmapUV.x)*(whiteVC ? 1.0 : 0.0);
+    }
+  #endif
+
   highp vec3 spos = vec3(v_causticData.x, v_extra.g, v_causticData.y);
   highp vec3 scr = cross(dFdx(spos), dFdy(spos));
   float eastWest = smoothstep(0.5, 0.8, abs(scr.x)/max(length(scr), 0.000000000001));
