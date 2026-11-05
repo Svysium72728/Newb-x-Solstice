@@ -2,6 +2,7 @@
 #define NL_CONFIG_H
 
 #define NL_LAVA_BLUE
+#define NL_TAG_WAVE
 
 #define NL_BLACKHOLE_REFL
 #define NL_BH_REFL_TERRAIN 1.0
