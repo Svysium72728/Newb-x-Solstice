@@ -133,6 +133,13 @@ void nlWave(
   bool isRedStone = COLOR.r > 0.25 && COLOR.r > 3.0*COLOR.g  && COLOR.b == 0.0;
   bool isLeafLitter = bPos.y==0.015625 && (bPosH.x+bPosH.y)==0.0;
   bool shouldWave = ((isTreeLeaves || isPlants || isVines) && isColored && !isLeafLitter) || (isFarmPlant && isTop);
+  bool tagLeaf = false;
+  #ifdef NL_TAG_WAVE
+    vec2 tg = vec2(64.0, 32.0);
+    float tagA = texture2DLod(terrainTex, (floor(uv0*tg) + 0.5)/tg, 0.0).a;
+    tagLeaf = tagA > 0.978 && tagA < 0.983;
+    shouldWave = shouldWave || tagLeaf;
+  #endif
 
   float windStrength = lit.y*(noise1D(t*0.36) + rainFactor*0.4)*(1.0-waveFade);
 
@@ -152,7 +159,7 @@ void nlWave(
 
       float wave = NL_PLANTS_WAVE*windStrength;
 
-      if (isTreeLeaves) {
+      if (isTreeLeaves || tagLeaf) {
         wave *= 0.5;
       } else if (isVines) {
         wave *= fract(0.01+tiledCpos.y*0.5);
