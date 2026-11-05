@@ -554,6 +554,7 @@ void main() {
   }
   #endif
 
+  diffuse.rgb = mix(diffuse.rgb, diffuse.bgr, lavaBlue);
   diffuse.rgb = mix(diffuse.rgb, v_fog.rgb, v_fog.a);
 
   #ifdef NL_SUN_SHAFTS
