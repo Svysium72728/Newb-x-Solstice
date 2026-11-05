@@ -177,6 +177,15 @@ void main() {
     float shimmer = 1.0;
   #endif
 
+  float lavaMark = 0.0;
+  {
+    bool lmc = (a_color0.r+a_color0.g+a_color0.b) > 2.999;
+    bool lmb = bPos.y < 0.891 && bPos.y > 0.889;
+    if (lmc && lmb && (uv1.x > 0.81 && uv1.x < 0.876) && uv0.y > 0.5) {
+      lavaMark = 1.0;
+    }
+  }
+
   #ifdef NL_LAVA_NOISE
     bool isc = (a_color0.r+a_color0.g+a_color0.b) > 2.999;
     bool isb = bPos.y < 0.891 && bPos.y > 0.889;
@@ -194,7 +203,7 @@ void main() {
   v_texcoord0 = uv0;
   v_lightmapUV = uv1;
   v_color0 = color;
-  v_color1 = a_color0;
+  v_color1 = vec4(a_color0.rgb, lavaMark);
   v_fog = fogColor;
   v_causticData = vec3(gPos.x, gPos.z, env.underwater ? 1.0 : 0.0);
 
