@@ -357,17 +357,12 @@ void main() {
       vec3 fcn = FogColor.rgb;
       float ssvB = smoothstep(0.6, 0.35, fcn.r/max(fcn.g, 0.001))*smoothstep(0.1, 0.18, fcn.g);
       float warpB = smoothstep(2.0, 4.0, fcn.b/max(fcn.g, 0.005))*smoothstep(0.04, 0.08, fcn.b);
-      vec3 tc = diffuse.rgb;
-      bool whiteVC = (v_color1.r + v_color1.g + v_color1.b) > 2.999;
-      float lavaLike = step(tc.b, 0.12*tc.r)*step(tc.g, 0.8*tc.r)*step(0.4, tc.r);
-      lavaBlue = max(ssvB, warpB)*lavaLike*step(0.8, v_lightmapUV.x)*(whiteVC ? 1.0 : 0.0);
+      lavaBlue = max(ssvB, warpB)*step(0.5, v_color1.a);
     }
   #endif
 
-  highp vec3 spos = vec3(v_causticData.x, v_extra.g, v_causticData.y);
-  highp vec3 scr = cross(dFdx(spos), dFdy(spos));
-  float eastWest = smoothstep(0.5, 0.8, abs(scr.x)/max(length(scr), 0.000000000001));
-  float sideshadow = eastWest * max(v_lightmapUV.x, v_lightmapUV.y);
+  float outdoorMask = smoothstep(0.86, 0.93, v_lightmapUV.y);
+  float sideshadow = smoothstep(0.64, 0.62, v_color1.g) * max(v_lightmapUV.x, v_lightmapUV.y) * outdoorMask;
   diffuse.rgb *= 1.0-0.25*sideshadow;
 
   vec3 glow = nlGlow(s_MatTexture, v_texcoord0, v_extra.a);
