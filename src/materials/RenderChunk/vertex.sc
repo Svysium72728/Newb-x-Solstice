@@ -194,7 +194,7 @@ void main() {
   v_texcoord0 = uv0;
   v_lightmapUV = uv1;
   v_color0 = color;
-  v_color1 = vec4(a_color0.rgb, cPos.x);
+  v_color1 = a_color0;
   v_fog = fogColor;
   v_causticData = vec3(gPos.x, gPos.z, env.underwater ? 1.0 : 0.0);
 
