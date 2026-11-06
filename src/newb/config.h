@@ -471,6 +471,9 @@
   #define NL_CAUSTIC_FPS 10.0
   #define NL_CAUSTIC_BLEND 1
   #undef NL_SKY_EQUI_CLOUDS
+  #define NL_WATER_TEX_MEAN 0.30
+  #define NL_WATER_TEX_CONTRAST_R 6.0
+  #define NL_WATER_HIGHLIGHT 8.0
 #endif
 
 #endif
