@@ -388,6 +388,7 @@ void main() {
       float texStretch = NL_WATER_TEX_CENTER + (diffuse.b - NL_WATER_TEX_CENTER)*NL_WATER_TEX_CONTRAST;
       float texPattern = NL_WATER_TEX_OPACITY*(texStretch*1.8 - 1.0);
       texPattern = texPattern/(1.0 + abs(texPattern)/(texPattern < 0.0 ? 0.75 : 1.5));
+      texPattern += NL_WATER_TEX_BRIGHT;
       waterPat = texPattern;
       diffuse.rgb = vec3_splat(1.0 + texPattern);
       diffuse.a = min(color.a*(1.0 + max(texPattern, 0.0)*NL_WATER_TEX_ALPHA), 1.0);
@@ -526,7 +527,9 @@ void main() {
     foamTex *= fade;
     foamTex = mix(foamTex, 1.0, fade * fade * fade);
 
-    diffuse.rgb = mix(diffuse.rgb, NL_WATER_FOAM_COLOR, clamp(foamTex*NL_WATER_FOAM_STRENGTH, 0.0, 1.0));
+    float foamLight = mix(NL_WATER_FOAM_NIGHT, 1.0, smoothstep(-0.2, 0.25, env.dayFactor));
+    foamLight = max(foamLight, smoothstep(0.4, 0.9, v_lightmapUV.x));
+    diffuse.rgb = mix(diffuse.rgb, NL_WATER_FOAM_COLOR*foamLight, clamp(foamTex*NL_WATER_FOAM_STRENGTH, 0.0, 1.0));
   }
   #endif
 
