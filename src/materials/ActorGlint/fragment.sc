@@ -58,6 +58,21 @@ void main() {
 
   albedo = applyLighting(albedo, light);
 
+  #ifdef NL_GLINT_OUTLINE
+    vec2 gts = vec2(textureSize(s_MatTexture, 0));
+    if (gts.x >= NL_GLINT_OUTLINE_MINTEX) {
+      vec2 gst = 1.0/gts;
+      float ga = texture2D(s_MatTexture, v_texcoord0).a;
+      float gn = texture2D(s_MatTexture, v_texcoord0 + vec2(0.0, gst.y)).a;
+      float gs = texture2D(s_MatTexture, v_texcoord0 - vec2(0.0, gst.y)).a;
+      float ge = texture2D(s_MatTexture, v_texcoord0 + vec2(gst.x, 0.0)).a;
+      float gw = texture2D(s_MatTexture, v_texcoord0 - vec2(gst.x, 0.0)).a;
+      float gedge = step(0.5, ga)*(1.0 - step(0.5, min(min(gn, gs), min(ge, gw))));
+      float gpulse = 0.65 + 0.35*sin(v_glintuv.x*18.0);
+      albedo.rgb += NL_GLINT_OUTLINE_COL*gedge*gpulse*NL_GLINT_OUTLINE_STRENGTH;
+    }
+  #endif
+
   #ifdef TRANSPARENT
     albedo = applyHudOpacity(albedo, HudOpacity.x);
   #endif
