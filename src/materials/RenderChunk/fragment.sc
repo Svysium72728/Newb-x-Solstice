@@ -351,6 +351,12 @@ void main() {
     diffuse.rgb *= mix(vec3(1.0,1.0,1.0), texture2D(s_SeasonsTexture, v_color1.xy).rgb * 2.0, v_color1.z);
   #endif
 
+  float metalMask = 0.0;
+  #ifdef NL_METAL_REFLECTION
+    float metalA = texture2DLod(s_MatTexture, v_texcoord0, 0.0).a;
+    metalMask = step(0.9835, metalA)*step(metalA, 0.987);
+  #endif
+
   float lavaBlue = 0.0;
   #ifdef NL_LAVA_BLUE
     if (env.nether) {
@@ -549,7 +555,48 @@ void main() {
   }
   #endif
 
-  diffuse.rgb = mix(diffuse.rgb, diffuse.bgr, lavaBlue);
+  diffuse.rgb = mix(diffuse.rgb, vec3(diffuse.b + 0.1*diffuse.r, diffuse.r*0.95, diffuse.r*0.75 + diffuse.g*1.2), lavaBlue);
+
+  #ifdef NL_METAL_REFLECTION
+    highp vec3 mpos = vec3(v_causticData.x - CameraPosition.x, v_extra.g, v_causticData.y - CameraPosition.z);
+    highp vec3 mn = cross(dFdx(mpos)*64.0, dFdy(mpos)*64.0);
+    mn = length(mn) > 0.0 ? normalize(mn) : vec3(0.0, 1.0, 0.0);
+    mn = dot(mn, mpos) > 0.0 ? -mn : mn;
+    if (metalMask > 0.5 && !env.underwater && !env.nether && !env.end) {
+      vec3 mlook = normalize(mpos - ViewPositionAndTime.xyz);
+      vec3 mR = reflect(mlook, mn);
+      nl_skycolor msky = nlSkyColors(env);
+      float mt = ViewPositionAndTime.w;
+      vec3 mrefl = nlRenderSky(msky, env, mR, mt, true);
+
+      #ifdef NL_CLOUD_AURORA_REFLECTION
+        if (mR.y > 0.04) {
+          vec4 mc = nlCloudAuroraReflection(msky, env, mR, mpos, CameraPosition.xyz, mt);
+          mrefl = mix(mrefl, mc.rgb, mc.a);
+        }
+      #endif
+
+      #if defined(NL_SKY_BLOCK_CLOUDS_REFL) || defined(NL_SKY_VOLUME_CLOUDS_REFL)
+        if (mR.y > 0.04) {
+          float mj = fract(52.9829189*fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715))));
+          vec4 mkc = nlSkyCloudReflection(mR, mpos - ViewPositionAndTime.xyz, msky, env, mt, mj);
+          mrefl = mrefl*(1.0 - mkc.a) + mkc.rgb;
+        }
+      #endif
+
+      float mcos = clamp(dot(-mlook, mn), 0.0, 1.0);
+      float mfres = mix(0.45, 1.0, pow(1.0 - mcos, 4.0));
+      float msk = smoothstep(0.4, 0.9, v_lightmapUV.y)*(1.0 - 0.5*env.rainFactor);
+      float sunUp = smoothstep(0.0, 0.12, env.sunDir.y)*(1.0 - env.rainFactor);
+      vec3 msun = nlSunLightColor(env)*pow(max(dot(mR, env.sunDir), 0.0), 80.0)*sunUp;
+      vec3 mtorch = vec3(1.0, 0.55, 0.2)*pow(1.0 - mcos, 2.0)*v_lightmapUV.x*v_lightmapUV.x*0.5;
+      vec3 mtint = mix(vec3_splat(1.0), diffuse.rgb/max(max(diffuse.r, max(diffuse.g, diffuse.b)), 0.001), 0.6);
+      vec3 mspec = (mrefl + msun)*msk + mtorch;
+      float mstr = clamp(mfres*NL_METAL_REFLECTION, 0.0, 1.0);
+      diffuse.rgb = diffuse.rgb*(1.0 - 0.5*mstr*msk) + mspec*mtint*mstr;
+    }
+  #endif
+
   diffuse.rgb = mix(diffuse.rgb, v_fog.rgb, v_fog.a);
 
   #ifdef NL_SUN_SHAFTS
