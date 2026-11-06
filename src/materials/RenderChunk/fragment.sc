@@ -387,7 +387,7 @@ void main() {
     if (v_extra.b > 0.9) {
       float texStretch = NL_WATER_TEX_CENTER + (diffuse.b - NL_WATER_TEX_CENTER)*NL_WATER_TEX_CONTRAST;
       float texPattern = NL_WATER_TEX_OPACITY*(texStretch*1.8 - 1.0);
-      texPattern += NL_WATER_TEX_BRIGHT;
+      texPattern = texPattern/(1.0 + abs(texPattern)/(texPattern < 0.0 ? 0.75 : 1.5));
       waterPat = texPattern;
       diffuse.rgb = vec3_splat(1.0 + texPattern);
       diffuse.a = min(color.a*(1.0 + max(texPattern, 0.0)*NL_WATER_TEX_ALPHA), 1.0);
