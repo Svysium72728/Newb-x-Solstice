@@ -1,6 +1,7 @@
 #ifndef NL_CONFIG_H
 #define NL_CONFIG_H
 
+#define NL_METAL_REFLECTION 0.9q
 #define NL_LAVA_BLUE
 #define NL_TAG_WAVE
 #define NL_GLINT_OUTLINE
