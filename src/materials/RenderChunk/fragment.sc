@@ -385,13 +385,21 @@ void main() {
   float waterPat = 0.0;
   #if defined(TRANSPARENT) && !(defined(SEASONS) || defined(RENDER_AS_BILLBOARDS))
     if (v_extra.b > 0.9) {
-      float texStretch = NL_WATER_TEX_CENTER + (diffuse.b - NL_WATER_TEX_CENTER)*NL_WATER_TEX_CONTRAST;
-      float texPattern = NL_WATER_TEX_OPACITY*(texStretch*1.8 - 1.0);
-      texPattern = texPattern/(1.0 + abs(texPattern)/(texPattern < 0.0 ? 0.75 : 1.5));
-      texPattern += NL_WATER_TEX_BRIGHT;
-      waterPat = texPattern;
-      diffuse.rgb = vec3_splat(1.0 + texPattern);
-      diffuse.a = min(color.a*(1.0 + max(texPattern, 0.0)*NL_WATER_TEX_ALPHA), 1.0);
+      #ifdef NL_REIMAGINED
+        float wl = dot(diffuse.rgb, vec3(0.2126, 0.7152, 0.0722));
+        float wrel = wl/NL_WATER_TEX_MEAN - 1.0;
+        float wf = 1.0 + wrel*NL_WATER_TEX_CONTRAST_R + max(wrel, 0.0)*NL_WATER_HIGHLIGHT;
+        waterPat = clamp(wf - 1.0, -0.6, 2.0);
+        diffuse.rgb = vec3_splat(clamp(wf, 0.4, 3.0));
+        diffuse.a = color.a;
+      #else
+        float texStretch = NL_WATER_TEX_CENTER + (diffuse.b - NL_WATER_TEX_CENTER)*NL_WATER_TEX_CONTRAST;
+        float texPattern = NL_WATER_TEX_OPACITY*(texStretch*1.8 - 1.0);
+        texPattern = texPattern/(1.0 + abs(texPattern)/(texPattern < 0.0 ? 0.75 : 1.5));
+        waterPat = texPattern;
+        diffuse.rgb = vec3_splat(1.0 + texPattern);
+        diffuse.a = min(color.a*(1.0 + max(texPattern, 0.0)*NL_WATER_TEX_ALPHA), 1.0);
+      #endif
     }
   #else
     diffuse.a = 1.0;
