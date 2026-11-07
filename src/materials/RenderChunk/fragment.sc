@@ -451,21 +451,17 @@ void main() {
       vec3 sunCol = mix(mix(NL_NOON_SUNLIGHT_COL, vec3_splat(1.0), 0.45), NL_DAWN_SUNLIGHT_COL, pow(1.0 - env.dayFactor*env.dayFactor, 3.0));
       vec3 sunRefl = texture2D(s_SunRefl, suv).rgb*sunCol*inside*sunVis*NL_SUN_REFL_STRENGTH;
       diffuse.rgb += sunRefl;
-      #ifdef NL_SUN_GLINT
-      vec2 gp = v_causticData.xy*NL_SUN_GLINT_SCALE;
-      float gtm = ViewPositionAndTime.w*NL_SUN_GLINT_SPEED;
-      vec3 gn = vec3(
-        sin(gp.x*1.7 + gtm*1.3) + sin(gp.y*2.9 - gtm*1.1) + sin((gp.x + gp.y)*4.1 + gtm*2.0),
-        sin(gp.x*2.3 - gtm*0.9) + sin(gp.y*1.9 + gtm*1.4),
-        cos(gp.y*1.5 + gtm*1.2) + sin((gp.x - gp.y)*3.7 - gtm*1.7)
-      );
-      vec3 gR = normalize(vds + gn*NL_SUN_GLINT_ROUGH);
-      float gd = max(dot(gR, sd), 0.0);
-      float glint = pow(gd, NL_SUN_GLINT_POWER) + 0.25*pow(gd, NL_SUN_GLINT_POWER*0.12);
-      float gtex = clamp(1.0 + waterPat*NL_SUN_GLINT_TEX, 0.0, 3.0);
-      float gfres = mix(0.15, 1.0, pow(1.0 - clamp(vds.y, 0.0, 1.0), 3.0));
-      diffuse.rgb += sunCol*glint*gtex*gfres*sunVis*NL_SUN_GLINT;
-      #endif
+   #ifdef NL_SUN_GLINT
+      vec2 sdh = normalize(sd.xz + 0.0001);
+      float galong = dot(wps.xz, sdh)*mix(-1.0, 1.0, NL_SUN_REFL_MIRROR);
+      float glat = abs(wps.x*sdh.y - wps.z*sdh.x);
+      float ghalf = NL_SUN_GLINT_WIDTH*0.5;
+      float gmask = (1.0 - smoothstep(ghalf*0.7, ghalf, glat))*smoothstep(0.0, 2.0, galong);
+      gmask = clamp(gmask*sunVis*NL_SUN_GLINT, 0.0, 1.0);
+      float gl = dot(diffuse.rgb, vec3(0.299, 0.587, 0.114));
+      vec3 gtint = NL_SUN_GLINT_COL*(gl*NL_SUN_GLINT_BOOST + NL_SUN_GLINT_BASE);
+      diffuse.rgb = mix(diffuse.rgb, gtint, gmask);
+   #endif
     }
 
   } else if (v_refl.a > 0.0) {
