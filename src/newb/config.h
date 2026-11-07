@@ -15,7 +15,7 @@
 #define NL_BH_REFL_TERRAIN 1.0
 #define NL_BH_REFL_MIRROR 0.0
 
-#define NL_SUN_GLINT 3.0
+#define NL_SUN_GLINT 0.0
 #define NL_SUN_GLINT_WIDTH 1.0
 #define NL_SUN_GLINT_COL vec3(1.0, 0.62, 0.2)
 #define NL_SUN_GLINT_BOOST 1.6
