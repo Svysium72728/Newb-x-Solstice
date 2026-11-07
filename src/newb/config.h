@@ -1,11 +1,31 @@
 #ifndef NL_CONFIG_H
 #define NL_CONFIG_H
 
-//#define NL_BLACKHOLE_REFL
-#define NL_BH_REFL_TERRAIN 0.6
+#define NL_METAL_REFLECTION 2.1
+//#define NL_LAVA_BLUE
+#define NL_TAG_WAVE
+#define NL_GLINT_OUTLINE
+#define NL_GLINT_OUTLINE_STRENGTH 1.2
+#define NL_GLINT_OUTLINE_COL vec3(0.55, 0.25, 1.0)
+#define NL_GLINT_OUTLINE_MINTEX 256.0
+#define NL_WATER_FOAM_NIGHT 0.15
+#define NL_WATER_TEX_BRIGHT 0.5
+
+#define NL_BLACKHOLE_REFL
+#define NL_BH_REFL_TERRAIN 1.0
 #define NL_BH_REFL_MIRROR 0.0
 
-//#define NL_SUN_SHAFTS 0.8
+#define NL_SUN_GLINT 0.0
+#define NL_SUN_GLINT_WIDTH 1.0
+#define NL_SUN_GLINT_COL vec3(1.0, 0.62, 0.2)
+#define NL_SUN_GLINT_BOOST 1.6
+#define NL_SUN_GLINT_BASE 0.08
+#define NL_SUN_GLINT_TEX 1.5
+#define NL_WATER_TEX_CONTRAST 4.0
+#define NL_WATER_TEX_CENTER 0.80
+#define NL_WATER_TEX_ALPHA 0.4
+
+#define NL_SUN_SHAFTS 0.8
 #define NL_SUN_SHAFTS_COL mix(NL_DAWN_SUNLIGHT_COL, vec3(1.0, 1.0, 1.0), 0.15)
 #define NL_SUN_SHAFTS_DENSITY 0.012
 
@@ -20,6 +40,7 @@
   #define NL_EQUI_CLOUD_SPEED 0.0004
   #define NL_EQUI_CLOUD_NIGHT 0.30
 
+
 #define NL_SUN_FOG_GLOW 3.0
 #define NL_SUN_FOG_POWER 10.0
 #define NL_SUN_FOG_NOON 0.15
@@ -27,8 +48,8 @@
 #define NL_SUN_FOG_DENSITY 0.8
 #define NL_SUN_FOG_SKY 0.6
 
-//#define NL_SKY_BLOCK_CLOUDS_REFL
-//#define NL_SKY_VOLUME_CLOUDS_REFL
+#define NL_SKY_BLOCK_CLOUDS_REFL
+#define NL_SKY_VOLUME_CLOUDS_REFL
 #define NL_VOL_CLOUD_REFL_STEPS 4
 #define NL_BLOCK_CLOUD_REFL_STEPS 2
 #define NL_CLOUD_REFL_UNIT 600.0
@@ -45,7 +66,7 @@
 #define NL_END_CLOUD_COL_LIGHT vec3(0.70,0.55,0.94)
 #define NL_END_CLOUD_COL_DARK  vec3(0.22,0.13,0.40)
 #define NL_END_CLOUD_FOG_COL   vec3(0.30,0.18,0.48)
-//#define NL_END_NEBULA
+#define NL_END_NEBULA
 #define NL_END_NEBULA_SCALE 2.2
 #define NL_END_NEBULA_SPEED 0.02
 #define NL_END_NEBULA_PATCH 1.8
@@ -81,7 +102,7 @@
 #define NL_BLOCK_CLOUD_SHADE_COL vec3(0.866, 1.070, 1.345)
 
 #define NL_WATER_RESOLUTE_WAVES
-#define NL_WAVE_COUNT 2
+#define NL_WAVE_COUNT 8
 #define NL_RESOLUTE_WAVE_SPEED 0.8
 #define NL_WAVE_STEEP 2.0
 #define NL_WAVE_FREQ 0.4
@@ -95,6 +116,12 @@
 #define NL_WATER_FOAM
 #define NL_WATER_FOAM_STRENGTH 1.0
 #define NL_WATER_FOAM_COLOR vec3(3.0, 3.0, 3.0)
+#define NL_LAVA_FOAM
+#define NL_LAVA_FOAM_STRENGTH 0.85
+#define NL_LAVA_FOAM_SPEED 0.25
+#define NL_LAVA_FOAM_SCALE 8.0
+#define NL_LAVA_FOAM_COLOR_LOW vec3(1.5, 0.22, 0.02)
+#define NL_LAVA_FOAM_COLOR_HIGH vec3(2.4, 0.7, 0.1)
 #define NL_SUN_CIRCLE_BLOOM 1.0
 #define NL_CLOUD4_REFL_HEIGHT 187.0
 #define NL_CLOUD4_REFL_SCALE 0.02
@@ -237,7 +264,7 @@
 #define NL_WATER_WAVE_SPEED  1.2  // 0.2 calm ~ 2.0 turbulent
 #define NL_WATER_TEX_OPACITY 1.0 // 0.0 plain water ~ 1.0 vanilla water texture
 //#define NL_WATER_WAVE             // [toggle] wave effect
-//#define NL_WATER_REFL_MASK        // [toggle] fake water reflection mask
+#define NL_WATER_REFL_MASK        // [toggle] fake water reflection mask
 #define NL_WATER_TINT vec3(0.35, 0.39, 0.68)
 
 /* Underwater */
@@ -353,7 +380,7 @@
 //#define NL_GROUND_REFL 0.4       // [toggle] 0.2 slightly reflective ~ 1.0 fully reflect sky
 #define NL_GROUND_RAIN_WETNESS 0.8 // 0.0 no wetness ~ 1.0 fully wet blocks when raining
 #define NL_GROUND_RAIN_PUDDLES 0.7 // 0.0 no puddles ~ 1.0 puddles
-//#define NL_END_GROUND_REFL
+#define NL_END_GROUND_REFL
 #define NL_END_GROUND_REFL_STRENGTH 0.6 // 0.1 subtle ~ 1.0 strongly reflective
 
 /* Entity (Actor, ItemInHand) */
@@ -401,11 +428,15 @@
   #undef NL_WATER_TEX_OPACITY
   #define NL_WATER_TEX_OPACITY 0.0
   #define NL_SKY_VOLUME_CLOUDS
+  #define NL_SKY_AURORA
+  #define NL_SKY_AURORA_HEAVY
+  #define NL_SKY_AURORA_SMOOTH
+  #define NL_SKY_AURORA_SPEED 4.0
   #define NL_BLINKING_TORCH
   #undef NL_WATER_FOAM
   #undef NL_SKY_BLOCK_CLOUDS
   #undef NL_VOL_CLOUD_STEPS
-  #define NL_VOL_CLOUD_STEPS 5
+  #define NL_VOL_CLOUD_STEPS 10
   #define NL_END_CLOUDS
   #define NL_END_CLOUD_SPEED 0.0
   #define NL_END_CLOUD_LO 0.15
@@ -424,9 +455,13 @@
   #define NL_CAUSTIC_LO 0.68
   #define NL_CAUSTIC_HI 1.0
   #define NL_CAUSTIC_GAIN 0.6
+  #define NL_LAVA_NOISE
 #endif
 
 #ifdef NL_REIMAGINED
+  #define NL_SKY_AURORA
+  #define NL_SKY_AURORA_HEAVY
+  #define NL_SKY_AURORA_SPEED 4.0
   #define NL_SKY_BLOCK_CLOUDS
   #undef NL_WATER_RESOLUTE_WAVES
   #undef NL_WATER_REFL_MASK
@@ -436,6 +471,9 @@
   #define NL_CAUSTIC_FPS 10.0
   #define NL_CAUSTIC_BLEND 1
   #undef NL_SKY_EQUI_CLOUDS
+  #define NL_WATER_TEX_MEAN 0.30
+  #define NL_WATER_TEX_CONTRAST_R 6.0
+  #define NL_WATER_HIGHLIGHT 8.0
 #endif
 
 #endif
