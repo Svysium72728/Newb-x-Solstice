@@ -1,7 +1,7 @@
 {
   "name": "VolCloudNoise",
-  "register_slot": 5,
-  "binding_slot": 5,
+  "register_slot": 9,
+  "binding_slot": 9,
   "type": "texture2D",
   "precision": "lowp",
   "access": "readonly",

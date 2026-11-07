@@ -261,35 +261,34 @@ vec4 nlSkyCloudReflection(vec3 r, vec3 pos, nl_skycolor skycol, nl_environment e
       vec3 shadowCol = mix(skycol.zenith, skycol.horizon, 0.5)*NL_VOL_CLOUD_SHADOW_TINT*(1.0 - 0.4*env.rainFactor);
       vec3 topAmb = mix(shadowCol, vec3_splat(1.0), 0.45)*mix(NL_VOL_CLOUD_NIGHT*2.0, 1.0, dayK);
       float silver = pow(max(dot(sdr, L), 0.0), 6.0);
-      vec2 base = -pu.xz*NL_VOL_CLOUD_SCALE + vec2(time*NL_VOL_CLOUD_SPEED, time*NL_VOL_CLOUD_SPEED*0.4);
-      vec2 stepXZ = -r.xz*invY*NL_VOL_CLOUD_SCALE;
+      vec2 toLight = L.xz/max(L.y, 0.25);
+      highp vec2 base = -pu.xz*NL_VOL_CLOUD_SCALE + vec2(time*NL_VOL_CLOUD_SPEED, time*NL_VOL_CLOUD_SPEED*0.4);
+      highp vec2 stepXZ = -r.xz*invY*NL_VOL_CLOUD_SCALE;
+      highp vec2 cp = base + stepXZ*max(1.0 - pu.y, 0.0);
+      float dt = texture2DLod(s_VolCloudNoise, cp*3.7 + 0.31, 0.0).g;
+      float lb = texture2DLod(s_VolCloudNoise, cp + toLight*0.09, 0.0).r;
+      float lshade = clamp((lb - thr)*3.0, 0.0, 1.0);
 
       float Tv = 1.0;
       vec3 cv = vec3(0.0, 0.0, 0.0);
       for (int i = 0; i < NL_VOL_CLOUD_REFL_STEPS; i++) {
-        float h = (float(i) + jitter)/float(NL_VOL_CLOUD_REFL_STEPS);
-        vec2 p = base + stepXZ*max(1.0 + 0.6*h - pu.y, 0.0);
+        float h = (float(i) + 0.5 + 0.35*(jitter - 0.5))/float(NL_VOL_CLOUD_REFL_STEPS);
+        highp vec2 p = cp*(1.0 - 0.12*h) + toLight*0.04*h;
         float b = texture2DLod(s_VolCloudNoise, p, 0.0).r;
-        float prof = smoothstep(0.0, 0.1, h)*(1.0 - smoothstep(0.25, 0.9, h - (b - 0.5)*1.2));
-        float tp = thr + 0.28*(1.0 - prof);
-        if (b > tp - 0.12) {
-          float dt = texture2DLod(s_VolCloudNoise, p*3.7 + 0.31, 0.0).g;
-          float dt2 = texture2DLod(s_VolCloudNoise, p*9.1 + 0.67, 0.0).b;
-          float billow = (dt - 0.5)*0.2 + (dt2 - 0.5)*0.08;
-          float n = b + billow*(0.6 + 0.8*(1.0 - prof));
-          float core = clamp((n - tp)*5.0, 0.0, 1.0);
-          float d = core*core*(3.0 - 2.0*core);
-          if (d > 0.0) {
-            float rim = smoothstep(0.0, 0.5, core);
-            float belly = mix(0.35, 1.0, smoothstep(0.0, 0.8, h));
-            float lit = belly*exp(-d*0.9);
-            vec3 c = mix(shadowCol*0.6, topAmb, belly*rim) + lightCol*(lit*0.9 + 2.5*silver)*mix(0.55, 1.0, rim);
-            float a = 1.0 - exp(-d*NL_VOL_CLOUD_DENSITY/float(NL_VOL_CLOUD_REFL_STEPS));
-            cv += Tv*a*c;
-            Tv *= 1.0 - a;
-            if (Tv < 0.04) {
-              break;
-            }
+        float prof = smoothstep(0.0, 0.18, h)*(1.0 - smoothstep(0.35, 1.0, h - (b - 0.5)*1.1));
+        float tp = thr + 0.25*(1.0 - prof);
+        float n = b + (dt - 0.5)*0.22*(1.0 - 0.5*prof);
+        float d = smoothstep(tp - 0.02, tp + 0.2, n);
+        if (d > 0.002) {
+          float lit = exp(-lshade*(1.0 - h)*1.8);
+          float rim = smoothstep(0.0, 0.6, d);
+          float belly = mix(0.4, 1.0, h);
+          vec3 c = mix(shadowCol*0.6, topAmb, belly*rim) + lightCol*(lit*0.9*belly + 2.5*silver*lit)*mix(0.6, 1.0, rim);
+          float a = 1.0 - exp(-d*NL_VOL_CLOUD_DENSITY/float(NL_VOL_CLOUD_REFL_STEPS));
+          cv += Tv*a*c;
+          Tv *= 1.0 - a;
+          if (Tv < 0.1) {
+            break;
           }
         }
       }
@@ -352,7 +351,24 @@ void main() {
     diffuse.rgb *= mix(vec3(1.0,1.0,1.0), texture2D(s_SeasonsTexture, v_color1.xy).rgb * 2.0, v_color1.z);
   #endif
 
-  float sideshadow = smoothstep(0.64, 0.62, v_color1.g) * max(v_lightmapUV.x, v_lightmapUV.y);
+  float metalMask = 0.0;
+  #ifdef NL_METAL_REFLECTION
+    float metalA = texture2DLod(s_MatTexture, v_texcoord0, 0.0).a;
+    metalMask = step(0.9835, metalA)*step(metalA, 0.987);
+  #endif
+
+  float lavaBlue = 0.0;
+  #ifdef NL_LAVA_BLUE
+    if (env.nether) {
+      vec3 fcn = FogColor.rgb;
+      float ssvB = smoothstep(0.6, 0.35, fcn.r/max(fcn.g, 0.001))*smoothstep(0.1, 0.18, fcn.g);
+      float warpB = smoothstep(2.0, 4.0, fcn.b/max(fcn.g, 0.005))*smoothstep(0.04, 0.08, fcn.b);
+      lavaBlue = max(ssvB, warpB)*step(0.5, v_color1.a);
+    }
+  #endif
+
+  float outdoorMask = smoothstep(0.86, 0.93, v_lightmapUV.y);
+  float sideshadow = smoothstep(0.64, 0.62, v_color1.g) * max(v_lightmapUV.x, v_lightmapUV.y) * outdoorMask;
   diffuse.rgb *= 1.0-0.25*sideshadow;
 
   vec3 glow = nlGlow(s_MatTexture, v_texcoord0, v_extra.a);
@@ -366,12 +382,24 @@ void main() {
 
   diffuse.rgb *= diffuse.rgb;
 
+  float waterPat = 0.0;
   #if defined(TRANSPARENT) && !(defined(SEASONS) || defined(RENDER_AS_BILLBOARDS))
     if (v_extra.b > 0.9) {
-      float texPattern = NL_WATER_TEX_OPACITY*(diffuse.b*1.8 - 1.0);
-      texPattern = texPattern/(1.0 + abs(texPattern)/(texPattern < 0.0 ? 0.75 : 1.5));
-      diffuse.rgb = vec3_splat(1.0 + texPattern);
-      diffuse.a = color.a;
+      #ifdef NL_REIMAGINED
+        float wl = dot(diffuse.rgb, vec3(0.2126, 0.7152, 0.0722));
+        float wrel = wl/NL_WATER_TEX_MEAN - 1.0;
+        float wf = 1.0 + wrel*NL_WATER_TEX_CONTRAST_R + max(wrel, 0.0)*NL_WATER_HIGHLIGHT;
+        waterPat = clamp(wf - 1.0, -0.6, 2.0);
+        diffuse.rgb = vec3_splat(clamp(wf, 0.4, 3.0));
+        diffuse.a = color.a;
+      #else
+        float texStretch = NL_WATER_TEX_CENTER + (diffuse.b - NL_WATER_TEX_CENTER)*NL_WATER_TEX_CONTRAST;
+        float texPattern = NL_WATER_TEX_OPACITY*(texStretch*1.8 - 1.0);
+        texPattern = texPattern/(1.0 + abs(texPattern)/(texPattern < 0.0 ? 0.75 : 1.5));
+        waterPat = texPattern;
+        diffuse.rgb = vec3_splat(1.0 + texPattern);
+        diffuse.a = min(color.a*(1.0 + max(texPattern, 0.0)*NL_WATER_TEX_ALPHA), 1.0);
+      #endif
     }
   #else
     diffuse.a = 1.0;
@@ -423,6 +451,17 @@ void main() {
       vec3 sunCol = mix(mix(NL_NOON_SUNLIGHT_COL, vec3_splat(1.0), 0.45), NL_DAWN_SUNLIGHT_COL, pow(1.0 - env.dayFactor*env.dayFactor, 3.0));
       vec3 sunRefl = texture2D(s_SunRefl, suv).rgb*sunCol*inside*sunVis*NL_SUN_REFL_STRENGTH;
       diffuse.rgb += sunRefl;
+   #ifdef NL_SUN_GLINT
+      vec2 sdh = normalize(sd.xz + 0.0001);
+      float galong = dot(wps.xz, sdh)*mix(-1.0, 1.0, NL_SUN_REFL_MIRROR);
+      float glat = abs(wps.x*sdh.y - wps.z*sdh.x);
+      float ghalf = NL_SUN_GLINT_WIDTH*0.5;
+      float gmask = (1.0 - smoothstep(ghalf*0.7, ghalf, glat))*smoothstep(0.0, 2.0, galong);
+      gmask = clamp(gmask*sunVis*NL_SUN_GLINT, 0.0, 1.0);
+      float gl = dot(diffuse.rgb, vec3(0.299, 0.587, 0.114));
+      vec3 gtint = NL_SUN_GLINT_COL*(gl*NL_SUN_GLINT_BOOST + NL_SUN_GLINT_BASE);
+      diffuse.rgb = mix(diffuse.rgb, gtint, gmask);
+   #endif
     }
 
   } else if (v_refl.a > 0.0) {
@@ -492,8 +531,77 @@ void main() {
     foamTex *= fade;
     foamTex = mix(foamTex, 1.0, fade * fade * fade);
 
-    diffuse.rgb = mix(diffuse.rgb, NL_WATER_FOAM_COLOR, clamp(foamTex*NL_WATER_FOAM_STRENGTH, 0.0, 1.0));
+    float foamLight = mix(NL_WATER_FOAM_NIGHT, 1.0, smoothstep(-0.2, 0.25, env.dayFactor));
+    foamLight = max(foamLight, smoothstep(0.4, 0.9, v_lightmapUV.x));
+    diffuse.rgb = mix(diffuse.rgb, NL_WATER_FOAM_COLOR*foamLight, clamp(foamTex*NL_WATER_FOAM_STRENGTH, 0.0, 1.0));
   }
+  #endif
+
+  #ifdef NL_LAVA_FOAM
+  float ldy = abs(dFdy(v_extra.g));
+  highp float lwy = v_extra.g + CameraPosition.y;
+  if ((v_color1.r + v_color1.g + v_color1.b) > 2.999
+      && abs(fract(lwy) - 0.89) < 0.012
+      && ldy < 0.0002
+      && v_lightmapUV.x > 0.81 && v_lightmapUV.x < 0.876
+      && v_texcoord0.y > 0.5
+      && !env.underwater) {
+    vec2 lp = v_causticData.xy;
+    float lt = NL_LAVA_FOAM_SPEED*ViewPositionAndTime.w;
+    float ln = sin(lp.x*0.9 + 3.0*sin(0.5*lp.y) + lt)*sin(lp.y*0.9 + 3.0*sin(0.5*lp.x) - lt);
+    ln = 0.5 + 0.5*sin(lp.x*0.9 + 2.0*ln + 0.2*lt)*sin(lp.y*0.9 - 4.0*ln + 0.1*lt);
+    float lpatch = smoothstep(0.42, 0.8, ln);
+    float lcell = fract(238.084*sin(dot(floor(NL_LAVA_FOAM_SCALE*lp + vec2(lt*0.4, 0.0)), vec2(1.32, 141.3))));
+    float lfoam = lpatch*smoothstep(0.3, 0.9, lcell + 0.45*lpatch);
+    vec3 lcol = mix(NL_LAVA_FOAM_COLOR_LOW, NL_LAVA_FOAM_COLOR_HIGH, lcell);
+    #ifdef NL_LAVA_FOAM_DEBUG
+      diffuse.rgb = vec3(3.0, 0.0, 3.0);
+    #else
+      diffuse.rgb = mix(diffuse.rgb, lcol, clamp(lfoam*NL_LAVA_FOAM_STRENGTH, 0.0, 1.0));
+    #endif
+  }
+  #endif
+
+  diffuse.rgb = mix(diffuse.rgb, vec3(diffuse.b + 0.1*diffuse.r, diffuse.r*0.95, diffuse.r*0.75 + diffuse.g*1.2), lavaBlue);
+
+  #ifdef NL_METAL_REFLECTION
+    highp vec3 mpos = vec3(v_causticData.x - CameraPosition.x, v_extra.g, v_causticData.y - CameraPosition.z);
+    highp vec3 mn = cross(dFdx(mpos)*64.0, dFdy(mpos)*64.0);
+    mn = length(mn) > 0.0 ? normalize(mn) : vec3(0.0, 1.0, 0.0);
+    mn = dot(mn, mpos) > 0.0 ? -mn : mn;
+    if (metalMask > 0.5 && !env.underwater && !env.nether && !env.end) {
+      vec3 mlook = normalize(mpos - ViewPositionAndTime.xyz);
+      vec3 mR = reflect(mlook, mn);
+      nl_skycolor msky = nlSkyColors(env);
+      float mt = ViewPositionAndTime.w;
+      vec3 mrefl = nlRenderSky(msky, env, mR, mt, true);
+
+      #ifdef NL_CLOUD_AURORA_REFLECTION
+        if (mR.y > 0.04) {
+          vec4 mc = nlCloudAuroraReflection(msky, env, mR, mpos, CameraPosition.xyz, mt);
+          mrefl = mix(mrefl, mc.rgb, mc.a);
+        }
+      #endif
+
+      #if defined(NL_SKY_BLOCK_CLOUDS_REFL) || defined(NL_SKY_VOLUME_CLOUDS_REFL)
+        if (mR.y > 0.04) {
+          float mj = fract(52.9829189*fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715))));
+          vec4 mkc = nlSkyCloudReflection(mR, mpos - ViewPositionAndTime.xyz, msky, env, mt, mj);
+          mrefl = mrefl*(1.0 - mkc.a) + mkc.rgb;
+        }
+      #endif
+
+      float mcos = clamp(dot(-mlook, mn), 0.0, 1.0);
+      float mfres = mix(0.45, 1.0, pow(1.0 - mcos, 4.0));
+      float msk = smoothstep(0.4, 0.9, v_lightmapUV.y)*(1.0 - 0.5*env.rainFactor);
+      float sunUp = smoothstep(0.0, 0.12, env.sunDir.y)*(1.0 - env.rainFactor);
+      vec3 msun = nlSunLightColor(env)*pow(max(dot(mR, env.sunDir), 0.0), 80.0)*sunUp;
+      vec3 mtorch = vec3(1.0, 0.55, 0.2)*pow(1.0 - mcos, 2.0)*v_lightmapUV.x*v_lightmapUV.x*0.5;
+      vec3 mtint = mix(vec3_splat(1.0), diffuse.rgb/max(max(diffuse.r, max(diffuse.g, diffuse.b)), 0.001), 0.6);
+      vec3 mspec = (mrefl + msun)*msk + mtorch;
+      float mstr = clamp(mfres*NL_METAL_REFLECTION, 0.0, 1.0);
+      diffuse.rgb = diffuse.rgb*(1.0 - 0.5*mstr*msk) + mspec*mtint*mstr;
+    }
   #endif
 
   diffuse.rgb = mix(diffuse.rgb, v_fog.rgb, v_fog.a);

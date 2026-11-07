@@ -6,7 +6,7 @@ Check [the shader dependencies](https://github.com/Coolguyhehe2515/Coolguyhehe25
 
 <br>
 
-![Screenshots](docs/newb_main.jpg "Newb X Krispy, MCBE 26.45")
+![Screenshots](docs/Picsart_26-11-04_18-45-54-257.jpg "Newb X Solstice, MCBE 26.60")
 
 # inspirations
 

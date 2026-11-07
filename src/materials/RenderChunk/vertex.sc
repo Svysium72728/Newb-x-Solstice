@@ -165,13 +165,26 @@ void main() {
     nlUnderwaterLighting(light, pos.xyz, lit, uv1, tiledCpos, cPos, t, skycol.horizon);
   }
 
-  color.rgb *= light;
+    #if defined(NL_WATER_RESOLUTE_WAVES) && defined(NL_WAVE_NEUTRAL_LIGHT)
+    color.rgb *= mix(light, vec3_splat(luminance(light)), water*NL_WAVE_NEUTRAL_LIGHT);
+  #else
+    color.rgb *= light;
+  #endif
 
   #if defined(NL_GLOW_SHIMMER) && !(defined(RENDER_AS_BILLBOARDS) || defined(SEASONS))
     float shimmer = nlGlowShimmer(cPos, t);
   #else
     float shimmer = 1.0;
   #endif
+
+  float lavaMark = 0.0;
+  {
+    bool lmc = (a_color0.r+a_color0.g+a_color0.b) > 2.999;
+    bool lmb = bPos.y < 0.891 && bPos.y > 0.889;
+    if (lmc && lmb && (uv1.x > 0.81 && uv1.x < 0.876) && uv0.y > 0.5) {
+      lavaMark = 1.0;
+    }
+  }
 
   #ifdef NL_LAVA_NOISE
     bool isc = (a_color0.r+a_color0.g+a_color0.b) > 2.999;
@@ -190,7 +203,7 @@ void main() {
   v_texcoord0 = uv0;
   v_lightmapUV = uv1;
   v_color0 = color;
-  v_color1 = a_color0;
+  v_color1 = vec4(a_color0.rgb, lavaMark);
   v_fog = fogColor;
   v_causticData = vec3(gPos.x, gPos.z, env.underwater ? 1.0 : 0.0);
 
