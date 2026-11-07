@@ -48,8 +48,8 @@
 #define NL_SUN_FOG_DENSITY 0.8
 #define NL_SUN_FOG_SKY 0.6
 
-#define NL_SKY_BLOCK_CLOUDS_REFL
-#define NL_SKY_VOLUME_CLOUDS_REFL
+//#define NL_SKY_BLOCK_CLOUDS_REFL
+//#define NL_SKY_VOLUME_CLOUDS_REFL
 #define NL_VOL_CLOUD_REFL_STEPS 4
 #define NL_BLOCK_CLOUD_REFL_STEPS 2
 #define NL_CLOUD_REFL_UNIT 600.0
@@ -66,7 +66,7 @@
 #define NL_END_CLOUD_COL_LIGHT vec3(0.70,0.55,0.94)
 #define NL_END_CLOUD_COL_DARK  vec3(0.22,0.13,0.40)
 #define NL_END_CLOUD_FOG_COL   vec3(0.30,0.18,0.48)
-#define NL_END_NEBULA
+//#define NL_END_NEBULA
 #define NL_END_NEBULA_SCALE 2.2
 #define NL_END_NEBULA_SPEED 0.02
 #define NL_END_NEBULA_PATCH 1.8
@@ -84,10 +84,10 @@
 #define NL_OCEAN_VIG_START 0.25
 #define NL_OCEAN_VIG_END 0.8
 #define NL_OCEAN_VIG_POWER 1.8
-#define NL_OCEAN_VIG_STRENGTH 1.0
+#define NL_OCEAN_VIG_STRENGTH 1/.0
 
 #define NL_SKY_BLOCK_CLOUDS
-#define NL_BLOCK_CLOUD_STEPS 6
+#define NL_BLOCK_CLOUD_STEPS 4
 #define NL_BLOCK_CLOUD_SCALE 9.5
 #define NL_BLOCK_CLOUD_COVER 0.34
 #define NL_BLOCK_CLOUD_BASE 1.0
@@ -102,7 +102,7 @@
 #define NL_BLOCK_CLOUD_SHADE_COL vec3(0.866, 1.070, 1.345)
 
 #define NL_WATER_RESOLUTE_WAVES
-#define NL_WAVE_COUNT 8
+#define NL_WAVE_COUNT 4
 #define NL_RESOLUTE_WAVE_SPEED 0.8
 #define NL_WAVE_STEEP 2.0
 #define NL_WAVE_FREQ 0.4
@@ -256,7 +256,7 @@
 #define NL_LANTERN_WAVE 0.16   // [toggle] 0.05 subtle ~ 0.4 large swing
 #define NL_WAVE_SPEED 2.8      // 0.5 slow wave ~ 5.0 very fast wave
 //#define NL_EXTRA_PLANTS_WAVE // [toggle] !dont use! wave using texture coords (1.21.0 vanilla 2048x1024)
-#define NL_WAVE_RANGE 16.0     // 6.0 upto 6 blocks ~ 32.0 upto 32 blocks away (slower)
+#define NL_WAVE_RANGE 8.0     // 6.0 upto 6 blocks ~ 32.0 upto 32 blocks away (slower)
 
 /* Water */
 #define NL_WATER_TRANSPARENCY 0.7 // 0.0 transparent ~ 1.0 normal
@@ -378,7 +378,7 @@
 
 /* Sky reflection */
 //#define NL_GROUND_REFL 0.4       // [toggle] 0.2 slightly reflective ~ 1.0 fully reflect sky
-#define NL_GROUND_RAIN_WETNESS 0.8 // 0.0 no wetness ~ 1.0 fully wet blocks when raining
+#define NL_GROUND_RAIN_WETNESS 0.2 // 0.0 no wetness ~ 1.0 fully wet blocks when raining
 #define NL_GROUND_RAIN_PUDDLES 0.7 // 0.0 no puddles ~ 1.0 puddles
 #define NL_END_GROUND_REFL
 #define NL_END_GROUND_REFL_STRENGTH 0.6 // 0.1 subtle ~ 1.0 strongly reflective
@@ -428,10 +428,6 @@
   #undef NL_WATER_TEX_OPACITY
   #define NL_WATER_TEX_OPACITY 0.0
   #define NL_SKY_VOLUME_CLOUDS
-  #define NL_SKY_AURORA
-  #define NL_SKY_AURORA_HEAVY
-  #define NL_SKY_AURORA_SMOOTH
-  #define NL_SKY_AURORA_SPEED 4.0
   #define NL_BLINKING_TORCH
   #undef NL_WATER_FOAM
   #undef NL_SKY_BLOCK_CLOUDS
@@ -459,9 +455,6 @@
 #endif
 
 #ifdef NL_REIMAGINED
-  #define NL_SKY_AURORA
-  #define NL_SKY_AURORA_HEAVY
-  #define NL_SKY_AURORA_SPEED 4.0
   #define NL_SKY_BLOCK_CLOUDS
   #undef NL_WATER_RESOLUTE_WAVES
   #undef NL_WATER_REFL_MASK
