@@ -1,0 +1,103 @@
+
+name: Actions Auto Cleaner
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+
+  workflow_dispatch:
+
+permissions:
+  actions: write
+
+concurrency:
+  group: actions-auto-cleaner
+  cancel-in-progress: false
+
+jobs:
+  cleanup:
+    name: Clean Artifacts & Caches
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Delete all workflow artifacts
+        id: artifacts
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            let deleted = 0;
+            let page = 1;
+
+            while (true) {
+              const response = await github.rest.actions.listArtifactsForRepo({
+                owner,
+                repo,
+                per_page: 100,
+                page
+              });
+
+              const artifacts = response.data.artifacts;
+              if (artifacts.length === 0) break;
+
+              for (const artifact of artifacts) {
+                await github.rest.actions.deleteArtifact({
+                  owner,
+                  repo,
+                  artifact_id: artifact.id
+                });
+                deleted++;
+                core.info(`Deleted artifact: ${artifact.name}`);
+              }
+
+              page++;
+            }
+
+            core.setOutput('deleted', deleted);
+            core.info(`Total artifacts deleted: ${deleted}`);
+
+      - name: Delete all Actions caches
+        id: caches
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            let deleted = 0;
+            let page = 1;
+
+            while (true) {
+              const response = await github.rest.actions.getActionsCacheList({
+                owner,
+                repo,
+                per_page: 100,
+                page
+              });
+
+              const caches = response.data.actions_caches;
+              if (caches.length === 0) break;
+
+              for (const cache of caches) {
+                await github.rest.actions.deleteActionsCacheById({
+                  owner,
+                  repo,
+                  cache_id: cache.id
+                });
+                deleted++;
+                core.info(`Deleted cache ID: ${cache.id}`);
+              }
+
+              page++;
+            }
+
+            core.setOutput('deleted', deleted);
+            core.info(`Total caches deleted: ${deleted}`);
+
+      - name: Cleanup Summary
+        if: always()
+        run: |
+          echo "## Actions Auto Cleaner" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Cleanup process completed." >> "$GITHUB_STEP_SUMMARY"
+          echo "- Artifacts: ${{ steps.artifacts.outputs.deleted }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Caches: ${{ steps.caches.outputs.deleted }}" >> "$G
+          ITHUB_STEP_SUMMARY"
