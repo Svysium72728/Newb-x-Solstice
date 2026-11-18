@@ -1,6 +1,12 @@
 #ifndef NL_CONFIG_H
 #define NL_CONFIG_H
 
+#define NL_CUSTOM_STARS
+#define NL_STAR_DENSITY 0.22
+#define NL_STAR_SIZE 1.1
+#define NL_STAR_GLOW 1.0
+#define NL_STAR_BRIGHTNESS 1.0
+
 #define NL_METAL_REFLECTION 2.1
 //#define NL_LAVA_BLUE
 #define NL_TAG_WAVE
@@ -225,9 +231,9 @@
 #define NL_DAY_ZENITH_COL    vec3(0.35, 0.39, 0.68)
 #define NL_DAY_HORIZON_COL   vec3(0.80, 0.77, 1.11)
 #define NL_DAY_EDGE_COL      vec3(1.04, 0.95, 1.29)
-#define NL_NIGHT_ZENITH_COL  vec3(0.008,0.048,0.08)
-#define NL_NIGHT_HORIZON_COL vec3(0.02,0.06,0.1)
-#define NL_NIGHT_EDGE_COL    vec3(0.04,0.08,0.1)
+#define NL_NIGHT_ZENITH_COL  vec3(0.055,0.077,0.112)
+#define NL_NIGHT_HORIZON_COL vec3(0.144,0.198,0.301)
+#define NL_NIGHT_EDGE_COL    vec3(0.069,0.094,0.139)
 #define NL_RAIN_ZENITH_COL   vec3(0.47,0.51,0.56)
 #define NL_RAIN_HORIZON_COL  vec3(0.6,0.6,0.6)
 
