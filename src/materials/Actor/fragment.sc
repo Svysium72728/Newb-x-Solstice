@@ -27,6 +27,7 @@ void main() {
   #endif
 
   vec4 albedo = getActorAlbedoNoColorChange(v_texcoord0, s_MatTexture, s_MatTexture1, MatColor);
+  vec3 entityGlow = glowDetect(albedo);
 
   #ifdef ALPHA_TEST
     float alpha = mix(albedo.a, (albedo.a * OverlayColor.a), TintedAlphaTestEnabled.x);
@@ -58,6 +59,7 @@ void main() {
   #endif
 
   albedo = applyLighting(albedo, light);
+  albedo.rgb += entityGlow*NL_GLOW_TEX;
 
   #ifdef TRANSPARENT
     albedo = applyHudOpacity(albedo, HudOpacity.x);
