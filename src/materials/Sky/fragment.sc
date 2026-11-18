@@ -266,6 +266,79 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
     }
   #endif
 
+  #ifdef NL_CUSTOM_STARS
+    #ifndef NL_STAR_GRID
+      #define NL_STAR_GRID 60.0
+    #endif
+    #ifndef NL_STAR_DENSITY
+      #define NL_STAR_DENSITY 0.22
+    #endif
+    #ifndef NL_STAR_SIZE
+      #define NL_STAR_SIZE 1.1
+    #endif
+    #ifndef NL_STAR_GLOW
+      #define NL_STAR_GLOW 1.0
+    #endif
+    #ifndef NL_STAR_BRIGHTNESS
+      #define NL_STAR_BRIGHTNESS 1.0
+    #endif
+
+    float starHash(highp vec3 p) {
+      return fract(sin(dot(p, vec3(127.1, 311.7, 74.7)))*43758.5453);
+    }
+
+    vec3 CustomStars(vec3 viewDir, nl_environment env, highp float tod, highp float time) {
+      float pxAng = max(length(dFdx(viewDir)), length(dFdy(viewDir)));
+      float vis = (1.0 - smoothstep(-0.2, 0.05, env.dayFactor))*(1.0 - env.rainFactor)*smoothstep(0.0, 0.12, viewDir.y);
+      if (vis < 0.01) {
+        return vec3(0.0, 0.0, 0.0);
+      }
+      highp vec3 q = viewDir;
+      q.xz = mul(rmat2(-degToRad(NL_SUN_PATH_YAW)), q.xz);
+      q.yz = mul(rmat2(degToRad(NL_SUN_PATH_TILT)), q.yz);
+      highp float a = 2.0*PI*tod;
+      float ca = cos(a);
+      float sa = sin(a);
+      q = vec3(ca*q.x - sa*q.y, sa*q.x + ca*q.y, q.z);
+
+      vec3 aq = abs(q);
+      float m = max(aq.x, max(aq.y, aq.z));
+      vec3 s = q/m;
+      vec2 uv;
+      float fid;
+      if (aq.x >= m) {
+        uv = s.yz;
+        fid = step(q.x, 0.0);
+      } else if (aq.y >= m) {
+        uv = s.xz;
+        fid = 2.0 + step(q.y, 0.0);
+      } else {
+        uv = s.xy;
+        fid = 4.0 + step(q.z, 0.0);
+      }
+
+      float r2 = dot(uv, uv);
+      float pxUV = pxAng*(1.0 + r2)/sqrt(1.0 + max(uv.x*uv.x, uv.y*uv.y));
+      vec2 g = (uv*0.5 + 0.5)*NL_STAR_GRID;
+      vec2 cell = floor(g);
+      vec3 id = vec3(cell, fid);
+      float dens = NL_STAR_DENSITY*pow(1.0 + r2, -1.5);
+      if (starHash(id) > dens) {
+        return vec3(0.0, 0.0, 0.0);
+      }
+
+      vec2 sp = 0.3 + 0.4*vec2(starHash(id + 1.7), starHash(id + 5.3));
+      float d = length(g - cell - sp)/(pxUV*0.5*NL_STAR_GRID);
+      float b = starHash(id + 13.1);
+      float inten = 0.16 + 4.0*pow(b, 7.0);
+      float core = 1.0 - smoothstep(0.45*NL_STAR_SIZE, NL_STAR_SIZE, d);
+      float halo = smoothstep(0.93, 1.0, b)*NL_STAR_GLOW*0.6*exp(-0.5*d*d);
+      float tw = 1.0 - 0.15*smoothstep(0.5, 1.0, b)*sin(time*(2.0 + 4.0*starHash(id + 3.1)) + 40.0*b);
+      vec3 tint = mix(vec3(0.75, 0.86, 1.0), vec3(1.0, 0.92, 0.78), starHash(id + 7.7));
+      return tint*inten*(core + halo)*tw*vis*NL_STAR_BRIGHTNESS;
+    }
+  #endif
+
   #ifdef NL_SKY_AURORA
     float pow2(float x){return x*x;}
     float clamp01(float x){return clamp(x,0.0,1.0);}
@@ -401,6 +474,12 @@ void main() {
 
     #ifdef NL_GALAXY_STARS
       skyColor += NL_GALAXY_STARS*nlRenderGalaxy(viewDir, env.fogCol, env, v_underwaterRainTimeDay.z);
+    #endif
+
+    #ifdef NL_CUSTOM_STARS
+    if (!env.underwater) {
+      skyColor += CustomStars(viewDir, env, TimeOfDay.x, v_underwaterRainTimeDay.z);
+    }
     #endif
 
     #ifdef NL_SUN_FOG_GLOW
