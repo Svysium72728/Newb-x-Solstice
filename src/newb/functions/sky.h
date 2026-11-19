@@ -251,6 +251,24 @@ float nlSunShafts(vec3 d, vec3 L, highp float t) {
   return beams*radial*smoothstep(0.0, 0.35, c) + 0.6*core;
 }
 
+float nlWinHash(highp vec2 p) {
+  return fract(sin(dot(p, vec2(127.1, 311.7)))*43758.5453);
+}
+
+float nlWindowPattern(highp vec3 P, vec3 L) {
+  vec3 up = abs(L.y) < 0.99 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
+  vec3 tg = normalize(cross(up, L));
+  vec3 bt = cross(L, tg);
+  highp vec2 q = vec2(dot(P, tg), dot(P, bt))/vec2(NL_WINDOW_LIGHT_CELL_W, NL_WINDOW_LIGHT_CELL_H);
+  highp vec2 c = floor(q);
+  vec2 f = q - c;
+  float on = step(0.4, nlWinHash(c));
+  float rect = smoothstep(0.0, 0.12, f.x)*smoothstep(1.0, 0.88, f.x)*smoothstep(0.0, 0.1, f.y)*smoothstep(1.0, 0.9, f.y);
+  float bx = 1.0 - 0.8*(1.0 - smoothstep(0.0, 0.05, abs(f.x - 0.5)));
+  float by = 1.0 - 0.8*(1.0 - smoothstep(0.0, 0.05, abs(f.y - 0.5)));
+  return on*rect*bx*by;
+}
+
 vec3 nlRenderShootingStar(vec3 viewDir, vec3 FOG_COLOR, float t) {
     float h = t / (NL_SHOOTING_STAR_DELAY+NL_SHOOTING_STAR_PERIOD);
     float h0 = floor(h);
