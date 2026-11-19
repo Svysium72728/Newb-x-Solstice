@@ -103,7 +103,8 @@
 #define NL_BLOCK_CLOUD_SOFT 0.10
 #define NL_BLOCK_CLOUD_OPACITY 0.92
 #define NL_BLOCK_CLOUD_SPEED 0.21
-#define NL_BLOCK_CLOUD_NIGHT 0.07
+#define NL_BLOCK_CLOUD_NIGHT 0.22
+#define NL_BLOCK_CLOUD_SUN_TINT 0.12
 #define NL_BLOCK_CLOUD_LIGHT_COL vec3(1.0, 1.1, 1.25)
 #define NL_BLOCK_CLOUD_SHADE_COL vec3(0.32, 0.40, 0.54)
 
@@ -228,9 +229,9 @@
 #define NL_DAWN_ZENITH_COL   vec3(0.40, 0.32, 0.43)
 #define NL_DAWN_HORIZON_COL  vec3(2.20, 1.05, 0.78)
 #define NL_DAWN_EDGE_COL     vec3(3.20, 1.85, 0.85)
-#define NL_DAY_ZENITH_COL    vec3(0.555, 0.852, 1.347)
-#define NL_DAY_HORIZON_COL   vec3(3.442, 3.805, 4.538)
-#define NL_DAY_EDGE_COL      vec3(2.0, 2.2, 2.6)
+#define NL_DAY_ZENITH_COL    vec3(0.37, 0.45, 0.69)
+#define NL_DAY_HORIZON_COL   vec3(0.29, 0.36, 0.56)
+#define NL_DAY_EDGE_COL      vec3(0.68, 0.72, 0.94)
 #define NL_NIGHT_ZENITH_COL  vec3(0.055,0.077,0.112)
 #define NL_NIGHT_HORIZON_COL vec3(0.144,0.198,0.301)
 #define NL_NIGHT_EDGE_COL    vec3(0.069,0.094,0.139)
@@ -271,7 +272,7 @@
 #define NL_WATER_TEX_OPACITY 1.0 // 0.0 plain water ~ 1.0 vanilla water texture
 //#define NL_WATER_WAVE             // [toggle] wave effect
 #define NL_WATER_REFL_MASK        // [toggle] fake water reflection mask
-#define NL_WATER_TINT vec3(0.555, 0.852, 1.347)
+#define NL_WATER_TINT vec3(0.37, 0.45, 0.69)
 
 /* Underwater */
 #define NL_UNDERWATER_BRIGHTNESS 0.6         // 0.0 dark ~ 3.0 bright
