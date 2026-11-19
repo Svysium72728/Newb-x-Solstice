@@ -197,6 +197,7 @@ vec4 nlSkyCloudReflection(vec3 r, vec3 pos, nl_skycolor skycol, nl_environment e
   if (f > 0.0) {
     float dawn = 1.0 - env.dayFactor*env.dayFactor;
     dawn *= dawn*dawn;
+    dawn *= 1.0 - smoothstep(0.0, 0.3, env.dayFactor);
     vec3 sunCol = mix(mix(NL_NOON_SUNLIGHT_COL, vec3_splat(1.0), 0.45), NL_DAWN_SUNLIGHT_COL, dawn);
     vec3 pu = pos/NL_CLOUD_REFL_UNIT;
     float invY = 1.0/r.y;
@@ -211,7 +212,7 @@ vec4 nlSkyCloudReflection(vec3 r, vec3 pos, nl_skycolor skycol, nl_environment e
       float daylight = smoothstep(-0.2, 0.25, env.dayFactor);
       float bright = mix(NL_BLOCK_CLOUD_NIGHT, 1.0, daylight)*(1.0 - 0.35*env.rainFactor);
       vec3 Lb = mix(env.moonDir, env.sunDir, step(0.0, env.dayFactor));
-      vec3 topCol = NL_BLOCK_CLOUD_LIGHT_COL*mix(vec3_splat(1.0), sunCol, 0.5)*bright;
+      vec3 topCol = NL_BLOCK_CLOUD_LIGHT_COL*mix(vec3_splat(1.0), sunCol, mix(NL_BLOCK_CLOUD_SUN_TINT, 0.5, dawn))*bright;
       vec3 shadeCol = NL_BLOCK_CLOUD_SHADE_COL*mix(vec3_splat(1.0), skycol.horizon*1.4, 0.35)*bright;
       highp vec2 wind = vec2(time*NL_BLOCK_CLOUD_SPEED, time*NL_BLOCK_CLOUD_SPEED*0.4);
 
