@@ -621,6 +621,20 @@ void main() {
     }
   #endif
 
+  #ifdef NL_TERRAIN_SUN_GLOW
+    if (!env.underwater && !env.end && !env.nether) {
+      highp vec3 grel = vec3(v_causticData.x - CameraPosition.x, v_extra.g, v_causticData.y - CameraPosition.z);
+      vec3 grd = vec3(-grel.x, grel.y, -grel.z)*inversesqrt(max(dot(grel, grel), 0.0001));
+      float gsun = smoothstep(-0.05, 0.15, env.sunDir.y);
+      float gsky = mix(NL_TERRAIN_SUN_GLOW_INDOOR, 1.0, smoothstep(0.3, 0.8, v_lightmapUV.y));
+      float gamt = NL_TERRAIN_SUN_GLOW*gsun*gsky;
+      if (gamt > 0.001) {
+        float gset = 1.0 - smoothstep(0.0, 0.35, abs(env.sunDir.y));
+        diffuse.rgb = nlTerrainSunGlow(grd, env.sunDir, diffuse.rgb, NL_TERRAIN_SUN_GLOW_COL, gset, env.rainFactor, gamt);
+      }
+    }
+  #endif
+
   #ifdef NL_UNDERWATER_STREAKS
     if (env.underwater) {
       highp vec3 wpu = vec3(v_causticData.x - CameraPosition.x, v_extra.g, v_causticData.y - CameraPosition.z);
