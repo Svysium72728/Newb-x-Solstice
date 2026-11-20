@@ -115,6 +115,8 @@ vec3 nlLighting(
   if (!(env.nether || env.end)) {
     lum = luminance(light);
     light += vec3_splat(gameBrightness*(NL_MIN_LIGHTING_BOOST*mix(1.0, 0.4, nightIntensity)/(1.0+lum)));
+    float caveK = (1.0 - uv1.y)*(1.0 - uv1.x);
+    light *= 1.0 - NL_CAVE_DARKEN*caveK*caveK;
   }
 
   // darken at crevices
