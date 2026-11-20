@@ -621,42 +621,6 @@ void main() {
     }
   #endif
 
-  #ifdef NL_WINDOW_LIGHT
-    if (!env.underwater && !env.end && !env.nether) {
-      float wsky = v_lightmapUV.y;
-      highp vec3 wrel = vec3(v_causticData.x - CameraPosition.x, v_extra.g, v_causticData.y - CameraPosition.z);
-      highp vec3 wdx = dFdx(wrel);
-      highp vec3 wdy = dFdy(wrel);
-      highp vec3 wn = cross(wdx, wdy);
-      float wsx = dFdx(wsky);
-      float wsy = dFdy(wsky);
-      highp vec3 wg = (wsx*cross(wdy, wn) - wsy*cross(wdx, wn))/max(dot(wn, wn), 0.000001);
-      float wgm = length(wg);
-      vec2 wlh = vec2(-env.sunDir.x, -env.sunDir.z);
-      float wsh = length(wlh);
-      float walign = dot(normalize(wg.xz + vec2(0.00001, 0.0)), wlh/max(wsh, 0.0001));
-      float wgate = smoothstep(0.01, 0.04, wgm)*mix(1.0, smoothstep(-0.1, 0.5, walign), smoothstep(0.1, 0.4, wsh));
-      float wsun = smoothstep(0.08, 0.35, env.sunDir.y)*(1.0 - env.rainFactor);
-      float wmask = smoothstep(0.1, 0.3, wsky)*(1.0 - smoothstep(0.86, 0.97, wsky))*wsun*wgate;
-      if (wmask > 0.01) {
-        highp vec3 wf = vec3(-v_causticData.x, v_extra.g + CameraPosition.y, -v_causticData.y);
-        highp vec3 cf = vec3(-CameraPosition.x, CameraPosition.y, -CameraPosition.z);
-        highp vec3 rf = vec3(-wrel.x, wrel.y, -wrel.z);
-        float wpat = nlWindowPattern(wf, env.sunDir);
-        float whaze = 0.0;
-        for (int wi = 0; wi < NL_WINDOW_LIGHT_STEPS; wi++) {
-          float wt = (float(wi) + 0.5)/float(NL_WINDOW_LIGHT_STEPS);
-          whaze += nlWindowPattern(cf + rf*wt, env.sunDir);
-        }
-        whaze /= float(NL_WINDOW_LIGHT_STEPS);
-        float wd = length(wrel);
-        whaze *= 1.0 - exp(-wd*NL_WINDOW_LIGHT_DENSITY);
-        diffuse.rgb *= 1.0 + wpat*wmask*NL_WINDOW_LIGHT_PATCH;
-        diffuse.rgb += nlSunLightColor(env)*whaze*wmask*NL_WINDOW_LIGHT;
-      }
-    }
-  #endif
-
   #ifdef NL_UNDERWATER_STREAKS
     if (env.underwater) {
       highp vec3 wpu = vec3(v_causticData.x - CameraPosition.x, v_extra.g, v_causticData.y - CameraPosition.z);
