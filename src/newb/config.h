@@ -15,7 +15,7 @@
 #define NL_CAVE_DARKEN 0.6
 #define NL_TERRAIN_SUN_GLOW 0.8
 #define NL_TERRAIN_SUN_GLOW_INDOOR 0.0
-#define NL_DAY_WHITE 0.55
+//#define NL_DAY_WHITE 0.55
 #define NL_DAY_WHITE_START 0.3
 #define NL_DAY_WHITE_FULL 0.85
 #define NL_DAY_WHITE_THR 0.05
@@ -109,7 +109,7 @@
 #define NL_OCEAN_VIG_STRENGTH 1.0
 
 #define NL_SKY_BLOCK_CLOUDS
-#define NL_BLOCK_CLOUD_STEPS 13
+#define NL_BLOCK_CLOUD_STEPS 10
 #define NL_BLOCK_CLOUD_SCALE 5.5
 #define NL_BLOCK_CLOUD_COVER 0.45
 #define NL_BLOCK_CLOUD_BASE 1.0
@@ -125,7 +125,7 @@
 #define NL_BLOCK_CLOUD_LIGHT_COL vec3(1.0, 1.1, 1.25)
 #define NL_BLOCK_CLOUD_SHADE_COL vec3(0.32, 0.40, 0.54)
 
-#define NL_WATER_RESOLUTE_WAVES
+//#define NL_WATER_RESOLUTE_WAVES
 #define NL_WAVE_COUNT 8
 #define NL_RESOLUTE_WAVE_SPEED 0.8
 #define NL_WAVE_STEEP 2.0
@@ -232,10 +232,10 @@
 #define NL_END_TORCH_COL        vec3(1.0,0.52,0.18)
 
 /* Fog */
-#define NL_FOG 1.0                // [toggle] 0.1 subtle ~ 1.0 blend with sky completely
+//#define NL_FOG 1.0                // [toggle] 0.1 subtle ~ 1.0 blend with sky completely
 #define NL_MIST_DENSITY 0.28      // 0.0 no mist ~ 1.0 misty
-#define NL_RAIN_MIST_OPACITY 0.12 // [toggle] 0.04 very subtle ~ 0.5 thick rain mist blow
-#define NL_CLOUDY_FOG 0.1         // [toggle] 0.0 subtle - 0.8 dense fog clouds
+//#define NL_RAIN_MIST_OPACITY 0.12 // [toggle] 0.04 very subtle ~ 0.5 thick rain mist blow
+//#define NL_CLOUDY_FOG 0.1         // [toggle] 0.0 subtle - 0.8 dense fog clouds
 
 /* Sky */
 #define NL_SKY_VOID_FACTOR     0.5
@@ -276,9 +276,9 @@
 #define NL_TORCH_BLOOM_COLOR vec3(1.0, 0.6, 0.25) // Warm yellow-orange glow
 
 /* Waving */
-#define NL_PLANTS_WAVE 0.05    // [toggle] 0.02 gentle ~ 0.4 violent
-#define NL_LANTERN_WAVE 0.16   // [toggle] 0.05 subtle ~ 0.4 large swing
-#define NL_WAVE_SPEED 2.8      // 0.5 slow wave ~ 5.0 very fast wave
+//#define NL_PLANTS_WAVE 0.05    // [toggle] 0.02 gentle ~ 0.4 violent
+//#define NL_LANTERN_WAVE 0.16   // [toggle] 0.05 subtle ~ 0.4 large swing
+//#define NL_WAVE_SPEED 2.8      // 0.5 slow wave ~ 5.0 very fast wave
 //#define NL_EXTRA_PLANTS_WAVE // [toggle] !dont use! wave using texture coords (1.21.0 vanilla 2048x1024)
 #define NL_WAVE_RANGE 16.0     // 6.0 upto 6 blocks ~ 32.0 upto 32 blocks away (slower)
 
