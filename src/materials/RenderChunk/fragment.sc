@@ -624,6 +624,18 @@ void main() {
     }
   #endif
 
+  #ifdef NL_DAY_WHITE
+    if (!env.underwater && !env.end && !env.nether && v_extra.b < 0.9) {
+      float dwDay = smoothstep(NL_DAY_WHITE_START, NL_DAY_WHITE_FULL, env.dayFactor)*(1.0 - env.rainFactor);
+      float dwOut = smoothstep(0.82, 0.95, v_lightmapUV.y);
+      float dwLum = luminance(diffuse.rgb);
+      float dwHi = smoothstep(NL_DAY_WHITE_THR, NL_DAY_WHITE_THR + 0.5, dwLum);
+      float dwK = clamp(dwDay*dwOut*dwHi*NL_DAY_WHITE, 0.0, 1.0);
+      vec3 dwTarget = mix(vec3_splat(dwLum), vec3_splat(1.0), NL_DAY_WHITE_PURE)*NL_DAY_WHITE_GAIN;
+      diffuse.rgb = mix(diffuse.rgb, dwTarget, dwK);
+    }
+  #endif
+
   diffuse.rgb = mix(diffuse.rgb, v_fog.rgb, v_fog.a);
 
   #ifdef NL_SUN_SHAFTS
