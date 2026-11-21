@@ -2,7 +2,7 @@
 #define NL_CONFIG_H
 
 #define NL_CUSTOM_STARS
-#define NL_STAR_DENSITY 0.22
+#define NL_STAR_DENSITY 0.26
 #define NL_STAR_SIZE 1.1
 #define NL_STAR_GLOW 1.0
 #define NL_STAR_BRIGHTNESS 1.0
@@ -45,17 +45,16 @@
 #define NL_SUN_SHAFTS_COL mix(NL_DAWN_SUNLIGHT_COL, vec3(1.0, 1.0, 1.0), 0.15)
 #define NL_SUN_SHAFTS_DENSITY 0.012
 
- //#define NL_SKY_EQUI_CLOUDS
-  #define NL_EQUI_CLOUD_COVER 0.50
-  #define NL_EQUI_CLOUD_SOFT 0.14
-  #define NL_EQUI_CLOUD_OPACITY 1.0
-  #define NL_EQUI_CLOUD_SHADE 1.8
-  #define NL_EQUI_CLOUD_BUMP 1.0
-  #define NL_EQUI_CLOUD_RIM 0.5
-  #define NL_EQUI_CLOUD_EDGE 0.25
-  #define NL_EQUI_CLOUD_SPEED 0.0004
-  #define NL_EQUI_CLOUD_NIGHT 0.30
-
+//#define NL_SKY_EQUI_CLOUDS
+#define NL_EQUI_CLOUD_COVER 0.50
+#define NL_EQUI_CLOUD_SOFT 0.14
+#define NL_EQUI_CLOUD_OPACITY 1.0
+#define NL_EQUI_CLOUD_SHADE 1.8
+#define NL_EQUI_CLOUD_BUMP 1.0
+#define NL_EQUI_CLOUD_RIM 0.5
+#define NL_EQUI_CLOUD_EDGE 0.25
+#define NL_EQUI_CLOUD_SPEED 0.0004
+#define NL_EQUI_CLOUD_NIGHT 0.30
 
 #define NL_SUN_FOG_GLOW 3.0
 #define NL_SUN_FOG_POWER 10.0
@@ -64,8 +63,8 @@
 #define NL_SUN_FOG_DENSITY 0.8
 #define NL_SUN_FOG_SKY 0.6
 
-#define NL_SKY_BLOCK_CLOUDS_REFL
-#define NL_SKY_VOLUME_CLOUDS_REFL
+//#define NL_SKY_BLOCK_CLOUDS_REFL
+//#define NL_SKY_VOLUME_CLOUDS_REFL
 #define NL_VOL_CLOUD_REFL_STEPS 4
 #define NL_BLOCK_CLOUD_REFL_STEPS 2
 #define NL_CLOUD_REFL_UNIT 600.0
@@ -82,7 +81,7 @@
 #define NL_END_CLOUD_COL_LIGHT vec3(0.70,0.55,0.94)
 #define NL_END_CLOUD_COL_DARK  vec3(0.22,0.13,0.40)
 #define NL_END_CLOUD_FOG_COL   vec3(0.30,0.18,0.48)
-#define NL_END_NEBULA
+//#define NL_END_NEBULA
 #define NL_END_NEBULA_SCALE 2.2
 #define NL_END_NEBULA_SPEED 0.02
 #define NL_END_NEBULA_PATCH 1.8
@@ -103,7 +102,7 @@
 #define NL_OCEAN_VIG_STRENGTH 1.0
 
 #define NL_SKY_BLOCK_CLOUDS
-#define NL_BLOCK_CLOUD_STEPS 13
+#define NL_BLOCK_CLOUD_STEPS 8
 #define NL_BLOCK_CLOUD_SCALE 5.5
 #define NL_BLOCK_CLOUD_COVER 0.45
 #define NL_BLOCK_CLOUD_BASE 1.0
@@ -120,7 +119,7 @@
 #define NL_BLOCK_CLOUD_SHADE_COL vec3(0.32, 0.40, 0.54)
 
 #define NL_WATER_RESOLUTE_WAVES
-#define NL_WAVE_COUNT 8
+#define NL_WAVE_COUNT 3
 #define NL_RESOLUTE_WAVE_SPEED 0.8
 #define NL_WAVE_STEEP 2.0
 #define NL_WAVE_FREQ 0.4
@@ -158,29 +157,33 @@
 #define NL_BLACKHOLE
 
 /*
-  NEWB SHADER MAIN CONFIG
-  This part contains base configuration options for the shader.
+NEWB SHADER MAIN CONFIG
+This part contains base configuration options for the shader.
 
-  TOGGLES
-  - If [toggle] is mentioned, then
-    options can be commented to disable (by adding '//')
-  - eg: #define PLANTS_WAVE    -> this is ON
-        //#define PLANTS_WAVE  -> this is OFF
+TOGGLES
 
-  COLOR VALUES
-  - Color format: vec3(red,green,blue)
-  - 1.0 means 100%, 0.0 means 0%
-  - eg: vec3(1.0,1.0,0.0) = yellow
+- If [toggle] is mentioned, then
+  options can be commented to disable (by adding '//')
+- eg: #define PLANTS_WAVE    -> this is ON
+  //#define PLANTS_WAVE  -> this is OFF
 
-  VALUES
-  - Values must be decimal
-  - eg. 32 is wrong, 32.0 is correct
+COLOR VALUES
 
-  TYPES
-  - Should be integer. options to choose will be mentioned there
-  - eg: #define NL_CLOUD_TYPE 2
+- Color format: vec3(red,green,blue)
+- 1.0 means 100%, 0.0 means 0%
+- eg: vec3(1.0,1.0,0.0) = yellow
 
-  Remember to rebuild the shader after making changes.
+VALUES
+
+- Values must be decimal
+- eg. 32 is wrong, 32.0 is correct
+
+TYPES
+
+- Should be integer. options to choose will be mentioned there
+- eg: #define NL_CLOUD_TYPE 2
+
+Remember to rebuild the shader after making changes.
 */
 
 /* Color correction */
@@ -274,7 +277,7 @@
 #define NL_LANTERN_WAVE 0.16   // [toggle] 0.05 subtle ~ 0.4 large swing
 #define NL_WAVE_SPEED 2.8      // 0.5 slow wave ~ 5.0 very fast wave
 //#define NL_EXTRA_PLANTS_WAVE // [toggle] !dont use! wave using texture coords (1.21.0 vanilla 2048x1024)
-#define NL_WAVE_RANGE 16.0     // 6.0 upto 6 blocks ~ 32.0 upto 32 blocks away (slower)
+#define NL_WAVE_RANGE 8.0     // 6.0 upto 6 blocks ~ 32.0 upto 32 blocks away (slower)
 
 /* Water */
 #define NL_WATER_TRANSPARENCY 0.7 // 0.0 transparent ~ 1.0 normal
@@ -336,7 +339,7 @@
 
 /* Lightweight Clouds */
 #define NL_CLOUD4_SCALE vec2(0.020, 0.020) // 0.005 large ~ 0.1 tiny
-#define NL_CLOUD4_SHAPE vec2(0.2, 0.3)     // 0.0 round ~ 1.0 box 
+#define NL_CLOUD4_SHAPE vec2(0.2, 0.3)     // 0.0 round ~ 1.0 box
 #define NL_CLOUD4_SPEED 0.8               // 0.0 static ~ 0.1 fast moving
 #define NL_CLOUD4_SHADOW 1.0               // 0.1 subtle ~ 1.0 dark shadow
 #define NL_CLOUD4_SHADOW_OFFSET 0.2        // 0.05 minimal ~ 1.0 large
@@ -392,7 +395,7 @@
 #define NL_BH_HEIGHT 0.5
 #define NL_BH_COL_LOW  vec3(0.30, 0.21, 0.47)
 #define NL_BH_COL_HIGH vec3(0.49, 0.33, 0.57)
-#define NL_BH_REFLECT_STRENGTH 6.0
+#define NL_BH_REFLECT_STRENGTH 0.0
 
 /* Sky reflection */
 //#define NL_GROUND_REFL 0.4       // [toggle] 0.2 slightly reflective ~ 1.0 fully reflect sky
@@ -416,82 +419,75 @@
 #define NL_LAVA_NOISE_SPEED 0.2  // 0.0 still ~ 0.8 fast
 
 /*
-  NEWB SHADER SUBPACK CONFIG
-  This part contains custom configuration options for each subpack.
+NEWB SHADER SUBPACK CONFIG
+This part contains custom configuration options for each subpack.
 
-  If a value is already defined,
-  then you must undefine it before modifying:
-  eg: #undef OPTION_NAME
+If a value is already defined,
+then you must undefine it before modifying:
+eg: #undef OPTION_NAME
 
-  Subpack names and flags are inside `pack_config.toml`.
-  Build tool will enable corresponding flags when compiling.
+Subpack names and flags are inside pack_config.toml.
+Build tool will enable corresponding flags when compiling.
 */
 
 #ifdef NO_FOG
-  #undef NL_FOG
+#undef NL_FOG
 #endif
 
 #ifdef NO_WAVE
-  #undef NL_PLANTS_WAVE
-  #undef NL_LANTERN_WAVE
-  #undef NL_UNDERWATER_WAVE
-  #undef NL_WATER_WAVE
-  #undef NL_RAIN_MIST_OPACITY
+#undef NL_PLANTS_WAVE
+#undef NL_LANTERN_WAVE
+#undef NL_UNDERWATER_WAVE
+#undef NL_WATER_WAVE
+#undef NL_RAIN_MIST_OPACITY
 #endif
 
 /* Effects tiers - aurora & black hole */
 #ifdef NL_UNBOUND
-  #undef NL_SUN_CIRCLE_BLOOM
-  #define NL_SUN_CIRCLE_BLOOM 1.6
-  #undef NL_WATER_TEX_OPACITY
-  #define NL_WATER_TEX_OPACITY 0.0
-  #define NL_SKY_VOLUME_CLOUDS
-  #define NL_SKY_AURORA
-  #define NL_SKY_AURORA_HEAVY
-  #define NL_SKY_AURORA_SMOOTH
-  #define NL_SKY_AURORA_SPEED 4.0
-  #define NL_BLINKING_TORCH
-  #undef NL_WATER_FOAM
-  #undef NL_SKY_BLOCK_CLOUDS
-  #undef NL_VOL_CLOUD_STEPS
-  #define NL_VOL_CLOUD_STEPS 10
-  #define NL_END_CLOUDS
-  #define NL_END_CLOUD_SPEED 0.0
-  #define NL_END_CLOUD_LO 0.15
-  #define NL_END_CLOUD_HI 0.55
-  #define NL_END_CLOUD_OPACITY 1.0
-  #define NL_END_CLOUD_HAZE 0.15
-  #define NL_END_CLOUD_COL_LIGHT vec3(0.70,0.55,0.94)
-  #define NL_END_CLOUD_COL_DARK  vec3(0.22,0.13,0.40)
-  #define NL_END_CLOUD_FOG_COL   vec3(0.30,0.18,0.48)
-  #undef NL_SKY_BLOCK_CLOUDS_REFL
-  #undef NL_CAUSTIC_INTENSITY
-  #define NL_CAUSTIC_INTENSITY 0.3
-  #define NL_CAUSTIC_ATLAS
-  #define NL_CAUSTIC_FPS 10.0
-  #define NL_CAUSTIC_BLEND 1
-  #define NL_CAUSTIC_LO 0.68
-  #define NL_CAUSTIC_HI 1.0
-  #define NL_CAUSTIC_GAIN 0.6
-  #define NL_LAVA_NOISE
+#undef NL_SUN_CIRCLE_BLOOM
+#define NL_SUN_CIRCLE_BLOOM 1.6
+#undef NL_WATER_TEX_OPACITY
+#define NL_WATER_TEX_OPACITY 0.0
+#define NL_SKY_VOLUME_CLOUDS
+#define NL_BLINKING_TORCH
+#undef NL_WATER_FOAM
+#undef NL_SKY_BLOCK_CLOUDS
+#undef NL_VOL_CLOUD_STEPS
+#define NL_VOL_CLOUD_STEPS 10
+#define NL_END_CLOUDS
+#define NL_END_CLOUD_SPEED 0.0
+#define NL_END_CLOUD_LO 0.15
+#define NL_END_CLOUD_HI 0.55
+#define NL_END_CLOUD_OPACITY 1.0
+#define NL_END_CLOUD_HAZE 0.15
+#define NL_END_CLOUD_COL_LIGHT vec3(0.70,0.55,0.94)
+#define NL_END_CLOUD_COL_DARK  vec3(0.22,0.13,0.40)
+#define NL_END_CLOUD_FOG_COL   vec3(0.30,0.18,0.48)
+#undef NL_SKY_BLOCK_CLOUDS_REFL
+#undef NL_CAUSTIC_INTENSITY
+#define NL_CAUSTIC_INTENSITY 0.3
+#define NL_CAUSTIC_ATLAS
+#define NL_CAUSTIC_FPS 10.0
+#define NL_CAUSTIC_BLEND 1
+#define NL_CAUSTIC_LO 0.68
+#define NL_CAUSTIC_HI 1.0
+#define NL_CAUSTIC_GAIN 0.6
+#define NL_LAVA_NOISE
 #endif
 
 #ifdef NL_REIMAGINED
-  #define NL_SKY_AURORA
-  #define NL_SKY_AURORA_HEAVY
-  #define NL_SKY_AURORA_SPEED 4.0
-  #define NL_SKY_BLOCK_CLOUDS
-  #undef NL_WATER_RESOLUTE_WAVES
-  #undef NL_WATER_REFL_MASK
-  #undef NL_SKY_VOLUME_CLOUDS_REFL
-  #undef NL_CAUSTIC_INTENSITY
-  #define NL_CAUSTIC_INTENSITY 0.5
-  #define NL_CAUSTIC_FPS 10.0
-  #define NL_CAUSTIC_BLEND 1
-  #undef NL_SKY_EQUI_CLOUDS
-  #define NL_WATER_TEX_MEAN 0.30
-  #define NL_WATER_TEX_CONTRAST_R 6.0
-  #define NL_WATER_HIGHLIGHT 8.0
+#define NL_SKY_BLOCK_CLOUDS
+#undef NL_WATER_RESOLUTE_WAVES
+#undef NL_WATER_REFL_MASK
+#undef NL_SKY_VOLUME_CLOUDS_REFL
+#undef NL_CAUSTIC_INTENSITY
+#define NL_CAUSTIC_INTENSITY 0.5
+#define NL_CAUSTIC_FPS 10.0
+#define NL_CAUSTIC_BLEND 1
+#undef NL_SKY_EQUI_CLOUDS
+#define NL_WATER_TEX_MEAN 0.30
+#define NL_WATER_TEX_CONTRAST_R 6.0
+#define NL_WATER_HIGHLIGHT 8.0
 #endif
 
 #endif
