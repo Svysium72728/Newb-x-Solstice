@@ -221,26 +221,21 @@ vec3 screenDrops(vec3 baseColor, float time, vec2 uv, bool falling) {
     return texture2DLod(s_PlaneCloudNoise, p*0.00390625, 0.0).r;
   }
 
-  float rcPlaneFbm(highp vec2 x, float amp) {
-    float v = 0.0;
-    float a = 0.5;
-    for (int i = 0; i < 2; i++) {
-      v += a*rcPlaneNoise(x);
-      x = x*2.0/amp + vec2(100.0, 100.0);
-      a *= 0.5;
-    }
+  float rcPlaneFbm(highp vec2 x, float detail) {
+    float v = 0.5*mix(0.5, rcPlaneNoise(x), min(detail*2.0, 1.0));
+    x = x*2.0 + vec2(100.0, 100.0);
+    v += 0.25*mix(0.5, rcPlaneNoise(x), detail*detail);
     return v;
   }
 
-  float rcPlaneShape(highp vec2 uv, float dither) {
+  float rcPlaneShape(highp vec2 uv, float detail) {
     uv *= 5.0;
     float a = 0.0;
     for (int i = 0; i < NL_PLANE_CLOUD_REFL_LAYERS; i++) {
       uv /= 1.01;
-      a = mix(a, 1.0, smoothstep(0.35, 0.45, rcPlaneFbm(uv, dither)));
+      a = mix(a, 1.0, smoothstep(0.35, 0.45, rcPlaneFbm(uv, detail)));
     }
-    float t = smoothstep(0.0, 1.5, rcPlaneFbm(uv, pow(dither, 6.0)) + 0.8);
-    return a - pow(t, 1.5)*0.7;
+    return a - pow(smoothstep(0.0, 1.5, rcPlaneFbm(uv, detail) + 0.8), 1.5)*0.7;
   }
 #endif
 
