@@ -304,41 +304,39 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
   SAMPLER2D_AUTOREG(s_PlaneCloudNoise);
 
   float planeNoise(highp vec2 p) {
-    return texture2D(s_PlaneCloudNoise, p*0.00390625).r;
+    return texture2DLod(s_PlaneCloudNoise, p*0.00390625, 0.0).r;
   }
 
-  float planeFbm(highp vec2 x, float amp) {
-    float v = 0.0;
-    float a = 0.5;
-    for (int i = 0; i < 2; i++) {
-      v += a*planeNoise(x);
-      x = x*2.0/amp + vec2(100.0, 100.0);
-      a *= 0.5;
-    }
+  float planeFbm(highp vec2 x, float detail) {
+    float v = 0.5*mix(0.5, planeNoise(x), min(detail*2.0, 1.0));
+    x = x*2.0 + vec2(100.0, 100.0);
+    v += 0.25*mix(0.5, planeNoise(x), detail*detail);
     return v;
   }
 
-  float planeCloudShape(highp vec2 uv, float dither) {
+  float planeCloudShape(highp vec2 uv, float detail) {
     uv *= 5.0;
     float a = 0.0;
     for (int i = 0; i < NL_PLANE_CLOUD_LAYERS; i++) {
       uv /= 1.01;
-      a = mix(a, 1.0, smoothstep(0.35, 0.45, planeFbm(uv, dither)));
+      a = mix(a, 1.0, smoothstep(0.35, 0.45, planeFbm(uv, detail)));
     }
-    float t = smoothstep(0.0, 1.5, planeFbm(uv, pow(dither, 6.0)) + 0.8);
-    return a - pow(t, 1.5)*0.7;
+    return a - pow(smoothstep(0.0, 1.5, planeFbm(uv, detail) + 0.8), 1.5)*0.7;
   }
 
   vec4 PlaneClouds(vec3 viewDir, vec3 sd, nl_skycolor skycol, nl_environment env, highp float time) {
-    if (viewDir.y < 0.06) {
+    if (viewDir.y <= 0.0) {
       return vec4(0.0, 0.0, 0.0, 0.0);
     }
 
-    float h = max(viewDir.y, 0.06);
-    highp vec2 plane = sd.xz/h*NL_PLANE_CLOUD_SCALE;
+    float above = max(viewDir.y, NL_PLANE_CLOUD_HORIZON_MIN);
+    float horizon = smoothstep(NL_PLANE_CLOUD_HORIZON_FADE_START, NL_PLANE_CLOUD_HORIZON_FADE_END, above);
+    float detail = clamp(above/NL_PLANE_CLOUD_HORIZON_DETAIL, 0.0, 1.0);
+
+    highp vec2 plane = sd.xz/above*NL_PLANE_CLOUD_SCALE;
     plane.y *= NL_PLANE_CLOUD_STRETCH;
 
-    float fade = smoothstep(0.06, 0.25, viewDir.y)*clamp(1.0 - length(plane)*0.15, 0.0, 1.0);
+    float fade = clamp(1.0 - length(plane)*NL_PLANE_CLOUD_FAR_FADE, 0.0, 1.0)*horizon;
     if (fade < 0.002) {
       return vec4(0.0, 0.0, 0.0, 0.0);
     }
@@ -346,8 +344,7 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
     highp vec2 uv = plane;
     uv.x += time*NL_PLANE_CLOUD_SPEED;
 
-    float dither = 1.0;
-    float shape = max(planeCloudShape(uv, dither)*NL_PLANE_CLOUD_OPACITY, 0.0);
+    float shape = max(planeCloudShape(uv, detail)*NL_PLANE_CLOUD_OPACITY, 0.0);
     float a = clamp(shape*fade, 0.0, 1.0);
     float lit = clamp(shape, 0.0, 1.0);
 
