@@ -112,7 +112,7 @@ vec3 screenDrops(vec3 baseColor, float time, vec2 uv, bool falling) {
   }
 #endif
 
-#if defined(NL_SKY_BLOCK_CLOUDS_REFL) || defined(NL_SKY_VOLUME_CLOUDS_REFL)
+#if defined(NL_SKY_BLOCK_CLOUDS_REFL) || defined(NL_SKY_VOLUME_CLOUDS_REFL) || defined(NL_SKY_PLANE_CLOUDS_REFL)
 
 #ifndef NL_CLOUD_REFL_UNIT
   #define NL_CLOUD_REFL_UNIT 600.0
@@ -190,6 +190,58 @@ vec3 screenDrops(vec3 baseColor, float time, vec2 uv, bool falling) {
   #endif
 
   SAMPLER2D_AUTOREG(s_VolCloudNoise);
+#endif
+
+#ifdef NL_SKY_PLANE_CLOUDS_REFL
+  #ifndef NL_PLANE_CLOUD_SCALE
+    #define NL_PLANE_CLOUD_SCALE 0.35
+  #endif
+  #ifndef NL_PLANE_CLOUD_STRETCH
+    #define NL_PLANE_CLOUD_STRETCH 1.72
+  #endif
+  #ifndef NL_PLANE_CLOUD_SPEED
+    #define NL_PLANE_CLOUD_SPEED 0.07
+  #endif
+  #ifndef NL_PLANE_CLOUD_OPACITY
+    #define NL_PLANE_CLOUD_OPACITY 1.2
+  #endif
+  #ifndef NL_PLANE_CLOUD_LAYERS
+    #define NL_PLANE_CLOUD_LAYERS 10
+  #endif
+  #ifndef NL_PLANE_CLOUD_REFL_LAYERS
+    #define NL_PLANE_CLOUD_REFL_LAYERS NL_PLANE_CLOUD_LAYERS
+  #endif
+  #ifndef NL_PLANE_CLOUD_NIGHT
+    #define NL_PLANE_CLOUD_NIGHT 0.30
+  #endif
+
+  SAMPLER2D_AUTOREG(s_PlaneCloudNoise);
+
+  float rcPlaneNoise(highp vec2 p) {
+    return texture2DLod(s_PlaneCloudNoise, p*0.00390625, 0.0).r;
+  }
+
+  float rcPlaneFbm(highp vec2 x, float amp) {
+    float v = 0.0;
+    float a = 0.5;
+    for (int i = 0; i < 2; i++) {
+      v += a*rcPlaneNoise(x);
+      x = x*2.0/amp + vec2(100.0, 100.0);
+      a *= 0.5;
+    }
+    return v;
+  }
+
+  float rcPlaneShape(highp vec2 uv, float dither) {
+    uv *= 5.0;
+    float a = 0.0;
+    for (int i = 0; i < NL_PLANE_CLOUD_REFL_LAYERS; i++) {
+      uv /= 1.01;
+      a = mix(a, 1.0, smoothstep(0.35, 0.45, rcPlaneFbm(uv, dither)));
+    }
+    float t = smoothstep(0.0, 1.5, rcPlaneFbm(uv, pow(dither, 6.0)) + 0.8);
+    return a - pow(t, 1.5)*0.7;
+  }
 #endif
 
 #ifdef NL_SKY_BLOCK_CLOUDS_REFL
@@ -316,6 +368,33 @@ vec4 nlSkyCloudReflection(vec3 r, vec3 pos, nl_skycolor skycol, nl_environment e
       T *= Tv;
     }
     #endif
+
+    #ifdef NL_SKY_PLANE_CLOUDS_REFL
+    if (T > 0.04) {
+      highp vec2 pplane = sdr.xz/max(r.y, 0.06)*NL_PLANE_CLOUD_SCALE;
+      pplane.y *= NL_PLANE_CLOUD_STRETCH;
+      float pfade = smoothstep(0.06, 0.25, r.y)*clamp(1.0 - length(pplane)*0.15, 0.0, 1.0);
+      if (pfade > 0.002) {
+        highp vec2 puv = pplane;
+        puv.x += time*NL_PLANE_CLOUD_SPEED;
+        float pdither = pow(rcPlaneNoise(gl_FragCoord.xy) + 0.35, 0.008);
+        float pshape = max(rcPlaneShape(puv, pdither)*NL_PLANE_CLOUD_OPACITY, 0.0);
+        float pa = clamp(pshape*pfade, 0.0, 1.0);
+        float plit = clamp(pshape, 0.0, 1.0);
+
+        float pdayK = smoothstep(-0.1, 0.15, env.dayFactor);
+        vec3 pmoon = NL_NIGHT_MOONLIGHT_COL/max(max(NL_NIGHT_MOONLIGHT_COL.r, NL_NIGHT_MOONLIGHT_COL.g), NL_NIGHT_MOONLIGHT_COL.b);
+        vec3 plight = mix(pmoon*NL_PLANE_CLOUD_NIGHT, sunCol, pdayK)*(1.0 - 0.6*env.rainFactor);
+        vec3 pshadow = mix(skycol.zenith, skycol.horizon, 0.5)*vec3(0.78, 0.84, 1.0)*(1.0 - 0.4*env.rainFactor);
+        vec3 pamb = mix(pshadow, vec3_splat(1.0), 0.45)*mix(NL_PLANE_CLOUD_NIGHT*2.0, 1.0, pdayK);
+        vec3 pc = mix(pshadow, pamb, plit) + plight*plit*0.9;
+
+        col += T*pc*pa;
+        T *= 1.0 - pa;
+      }
+    }
+    #endif
+
   }
 
   return vec4(col*f*NL_CLOUD_REFL_STRENGTH, (1.0 - T)*f*NL_CLOUD_REFL_STRENGTH);
@@ -442,7 +521,7 @@ void main() {
     }
   #endif
 
-  #if defined(NL_SKY_BLOCK_CLOUDS_REFL) || defined(NL_SKY_VOLUME_CLOUDS_REFL)
+  #if defined(NL_SKY_BLOCK_CLOUDS_REFL) || defined(NL_SKY_VOLUME_CLOUDS_REFL) || defined(NL_SKY_PLANE_CLOUDS_REFL)
     if (!env.underwater && !env.end && !env.nether && abs(dFdy(v_extra.g)) < 0.0002) {
       highp vec3 wpk = vec3(v_causticData.x - CameraPosition.x, v_extra.g, v_causticData.y - CameraPosition.z);
       vec3 vdk = normalize(ViewPositionAndTime.xyz - wpk);
@@ -603,7 +682,7 @@ void main() {
         }
       #endif
 
-      #if defined(NL_SKY_BLOCK_CLOUDS_REFL) || defined(NL_SKY_VOLUME_CLOUDS_REFL)
+      #if defined(NL_SKY_BLOCK_CLOUDS_REFL) || defined(NL_SKY_VOLUME_CLOUDS_REFL) || defined(NL_SKY_PLANE_CLOUDS_REFL)
         if (mR.y > 0.04) {
           float mj = fract(52.9829189*fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715))));
           vec4 mkc = nlSkyCloudReflection(mR, mpos - ViewPositionAndTime.xyz, msky, env, mt, mj);
