@@ -365,15 +365,17 @@ vec4 nlSkyCloudReflection(vec3 r, vec3 pos, nl_skycolor skycol, nl_environment e
     #endif
 
     #ifdef NL_SKY_PLANE_CLOUDS_REFL
-    if (T > 0.04) {
-      highp vec2 pplane = sdr.xz/max(r.y, 0.06)*NL_PLANE_CLOUD_SCALE;
+    if (T > 0.04 && r.y > 0.0) {
+      float pabove = max(r.y, NL_PLANE_CLOUD_HORIZON_MIN);
+      float phor = smoothstep(NL_PLANE_CLOUD_HORIZON_FADE_START, NL_PLANE_CLOUD_HORIZON_FADE_END, pabove);
+      float pdetail = clamp(pabove/NL_PLANE_CLOUD_HORIZON_DETAIL, 0.0, 1.0);
+      highp vec2 pplane = sdr.xz/pabove*NL_PLANE_CLOUD_SCALE;
       pplane.y *= NL_PLANE_CLOUD_STRETCH;
-      float pfade = smoothstep(0.06, 0.25, r.y)*clamp(1.0 - length(pplane)*0.15, 0.0, 1.0);
+      float pfade = clamp(1.0 - length(pplane)*NL_PLANE_CLOUD_FAR_FADE, 0.0, 1.0)*phor;
       if (pfade > 0.002) {
         highp vec2 puv = pplane;
         puv.x += time*NL_PLANE_CLOUD_SPEED;
-        float pdither = pow(rcPlaneNoise(gl_FragCoord.xy) + 0.35, 0.008);
-        float pshape = max(rcPlaneShape(puv, pdither)*NL_PLANE_CLOUD_OPACITY, 0.0);
+        float pshape = max(rcPlaneShape(puv, pdetail)*NL_PLANE_CLOUD_OPACITY, 0.0);
         float pa = clamp(pshape*pfade, 0.0, 1.0);
         float plit = clamp(pshape, 0.0, 1.0);
 
