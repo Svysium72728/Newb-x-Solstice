@@ -346,7 +346,7 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
     highp vec2 uv = plane;
     uv.x += time*NL_PLANE_CLOUD_SPEED;
 
-    float dither = pow(planeNoise(gl_FragCoord.xy) + 0.35, 0.008);
+    float dither = 1.0;
     float shape = max(planeCloudShape(uv, dither)*NL_PLANE_CLOUD_OPACITY, 0.0);
     float a = clamp(shape*fade, 0.0, 1.0);
     float lit = clamp(shape, 0.0, 1.0);
