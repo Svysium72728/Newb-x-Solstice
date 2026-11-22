@@ -281,6 +281,90 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
     }
   #endif
 
+#ifdef NL_SKY_PLANE_CLOUDS
+  #ifndef NL_PLANE_CLOUD_SCALE
+    #define NL_PLANE_CLOUD_SCALE 0.35
+  #endif
+  #ifndef NL_PLANE_CLOUD_STRETCH
+    #define NL_PLANE_CLOUD_STRETCH 1.72
+  #endif
+  #ifndef NL_PLANE_CLOUD_SPEED
+    #define NL_PLANE_CLOUD_SPEED 0.07
+  #endif
+  #ifndef NL_PLANE_CLOUD_OPACITY
+    #define NL_PLANE_CLOUD_OPACITY 1.2
+  #endif
+  #ifndef NL_PLANE_CLOUD_LAYERS
+    #define NL_PLANE_CLOUD_LAYERS 10
+  #endif
+  #ifndef NL_PLANE_CLOUD_NIGHT
+    #define NL_PLANE_CLOUD_NIGHT 0.30
+  #endif
+
+  SAMPLER2D_AUTOREG(s_PlaneCloudNoise);
+
+  float planeNoise(highp vec2 p) {
+    return texture2D(s_PlaneCloudNoise, p*0.00390625).r;
+  }
+
+  float planeFbm(highp vec2 x, float amp) {
+    float v = 0.0;
+    float a = 0.5;
+    for (int i = 0; i < 2; i++) {
+      v += a*planeNoise(x);
+      x = x*2.0/amp + vec2(100.0, 100.0);
+      a *= 0.5;
+    }
+    return v;
+  }
+
+  float planeCloudShape(highp vec2 uv, float dither) {
+    uv *= 5.0;
+    float a = 0.0;
+    for (int i = 0; i < NL_PLANE_CLOUD_LAYERS; i++) {
+      uv /= 1.01;
+      a = mix(a, 1.0, smoothstep(0.35, 0.45, planeFbm(uv, dither)));
+    }
+    float t = smoothstep(0.0, 1.5, planeFbm(uv, pow(dither, 6.0)) + 0.8);
+    return a - pow(t, 1.5)*0.7;
+  }
+
+  vec4 PlaneClouds(vec3 viewDir, vec3 sd, nl_skycolor skycol, nl_environment env, highp float time) {
+    if (viewDir.y < 0.06) {
+      return vec4(0.0, 0.0, 0.0, 0.0);
+    }
+
+    float h = max(viewDir.y, 0.06);
+    highp vec2 plane = sd.xz/h*NL_PLANE_CLOUD_SCALE;
+    plane.y *= NL_PLANE_CLOUD_STRETCH;
+
+    float fade = smoothstep(0.06, 0.25, viewDir.y)*clamp(1.0 - length(plane)*0.15, 0.0, 1.0);
+    if (fade < 0.002) {
+      return vec4(0.0, 0.0, 0.0, 0.0);
+    }
+
+    highp vec2 uv = plane;
+    uv.x += time*NL_PLANE_CLOUD_SPEED;
+
+    float dither = pow(planeNoise(gl_FragCoord.xy) + 0.35, 0.008);
+    float shape = max(planeCloudShape(uv, dither)*NL_PLANE_CLOUD_OPACITY, 0.0);
+    float a = clamp(shape*fade, 0.0, 1.0);
+    float lit = clamp(shape, 0.0, 1.0);
+
+    float dawn = 1.0 - env.dayFactor*env.dayFactor;
+    dawn *= dawn*dawn;
+    vec3 sunCol = mix(mix(NL_NOON_SUNLIGHT_COL, vec3_splat(1.0), 0.45), NL_DAWN_SUNLIGHT_COL, dawn);
+    vec3 moonCol = NL_NIGHT_MOONLIGHT_COL/max(max(NL_NIGHT_MOONLIGHT_COL.r, NL_NIGHT_MOONLIGHT_COL.g), NL_NIGHT_MOONLIGHT_COL.b);
+    float dayK = smoothstep(-0.1, 0.15, env.dayFactor);
+    vec3 lightCol = mix(moonCol*NL_PLANE_CLOUD_NIGHT, sunCol, dayK)*(1.0 - 0.6*env.rainFactor);
+    vec3 shadowCol = mix(skycol.zenith, skycol.horizon, 0.5)*vec3(0.78, 0.84, 1.0)*(1.0 - 0.4*env.rainFactor);
+    vec3 topAmb = mix(shadowCol, vec3_splat(1.0), 0.45)*mix(NL_PLANE_CLOUD_NIGHT*2.0, 1.0, dayK);
+
+    vec3 c = mix(shadowCol, topAmb, lit) + lightCol*lit*0.9;
+    return vec4(c*a, a);
+  }
+#endif
+
   #ifdef NL_CUSTOM_STARS
     #ifndef NL_STAR_GRID
       #define NL_STAR_GRID 60.0
@@ -548,6 +632,14 @@ void main() {
       vec3 sde = vec3(-viewDir.x, viewDir.y, -viewDir.z);
       vec4 ce = EquiClouds(viewDir, sde, skycol, env, v_underwaterRainTimeDay.z);
       skyColor = skyColor*(1.0 - ce.a) + ce.rgb;
+    }
+    #endif
+
+    #ifdef NL_SKY_PLANE_CLOUDS
+    if (!env.underwater) {
+      vec3 sdp = vec3(-viewDir.x, viewDir.y, -viewDir.z);
+      vec4 cp = PlaneClouds(viewDir, sdp, skycol, env, v_underwaterRainTimeDay.z);
+      skyColor = skyColor*(1.0 - cp.a) + cp.rgb;
     }
     #endif
 
