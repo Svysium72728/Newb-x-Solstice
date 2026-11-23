@@ -309,9 +309,9 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
   }
 
   float planeFbm(highp vec2 x, float detail) {
-    float v = 0.5*mix(0.5, planeNoise(x), min(detail*2.0, 1.0));
+    float v = 0.5*mix(NL_PLANE_CLOUD_FLAT, planeNoise(x), min(detail*2.0, 1.0));
     x = x*2.0 + vec2(100.0, 100.0);
-    v += 0.25*mix(0.5, planeNoise(x), detail*detail);
+    v += 0.25*mix(NL_PLANE_CLOUD_FLAT, planeNoise(x), detail*detail);
     return v;
   }
 
