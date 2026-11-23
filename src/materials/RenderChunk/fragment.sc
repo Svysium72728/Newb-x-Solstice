@@ -218,7 +218,8 @@ vec3 screenDrops(vec3 baseColor, float time, vec2 uv, bool falling) {
   SAMPLER2D_AUTOREG(s_PlaneCloudNoise);
 
   float rcPlaneNoise(highp vec2 p) {
-    return texture2DLod(s_PlaneCloudNoise, p*0.00390625, 0.0).r;
+    highp vec2 q = fract(p*0.00390625);
+    return texture2DLod(s_PlaneCloudNoise, q, 0.0).r;
   }
 
   float rcPlaneFbm(highp vec2 x, float detail) {
@@ -366,11 +367,13 @@ vec4 nlSkyCloudReflection(vec3 r, vec3 pos, nl_skycolor skycol, nl_environment e
 
     #ifdef NL_SKY_PLANE_CLOUDS_REFL
     if (T > 0.04 && r.y > 0.0) {
-      float pabove = max(r.y, NL_PLANE_CLOUD_HORIZON_MIN);
+     highp float pabove = max(r.y, NL_PLANE_CLOUD_HORIZON_MIN);
       float phor = smoothstep(NL_PLANE_CLOUD_HORIZON_FADE_START, NL_PLANE_CLOUD_HORIZON_FADE_END, pabove);
       float pdetail = clamp(pabove/NL_PLANE_CLOUD_HORIZON_DETAIL, 0.0, 1.0);
-      highp vec2 pplane = sdr.xz/pabove*NL_PLANE_CLOUD_SCALE;
+      highp vec2 psxz = sdr.xz;
+      highp vec2 pplane = psxz*NL_PLANE_CLOUD_SCALE/pabove;
       pplane.y *= NL_PLANE_CLOUD_STRETCH;
+      pplane = clamp(pplane, vec2(-300.0, -300.0), vec2(300.0, 300.0));
       float pfade = clamp(1.0 - length(pplane)*NL_PLANE_CLOUD_FAR_FADE, 0.0, 1.0)*phor;
       if (pfade > 0.002) {
         highp vec2 puv = pplane;
