@@ -300,6 +300,9 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
   #ifndef NL_PLANE_CLOUD_NIGHT
     #define NL_PLANE_CLOUD_NIGHT 0.30
   #endif
+  #ifndef NL_PLANE_CLOUD_FLAT
+    #define NL_PLANE_CLOUD_FLAT 0.5
+  #endif
 
   SAMPLER2D_AUTOREG(s_PlaneCloudNoise);
 
