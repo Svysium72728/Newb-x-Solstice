@@ -304,7 +304,8 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
   SAMPLER2D_AUTOREG(s_PlaneCloudNoise);
 
   float planeNoise(highp vec2 p) {
-    return texture2DLod(s_PlaneCloudNoise, p*0.00390625, 0.0).r;
+    highp vec2 q = fract(p*0.00390625);
+    return texture2DLod(s_PlaneCloudNoise, q, 0.0).r;
   }
 
   float planeFbm(highp vec2 x, float detail) {
@@ -329,12 +330,14 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
       return vec4(0.0, 0.0, 0.0, 0.0);
     }
 
-    float above = max(viewDir.y, NL_PLANE_CLOUD_HORIZON_MIN);
+    highp float above = max(viewDir.y, NL_PLANE_CLOUD_HORIZON_MIN);
     float horizon = smoothstep(NL_PLANE_CLOUD_HORIZON_FADE_START, NL_PLANE_CLOUD_HORIZON_FADE_END, above);
     float detail = clamp(above/NL_PLANE_CLOUD_HORIZON_DETAIL, 0.0, 1.0);
 
-    highp vec2 plane = sd.xz/above*NL_PLANE_CLOUD_SCALE;
+    highp vec2 sxz = sd.xz;
+    highp vec2 plane = sxz*NL_PLANE_CLOUD_SCALE/above;
     plane.y *= NL_PLANE_CLOUD_STRETCH;
+    plane = clamp(plane, vec2(-300.0, -300.0), vec2(300.0, 300.0));
 
     float fade = clamp(1.0 - length(plane)*NL_PLANE_CLOUD_FAR_FADE, 0.0, 1.0)*horizon;
     if (fade < 0.002) {
