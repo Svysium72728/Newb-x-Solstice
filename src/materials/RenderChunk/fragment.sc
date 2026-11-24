@@ -233,7 +233,7 @@ vec3 screenDrops(vec3 baseColor, float time, vec2 uv, bool falling) {
     uv *= 5.0;
     float a = 0.0;
     for (int i = 0; i < NL_PLANE_CLOUD_REFL_LAYERS; i++) {
-      uv /= 1.01;
+      uv -= clamp(uv*0.0099, vec2(-0.06, -0.06), vec2(0.06, 0.06));
       a = mix(a, 1.0, smoothstep(0.35, 0.45, rcPlaneFbm(uv, detail)));
     }
     return a - pow(smoothstep(0.0, 1.5, rcPlaneFbm(uv, detail) + 0.8), 1.5)*0.7;
