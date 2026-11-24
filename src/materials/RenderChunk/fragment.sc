@@ -21,6 +21,20 @@ SAMPLER2D_AUTOREG(s_BlockCloudNoise);
   SAMPLER2D_AUTOREG(s_CausticTex);
 #endif
 
+#if defined(NL_PUDDLES) || defined(NL_SKY_PLANE_CLOUDS_REFL)
+  SAMPLER2D_AUTOREG(s_PlaneCloudNoise);
+#endif
+
+#ifdef NL_PUDDLES
+  vec2 puddleField(highp vec2 xz, float rain) {
+    highp vec2 p1 = fract(xz*NL_PUDDLE_SCALE);
+    highp vec2 p2 = fract(xz*(NL_PUDDLE_SCALE*2.7) + vec2(0.37, 0.71));
+    float n = 0.7*texture2DLod(s_PlaneCloudNoise, p1, 0.0).r + 0.3*texture2DLod(s_PlaneCloudNoise, p2, 0.0).r;
+    float thr = mix(NL_PUDDLE_THR_LIGHT, NL_PUDDLE_THR_HEAVY, rain);
+    return vec2(smoothstep(thr, thr + NL_PUDDLE_EDGE, n), smoothstep(thr - NL_PUDDLE_DAMP, thr, n));
+  }
+#endif
+
 #define DROP_NUMBER 0
 
 float stickyRaindrop(vec2 uv, vec2 center, float baseSize, float stretch) {
@@ -214,8 +228,6 @@ vec3 screenDrops(vec3 baseColor, float time, vec2 uv, bool falling) {
   #ifndef NL_PLANE_CLOUD_NIGHT
     #define NL_PLANE_CLOUD_NIGHT 0.30
   #endif
-
-  SAMPLER2D_AUTOREG(s_PlaneCloudNoise);
 
   float rcPlaneNoise(highp vec2 p) {
     highp vec2 q = fract(p*0.00390625);
