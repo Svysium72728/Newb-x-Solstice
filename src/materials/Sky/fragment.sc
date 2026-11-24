@@ -556,6 +556,83 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
   #endif
 #endif
 
+#ifdef NL_SKY_AURORA_COMP
+  #ifndef NL_AURORA_COMP_STYLE
+    #define NL_AURORA_COMP_STYLE 1
+  #endif
+  #ifndef NL_AURORA_COMP_LAYERS
+    #define NL_AURORA_COMP_LAYERS 12
+  #endif
+  #ifndef NL_AURORA_COMP_SPEED
+    #define NL_AURORA_COMP_SPEED 0.04
+  #endif
+  #ifndef NL_AURORA_COMP_BRIGHTNESS
+    #define NL_AURORA_COMP_BRIGHTNESS 0.3
+  #endif
+  #ifndef NL_AURORA_COMP_COL1
+    #define NL_AURORA_COMP_COL1 vec3(7.0, 2.2, 12.0)
+  #endif
+  #ifndef NL_AURORA_COMP_COL2
+    #define NL_AURORA_COMP_COL2 vec3(6.0, 16.0, 18.0)
+  #endif
+
+  SAMPLER2D_AUTOREG(s_AuroraNoise);
+
+  vec3 GetAuroraComp(vec3 viewDir, highp float time) {
+    float VdotU = clamp(viewDir.y, 0.0, 1.0);
+    float visibility = sqrt(max(clamp(VdotU*1.5 - 0.225, 0.0, 1.0), 0.0));
+    visibility *= 1.0 - VdotU*0.9;
+    if (visibility <= 0.0) {
+      return vec3(0.0, 0.0, 0.0);
+    }
+
+    float dither = texture2DLod(s_AuroraNoise, gl_FragCoord.xy*0.0078125, 0.0).r;
+
+    highp vec2 wp = viewDir.xz/max(viewDir.y, 0.0001);
+    highp vec2 camM = vec2(time*NL_AURORA_COMP_SPEED, 0.0);
+    highp float anim = time*0.001;
+
+    float ditherM = dither + 5.0;
+    float sampleP = float(NL_AURORA_COMP_LAYERS + 10);
+    vec3 aurora = vec3(0.0, 0.0, 0.0);
+
+    for (int i = 0; i < NL_AURORA_COMP_LAYERS; i++) {
+      float current = (float(i) + ditherM)/sampleP;
+      current *= current;
+
+      highp vec2 pp = wp*(0.8 + current)*11.0 + camM;
+
+      #if NL_AURORA_COMP_STYLE == 1
+        pp = floor(pp)*0.0007;
+        float n = texture2DLod(s_AuroraNoise, fract(pp), 0.0).b;
+        n = 1.0 - 2.0*abs(n - 0.5);
+        n *= n; n *= n; n *= n; n *= n;
+        float d = texture2DLod(s_AuroraNoise, fract(pp*100.0 + anim), 0.0).b;
+        n *= d*sqrt(d);
+      #else
+        pp *= 0.0007;
+        float n = texture2DLod(s_AuroraNoise, fract(pp), 0.0).r;
+        n = 1.0 - 2.0*abs(n - 0.5);
+        n *= n; n *= n; n *= n; n *= n;
+        n *= texture2DLod(s_AuroraNoise, fract(pp*3.0 + anim), 0.0).b;
+        n *= texture2DLod(s_AuroraNoise, fract(pp*5.0 - anim), 0.0).b;
+      #endif
+
+      float currentM = 1.0 - current;
+      float cm2 = currentM*currentM;
+      aurora += n*currentM*mix(NL_AURORA_COMP_COL1, NL_AURORA_COMP_COL2, cm2*cm2);
+    }
+
+    #if NL_AURORA_COMP_STYLE == 1
+      aurora *= 1.3;
+    #else
+      aurora *= 1.8;
+    #endif
+
+    return aurora*visibility*NL_AURORA_COMP_BRIGHTNESS/float(NL_AURORA_COMP_LAYERS);
+  }
+#endif
+
 void main() {
   #ifndef INSTANCING
     vec3 viewDir = normalize(v_worldPos);
@@ -612,6 +689,13 @@ void main() {
           skyColor += GetAuroraHeavy(viewDir, ViewPositionAndTime, dither2) * mask;
         #endif
       #endif
+    }
+    #endif
+
+    #ifdef NL_SKY_AURORA_COMP
+    if (!env.underwater && !env.end && !env.nether) {
+      float cmask = (1.0 - env.rainFactor)*max(1.0 - 3.0*max(v_fogColor.b, v_fogColor.g), 0.0);
+      skyColor += GetAuroraComp(viewDir, ViewPositionAndTime.w)*cmask;
     }
     #endif
 
