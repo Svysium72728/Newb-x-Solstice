@@ -322,7 +322,7 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
     uv *= 5.0;
     float a = 0.0;
     for (int i = 0; i < NL_PLANE_CLOUD_LAYERS; i++) {
-      uv /= 1.01;
+      uv -= clamp(uv*0.0099, vec2(-0.06, -0.06), vec2(0.06, 0.06));
       a = mix(a, 1.0, smoothstep(0.35, 0.45, planeFbm(uv, detail)));
     }
     return a - pow(smoothstep(0.0, 1.5, planeFbm(uv, detail) + 0.8), 1.5)*0.7;
@@ -385,6 +385,8 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
       #define NL_STAR_BRIGHTNESS 1.0
     #endif
 
+    SAMPLER2D_AUTOREG(s_StarNoise);
+
     float starHash(highp vec3 p) {
       return fract(sin(dot(p, vec3(127.1, 311.7, 74.7)))*43758.5453);
     }
@@ -423,20 +425,21 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
       float pxUV = pxAng*(1.0 + r2)/sqrt(1.0 + max(uv.x*uv.x, uv.y*uv.y));
       vec2 g = (uv*0.5 + 0.5)*NL_STAR_GRID;
       vec2 cell = floor(g);
-      vec3 id = vec3(cell, fid);
+      vec2 toff = vec2(mod(fid, 3.0), floor(fid/3.0))*64.0;
+      vec3 sn = texture2DLod(s_StarNoise, (cell + toff + 0.5)/256.0, 0.0).rgb;
       float dens = NL_STAR_DENSITY*pow(1.0 + r2, -1.5);
-      if (starHash(id) > dens) {
+      if (sn.r > dens) {
         return vec3(0.0, 0.0, 0.0);
       }
 
-      vec2 sp = 0.3 + 0.4*vec2(starHash(id + 1.7), starHash(id + 5.3));
+      vec2 sp = 0.3 + 0.4*vec2(sn.g, fract(sn.g*17.31 + sn.b*5.7));
       float d = length(g - cell - sp)/(pxUV*0.5*NL_STAR_GRID);
-      float b = starHash(id + 13.1);
+      float b = sn.b;
       float inten = 0.16 + 4.0*pow(b, 7.0);
       float core = 1.0 - smoothstep(0.45*NL_STAR_SIZE, NL_STAR_SIZE, d);
       float halo = smoothstep(0.93, 1.0, b)*NL_STAR_GLOW*0.6*exp(-0.5*d*d);
-      float tw = 1.0 - 0.15*smoothstep(0.5, 1.0, b)*sin(time*(2.0 + 4.0*starHash(id + 3.1)) + 40.0*b);
-      vec3 tint = mix(vec3(0.75, 0.86, 1.0), vec3(1.0, 0.92, 0.78), starHash(id + 7.7));
+      float tw = 1.0 - 0.15*smoothstep(0.5, 1.0, b)*sin(time*(2.0 + 4.0*fract(b*23.7)) + 40.0*b);
+      vec3 tint = mix(vec3(0.75, 0.86, 1.0), vec3(1.0, 0.92, 0.78), fract(sn.r*31.7 + sn.g*9.3));
       return tint*inten*(core + halo)*tw*vis*NL_STAR_BRIGHTNESS;
     }
   #endif
