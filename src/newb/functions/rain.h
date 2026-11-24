@@ -47,8 +47,11 @@ vec4 nlRefl(
     float endDist = renderDist*0.6;
     if (camDist < endDist) {
       float cosR = max(viewDir.y, 0.0);
-      float puddles = max(1.0 - NL_GROUND_RAIN_PUDDLES*fastRand(tiledCpos.xz), 0.0);
-
+      #ifdef NL_PUDDLES
+        float puddles = 1.0;
+      #else
+        float puddles = max(1.0 - NL_GROUND_RAIN_PUDDLES*fastRand(tiledCpos.xz), 0.0);
+      #endif
       #ifndef NL_GROUND_REFL
         wetness *= puddles;
         float reflective = wetness*env.rainFactor*NL_GROUND_RAIN_WETNESS;
@@ -81,7 +84,11 @@ vec4 nlRefl(
     }
 
     // darken wet parts
-    color.rgb *= 1.0 - 0.4*wetness*env.rainFactor;
+    #ifdef NL_PUDDLES
+      color.rgb *= 1.0 - 0.1*wetness*env.rainFactor;
+    #else
+      color.rgb *= 1.0 - 0.4*wetness*env.rainFactor;
+    #endif
 
   #ifndef NL_GROUND_REFL
   }
