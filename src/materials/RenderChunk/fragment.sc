@@ -568,6 +568,14 @@ void main() {
     float dy = abs(dFdy(v_extra.g));
     if (dy < 0.0002) {
       float mask = v_refl.a*(clamp(v_extra.r*10.0,8.2,8.8)-7.8);
+      #ifdef NL_PUDDLES
+      if (env.rainFactor > 0.0) {
+        vec2 pf = puddleField(v_causticData.xy, env.rainFactor);
+        float rk = min(env.rainFactor*4.0, 1.0);
+        mask *= mix(1.0, pf.x, rk);
+        diffuse.rgb *= 1.0 - NL_PUDDLE_DARKEN*pf.y*rk*v_lightmapUV.y*v_lightmapUV.y;
+      }
+      #endif
       diffuse.rgb *= 1.0 - 0.6*mask;
       diffuse.rgb += v_refl.rgb*mask;
     }
