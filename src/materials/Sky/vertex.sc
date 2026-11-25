@@ -1,6 +1,6 @@
 #ifndef INSTANCING
   $input a_color0, a_position
-  $output v_worldPos, v_underwaterRainTimeDay, v_fogColor
+  $output v_worldPos, v_underwaterRainTimeDay, v_fogColor, v_starRot
 #endif
 
 #include <bgfx_shader.sh>
@@ -11,6 +11,7 @@
   uniform vec4 FogColor;
   uniform vec4 FogAndDistanceControl;
   uniform vec4 ViewPositionAndTime;
+  uniform vec4 TimeOfDay;
 #endif
 
 void main() {
@@ -19,6 +20,9 @@ void main() {
     v_underwaterRainTimeDay.y = detectRain(FogAndDistanceControl.xyz);
     v_underwaterRainTimeDay.z = ViewPositionAndTime.w;
     v_underwaterRainTimeDay.w = detectDayFactor(FogColor.rgb);
+
+    highp float starAng = 2.0*PI*TimeOfDay.x;
+    v_starRot = vec2(cos(starAng), sin(starAng));
 
     // background quad
     vec4 pos = vec4(a_position.xzy, 1.0);
