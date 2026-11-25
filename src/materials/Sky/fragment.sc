@@ -1,5 +1,5 @@
 #ifndef INSTANCING
-$input v_worldPos, v_underwaterRainTimeDay, v_fogColor
+$input v_worldPos, v_underwaterRainTimeDay, v_fogColor, v_starRot
 #endif
 
 #include <bgfx_shader.sh>
@@ -398,9 +398,8 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor
       highp vec3 q = viewDir;
       q.xz = mul(rmat2(-degToRad(NL_SUN_PATH_YAW)), q.xz);
       q.yz = mul(rmat2(degToRad(NL_SUN_PATH_TILT)), q.yz);
-      highp float a = 2.0*PI*tod;
-      float ca = cos(a);
-      float sa = sin(a);
+      float ca = v_starRot.x;
+      float sa = v_starRot.y;
       q = vec3(ca*q.x - sa*q.y, sa*q.x + ca*q.y, q.z);
 
       vec3 aq = abs(q);
