@@ -255,13 +255,11 @@ vec3 screenDrops(vec3 baseColor, float time, vec2 uv, bool falling) {
 #ifdef NL_SKY_BLOCK_CLOUDS_REFL
 // Same occupancy as the sky pass: one point fetch (cell + +x/+y/+xy neighbours packed in RGBA),
 // thresholded per cell, blended only across a narrow strip at the cell border.
-float blockOcc(highp vec2 q, float occThr) {
+float blockOcc(highp vec2 q) {
   highp vec2 c = q - 0.5;
   highp vec2 i = floor(c);
-  vec2 f = clamp((fract(c) - 0.5)*NL_BLOCK_CLOUD_SHARP + 0.5, 0.0, 1.0);
-  vec4 n = texture2D(s_BlockCloudNoise, (i + 0.5)*0.00390625);
-  vec4 s = step(vec4_splat(occThr), n);
-  return mix(mix(s.x, s.y, f.x), mix(s.z, s.w, f.x), f.y);
+  vec2 f = clamp(fract(c)*NL_BLOCK_CLOUD_SHARP + (0.5 - 0.5*NL_BLOCK_CLOUD_SHARP), 0.0, 1.0);
+  return texture2DLod(s_BlockCloudNoise, fract((i + f + 0.5)*0.00390625), 0.0).r;
 }
 #endif
 
@@ -279,51 +277,57 @@ vec4 nlSkyCloudReflection(vec3 r, vec3 pos, nl_skycolor skycol, nl_environment e
     float invY = 1.0/r.y;
     vec3 sdr = vec3(-r.x, r.y, -r.z);
 
-    #ifdef NL_SKY_BLOCK_CLOUDS_REFL
+        #ifdef NL_SKY_BLOCK_CLOUDS_REFL
     {
-      float occThr = clamp(1.0 - NL_BLOCK_CLOUD_COVER, 0.05, 0.95);
       float daylight = smoothstep(-0.2, 0.25, env.dayFactor);
       float bright = mix(NL_BLOCK_CLOUD_NIGHT, 1.0, daylight)*(1.0 - 0.35*env.rainFactor);
       vec3 Lb = mix(env.moonDir, env.sunDir, step(0.0, env.dayFactor));
       vec3 topCol = NL_BLOCK_CLOUD_LIGHT_COL*mix(vec3_splat(1.0), sunCol, mix(NL_BLOCK_CLOUD_SUN_TINT, 0.5, dawn))*bright;
       vec3 shadeCol = NL_BLOCK_CLOUD_SHADE_COL*mix(vec3_splat(1.0), skycol.horizon*1.4, 0.35)*bright;
-      // wind is added AFTER the per-layer scale so every slice drifts at the same speed
-      highp vec2 wind = vec2(time*NL_BLOCK_CLOUD_SPEED, time*NL_BLOCK_CLOUD_SPEED*0.4);
 
-      // wall lighting: compare occupancy one step toward the sun/moon (fades out when it is overhead)
+      highp float wt = mod(time*NL_BLOCK_CLOUD_SPEED, 1280.0);
+      highp vec2 wind = vec2(wt, wt*0.4);
+
       float lxz = length(Lb.xz);
       vec2 Lq = Lb.xz/max(lxz, 0.0001)*0.6;
       float sunSide = clamp(lxz*2.5, 0.0, 1.0);
 
-      float acc = 0.0;
-      float w0 = 0.0;
-      float count = 0.0;
-      vec3 wallAcc = vec3(0.0, 0.0, 0.0);
-      // no early break on purpose: `count` feeds the underside colour and must cover every layer
-      for (int i = 0; i < NL_BLOCK_CLOUD_REFL_STEPS; i++) {
-        float h = (float(i) + 0.5)/float(NL_BLOCK_CLOUD_REFL_STEPS);
-        float t = max(NL_BLOCK_CLOUD_BASE + NL_BLOCK_CLOUD_THICK*h - pu.y, 0.0)*invY;
-        highp vec2 p = (sdr.xz*t - pu.xz)*NL_BLOCK_CLOUD_SCALE + wind;
+      float dh = 1.0/float(NL_BLOCK_CLOUD_REFL_STEPS);
+      highp vec2 dir = sdr.xz*invY*NL_BLOCK_CLOUD_SCALE;
+      highp vec2 dp = dir*(NL_BLOCK_CLOUD_THICK*dh);
+      highp vec2 p = dir*(NL_BLOCK_CLOUD_BASE - pu.y + 0.5*NL_BLOCK_CLOUD_THICK*dh) - pu.xz*NL_BLOCK_CLOUD_SCALE + wind;
+      float h = 0.5*dh;
 
-        float o = blockOcc(p, occThr);
+      float m0 = smoothstep(0.5 - NL_BLOCK_CLOUD_SOFT, 0.5 + NL_BLOCK_CLOUD_SOFT, blockOcc(p));
+      float count = m0;
+      highp float acc = m0 > 0.001 ? m0 : 0.0;
+      float w0 = acc;
+      vec3 wallAcc = vec3(0.0, 0.0, 0.0);
+
+      for (int i = 1; i < NL_BLOCK_CLOUD_REFL_STEPS; i++) {
+        p += dp;
+        h += dh;
+
+        float o = blockOcc(p);
         float m = smoothstep(0.5 - NL_BLOCK_CLOUD_SOFT, 0.5 + NL_BLOCK_CLOUD_SOFT, o);
         count += m;
 
         float a = m*(1.0 - acc);
         if (a > 0.001) {
-          float lit = clamp(0.5 - (blockOcc(p + Lq, occThr) - o)*1.2, 0.0, 1.0);
+          float lit = clamp(0.5 - (blockOcc(p + Lq) - o)*1.2, 0.0, 1.0);
           lit = mix(0.5, lit, sunSide);
           float wk = clamp(0.25 + 0.65*h + 0.35*(lit - 0.5), 0.0, 1.0);
-          float first = (i == 0) ? 1.0 : 0.0;
-          w0 += a*first;
-          wallAcc += a*(1.0 - first)*mix(shadeCol, topCol, wk);
+          wallAcc += a*mix(shadeCol, topCol, wk);
           acc += a;
+          if (acc > 0.999 && w0 < 0.001) {
+            break;
+          }
         }
       }
 
       if (acc > 0.001) {
-        float c01 = count/float(NL_BLOCK_CLOUD_REFL_STEPS);
-        vec3 under = mix(topCol*0.92, shadeCol, pow(clamp((c01 - 0.08)/0.6, 0.0, 1.0), 0.8));
+        float c01 = count*dh;
+        vec3 under = mix(topCol*0.92, shadeCol, pow(clamp((c01 - 0.08)*1.6666667, 0.0, 1.0), 0.8));
         col += (wallAcc + w0*under)*NL_BLOCK_CLOUD_OPACITY;
         T *= 1.0 - acc*NL_BLOCK_CLOUD_OPACITY;
       }
