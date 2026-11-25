@@ -501,8 +501,7 @@ void main() {
   #if defined(TRANSPARENT) && !(defined(SEASONS) || defined(RENDER_AS_BILLBOARDS))
     if (v_extra.b > 0.9) {
       #ifdef NL_REIMAGINED
-        vec3 wsrc = texture2DLod(s_MatTexture, v_texcoord0, 0.0).rgb;
-        float wl = dot(wsrc*wsrc, vec3(0.2126, 0.7152, 0.0722));
+        float wl = dot(diffuse.rgb, vec3(0.2126, 0.7152, 0.0722));
         float wrel = wl/NL_WATER_TEX_MEAN - 1.0;
         float wf = 1.0 + wrel*NL_WATER_TEX_CONTRAST_R + max(wrel, 0.0)*NL_WATER_HIGHLIGHT;
         waterPat = clamp(wf - 1.0, -0.6, 2.0);
