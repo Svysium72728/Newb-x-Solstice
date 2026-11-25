@@ -295,7 +295,8 @@ vec4 nlSkyCloudReflection(vec3 r, vec3 pos, nl_skycolor skycol, nl_environment e
       float dh = 1.0/float(NL_BLOCK_CLOUD_REFL_STEPS);
       highp vec2 dir = sdr.xz*invY*NL_BLOCK_CLOUD_SCALE;
       highp vec2 dp = dir*(NL_BLOCK_CLOUD_THICK*dh);
-      highp vec2 p = dir*(NL_BLOCK_CLOUD_BASE - pu.y + 0.5*NL_BLOCK_CLOUD_THICK*dh) - pu.xz*NL_BLOCK_CLOUD_SCALE + wind;
+      highp vec2 camOff = mod(CameraPosition.xz*(NL_BLOCK_CLOUD_SCALE*NL_BLOCK_CLOUD_PARALLAX/NL_CLOUD_REFL_UNIT), 256.0);
+      highp vec2 p = dir*(NL_BLOCK_CLOUD_BASE - pu.y + 0.5*NL_BLOCK_CLOUD_THICK*dh) - pu.xz*NL_BLOCK_CLOUD_SCALE + wind + camOff;
       float h = 0.5*dh;
 
       float m0 = smoothstep(0.5 - NL_BLOCK_CLOUD_SOFT, 0.5 + NL_BLOCK_CLOUD_SOFT, blockOcc(p));
