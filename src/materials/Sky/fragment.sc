@@ -10,6 +10,7 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor, v_starRot
   uniform vec4 FogColor;
   uniform vec4 FogAndDistanceControl;
   uniform vec4 ViewPositionAndTime;
+  uniform vec4 CameraPosition;
 
   #ifdef NL_SKY_BLOCK_CLOUDS
     SAMPLER2D_AUTOREG(s_BlockCloudNoise);
@@ -91,7 +92,8 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor, v_starRot
       float dh = 1.0/float(NL_BLOCK_CLOUD_STEPS);
       highp vec2 pos = sd.xz*(NL_BLOCK_CLOUD_SCALE/viewDir.y);
       highp vec2 dq = pos*(NL_BLOCK_CLOUD_THICK*dh);
-      highp vec2 q = pos*NL_BLOCK_CLOUD_BASE + dq*0.5 + wind;
+      highp vec2 camOff = mod(CameraPosition.xz*(NL_BLOCK_CLOUD_SCALE*NL_BLOCK_CLOUD_PARALLAX/NL_CLOUD_REFL_UNIT), 256.0);
+      highp vec2 q = pos*NL_BLOCK_CLOUD_BASE + dq*0.5 + wind + camOff;
       float h = 0.5*dh;
 
       float m0 = smoothstep(0.5 - NL_BLOCK_CLOUD_SOFT, 0.5 + NL_BLOCK_CLOUD_SOFT, blockOcc(q));
