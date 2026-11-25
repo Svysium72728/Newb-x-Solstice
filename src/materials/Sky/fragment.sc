@@ -59,24 +59,17 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor, v_starRot
     // One point fetch returns this cell plus its +x / +y / +xy neighbours (packed in RGBA).
     // Each cell is thresholded first, then blended only across a narrow strip at the cell
     // border (NL_BLOCK_CLOUD_SHARP), so blocks stay square with soft, slightly rounded edges.
-    float blockOcc(highp vec2 q, float occThr) {
+    float blockOcc(highp vec2 q) {
       highp vec2 c = q - 0.5;
       highp vec2 i = floor(c);
-      vec2 f = clamp((fract(c) - 0.5)*NL_BLOCK_CLOUD_SHARP + 0.5, 0.0, 1.0);
-      vec4 n = texture2D(s_BlockCloudNoise, (i + 0.5)*0.00390625);
-      vec4 s = step(vec4_splat(occThr), n);
-      return mix(mix(s.x, s.y, f.x), mix(s.z, s.w, f.x), f.y);
+      vec2 f = clamp(fract(c)*NL_BLOCK_CLOUD_SHARP + (0.5 - 0.5*NL_BLOCK_CLOUD_SHARP), 0.0, 1.0);
+      return texture2DLod(s_BlockCloudNoise, fract((i + f + 0.5)*0.00390625), 0.0).r;
     }
 
     vec4 BlockClouds(vec3 viewDir, vec3 sd, nl_skycolor skycol, nl_environment env, highp float time, float jitter) {
       if (viewDir.y < 0.05) {
         return vec4(0.0, 0.0, 0.0, 0.0);
       }
-      const int steps = NL_BLOCK_CLOUD_STEPS;
-      float invY = 1.0/viewDir.y;
-      float occThr = clamp(1.0 - NL_BLOCK_CLOUD_COVER, 0.05, 0.95);
-      // wind is added AFTER the per-layer scale so every slice drifts at the same speed
-      highp vec2 wind = vec2(time*NL_BLOCK_CLOUD_SPEED, time*NL_BLOCK_CLOUD_SPEED*0.4);
 
       float daylight = smoothstep(-0.2, 0.25, env.dayFactor);
       vec3 L = mix(env.moonDir, env.sunDir, step(0.0, env.dayFactor));
@@ -88,33 +81,43 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor, v_starRot
       vec3 topCol = NL_BLOCK_CLOUD_LIGHT_COL*mix(vec3_splat(1.0), sunCol, mix(NL_BLOCK_CLOUD_SUN_TINT, 0.5, dawn))*bright;
       vec3 shadeCol = NL_BLOCK_CLOUD_SHADE_COL*mix(vec3_splat(1.0), skycol.horizon*1.4, 0.35)*bright;
 
-      // wall lighting: compare occupancy one step toward the sun/moon (fades out when it is overhead)
       float lxz = length(L.xz);
       vec2 Lq = L.xz/max(lxz, 0.0001)*0.6;
       float sunSide = clamp(lxz*2.5, 0.0, 1.0);
 
-      float acc = 0.0;
-      float w0 = 0.0;
-      float count = 0.0;
-      vec3 wallAcc = vec3(0.0, 0.0, 0.0);
-      // no early break on purpose: `count` feeds the underside colour and must cover every layer
-      for (int i = 0; i < steps; i++) {
-        float h = (float(i) + 0.5)/float(steps);
-        highp vec2 q = sd.xz*((NL_BLOCK_CLOUD_BASE + NL_BLOCK_CLOUD_THICK*h)*invY)*NL_BLOCK_CLOUD_SCALE + wind;
+      highp float wt = mod(time*NL_BLOCK_CLOUD_SPEED, 1280.0);
+      highp vec2 wind = vec2(wt, wt*0.4);
 
-        float o = blockOcc(q, occThr);
+      float dh = 1.0/float(NL_BLOCK_CLOUD_STEPS);
+      highp vec2 pos = sd.xz*(NL_BLOCK_CLOUD_SCALE/viewDir.y);
+      highp vec2 dq = pos*(NL_BLOCK_CLOUD_THICK*dh);
+      highp vec2 q = pos*NL_BLOCK_CLOUD_BASE + dq*0.5 + wind;
+      float h = 0.5*dh;
+
+      float m0 = smoothstep(0.5 - NL_BLOCK_CLOUD_SOFT, 0.5 + NL_BLOCK_CLOUD_SOFT, blockOcc(q));
+      float count = m0;
+      highp float acc = m0 > 0.001 ? m0 : 0.0;
+      float w0 = acc;
+      vec3 wallAcc = vec3(0.0, 0.0, 0.0);
+
+      for (int i = 1; i < NL_BLOCK_CLOUD_STEPS; i++) {
+        q += dq;
+        h += dh;
+
+        float o = blockOcc(q);
         float m = smoothstep(0.5 - NL_BLOCK_CLOUD_SOFT, 0.5 + NL_BLOCK_CLOUD_SOFT, o);
         count += m;
 
         float a = m*(1.0 - acc);
         if (a > 0.001) {
-          float lit = clamp(0.5 - (blockOcc(q + Lq, occThr) - o)*1.2, 0.0, 1.0);
+          float lit = clamp(0.5 - (blockOcc(q + Lq) - o)*1.2, 0.0, 1.0);
           lit = mix(0.5, lit, sunSide);
           float wk = clamp(0.25 + 0.65*h + 0.35*(lit - 0.5), 0.0, 1.0);
-          float first = (i == 0) ? 1.0 : 0.0;
-          w0 += a*first;
-          wallAcc += a*(1.0 - first)*mix(shadeCol, topCol, wk);
+          wallAcc += a*mix(shadeCol, topCol, wk);
           acc += a;
+          if (acc > 0.999 && w0 < 0.001) {
+            break;
+          }
         }
       }
 
@@ -122,8 +125,8 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor, v_starRot
         return vec4(0.0, 0.0, 0.0, 0.0);
       }
 
-      float c01 = count/float(steps);
-      vec3 under = mix(topCol*0.92, shadeCol, pow(clamp((c01 - 0.08)/0.6, 0.0, 1.0), 0.8));
+      float c01 = count*dh;
+      vec3 under = mix(topCol*0.92, shadeCol, pow(clamp((c01 - 0.08)*1.6666667, 0.0, 1.0), 0.8));
       float k = NL_BLOCK_CLOUD_OPACITY*smoothstep(0.05, 0.25, viewDir.y);
       return vec4((wallAcc + w0*under)*k, acc*k);
     }
