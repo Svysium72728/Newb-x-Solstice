@@ -45,7 +45,7 @@
 #define NL_WINDOW_LIGHT_CELL_W 3.0
 #define NL_WINDOW_LIGHT_CELL_H 3.0
 #define NL_CAVE_DARKEN 0.6
-#define NL_TERRAIN_SUN_GLOW 0.8
+//#define NL_TERRAIN_SUN_GLOW 0.8
 #define NL_TERRAIN_SUN_GLOW_INDOOR 0.0
 //#define NL_DAY_WHITE 0.22
 #define NL_DAY_WHITE_START 0.3
@@ -55,10 +55,10 @@
 #define NL_DAY_WHITE_GAIN 1.6
 #define NL_TERRAIN_SUN_GLOW_COL vec3(1.0, 0.82, 0.5)
 
-#define NL_METAL_REFLECTION 2.1
+//#define NL_METAL_REFLECTION 2.1
 //#define NL_LAVA_BLUE
 #define NL_TAG_WAVE
-#define NL_GLINT_OUTLINE
+//#define NL_GLINT_OUTLINE
 #define NL_GLINT_OUTLINE_STRENGTH 1.2
 #define NL_GLINT_OUTLINE_COL vec3(0.55, 0.25, 1.0)
 #define NL_GLINT_OUTLINE_MINTEX 256.0
@@ -141,11 +141,11 @@
 #define NL_OCEAN_VIG_STRENGTH 1.0
 
 #define NL_SKY_BLOCK_CLOUDS
-#define NL_BLOCK_CLOUD_STEPS 13
+#define NL_BLOCK_CLOUD_STEPS 10
 #define NL_BLOCK_CLOUD_SCALE 5.5
 #define NL_BLOCK_CLOUD_COVER 0.45
 #define NL_BLOCK_CLOUD_BASE 1.0
-#define NL_BLOCK_CLOUD_THICK 0.10
+#define NL_BLOCK_CLOUD_THICK 0.07
 #define NL_BLOCK_CLOUD_BEVEL 0.65
 #define NL_BLOCK_CLOUD_SQUARE 0.75
 #define NL_BLOCK_CLOUD_SOFT 0.01
@@ -302,7 +302,7 @@
 //#define NL_GLOW_LEAK 1.0        // [toggle] 0.08 subtle ~ 1.0 100% brightness of NL_GLOW_TEX
 
 /* Torch bloom */
-#define NL_TORCH_BLOOM // [toggle]
+//#define NL_TORCH_BLOOM // [toggle]
 #define NL_TORCH_BLOOM_STRENGTH 0.5  // 0.0 no bloom ~ 1.0 strong bloom
 #define NL_TORCH_BLOOM_THRESHOLD 0.25 // 0.0 all blocks ~ 1.0 only brightest
 #define NL_TORCH_BLOOM_COLOR vec3(1.0, 0.6, 0.25) // Warm yellow-orange glow
