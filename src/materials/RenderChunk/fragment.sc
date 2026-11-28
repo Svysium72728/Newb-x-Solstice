@@ -746,7 +746,9 @@ void main() {
     if (v_position.x > 0.001) {
       highp vec3 wpq = vec3(v_causticData.x - CameraPosition.x, v_extra.g, v_causticData.y - CameraPosition.z);
       vec3 dlq = vec3(-wpq.x, wpq.y, -wpq.z)*inversesqrt(max(dot(wpq, wpq), 0.000001));
-      diffuse.rgb += NL_SUN_SHAFTS_COL*nlSunShafts(dlq, env.sunDir, ViewPositionAndTime.w)*v_position.x;
+      float shaftV = nlSunShafts(dlq, env.sunDir, ViewPositionAndTime.w);
+      diffuse.rgb *= 1.0 - clamp(NL_SUN_SHAFTS_DARKEN*shaftV*v_position.x, 0.0, 0.9);
+      diffuse.rgb += NL_SUN_SHAFTS_COL*shaftV*v_position.x;
     }
   #endif
 
