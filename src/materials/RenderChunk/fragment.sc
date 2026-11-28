@@ -539,7 +539,7 @@ void main() {
   #endif
 
   #if defined(NL_SKY_BLOCK_CLOUDS_REFL) || defined(NL_SKY_VOLUME_CLOUDS_REFL) || defined(NL_SKY_PLANE_CLOUDS_REFL)
-    if (!env.underwater && !env.end && !env.nether && abs(dFdy(v_extra.g)) < 0.0002) {
+    if (abs(dFdy(v_extra.g)) < 0.0002 && !env.underwater && !env.end && !env.nether && v_fog.a < 0.98 && v_lightmapUV.y > 0.7) {
       highp vec3 wpk = vec3(v_causticData.x - CameraPosition.x, v_extra.g, v_causticData.y - CameraPosition.z);
       vec3 vdk = normalize(ViewPositionAndTime.xyz - wpk);
       vec3 rk = vec3(-vdk.x, vdk.y, -vdk.z);
