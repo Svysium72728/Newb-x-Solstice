@@ -236,19 +236,34 @@ float nlSunShaftMask(nl_environment env) {
   return smoothstep(-0.12, 0.02, h)*(1.0 - smoothstep(0.05, 0.5, h))*(1.0 - env.rainFactor);
 }
 
+float nlFastAtan2(float y, float x) {
+  float ax = abs(x);
+  float ay = abs(y);
+  float a = min(ax, ay)/max(max(ax, ay), 1e-6);
+  float s = a*a;
+  float r = ((-0.0464964749*s + 0.15931422)*s - 0.327622764)*s*a + a;
+  r = ay > ax ? 1.57079637 - r : r;
+  r = x < 0.0 ? 3.14159274 - r : r;
+  return y < 0.0 ? -r : r;
+}
+
 float nlSunShafts(vec3 d, vec3 L, highp float t) {
-  float c = clamp(dot(d, L), -1.0, 1.0);
+  float c = dot(d, L);
+  if (c <= 0.0) {
+    return 0.0;
+  }
   vec3 up = abs(L.y) < 0.99 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
   vec3 tg = normalize(cross(up, L));
   vec3 bt = cross(L, tg);
-  float a = atan2(dot(d, bt), dot(d, tg));
+  float a = nlFastAtan2(dot(d, bt), dot(d, tg));
   float w1 = 0.5 + 0.5*sin(9.0*a + 1.2*sin(4.0*a + 0.1*t) + 0.12*t);
-  float w2 = 0.5 + 0.5*sin(23.0*a - 0.2*t + 1.8*sin(7.0*a + 0.07*t));
-  float w3 = 0.5 + 0.5*sin(41.0*a + 0.3*t + 1.5*sin(13.0*a - 0.15*t));
-  float beams = smoothstep(0.3, 1.0, 0.5*w1 + 0.32*w2 + 0.18*w3);
-  float radial = exp(-1.8*acos(c));
-  float core = pow(max(c, 0.0), 12.0);
-  return beams*radial*smoothstep(0.0, 0.35, c) + 0.6*core;
+  float w2 = 0.5 + 0.5*sin(23.0*a - 0.2*t);
+  float beams = smoothstep(0.3, 1.0, 0.6*w1 + 0.4*w2);
+  float radial = exp(-2.55*sqrt(max(1.0 - c, 0.0)));
+  float c2 = c*c;
+  float c4 = c2*c2;
+  float c8 = c4*c4;
+  return beams*radial*smoothstep(0.0, 0.35, c) + 0.6*c8*c4;
 }
 
 vec3 nlTerrainSunGlow(vec3 rd, vec3 sunDir, vec3 skyColor, vec3 glowColor, float sunsetFactor, float rainFactor, float amt) {
