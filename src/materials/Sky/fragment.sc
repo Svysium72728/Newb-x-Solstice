@@ -693,9 +693,11 @@ void main() {
     #endif
 
     #ifdef NL_SKY_AURORA_COMP
-    if (!env.underwater && !env.end && !env.nether) {
+    if (!env.underwater && !env.end && !env.nether && viewDir.y > 0.0) {
       float cmask = (1.0 - env.rainFactor)*max(1.0 - 3.0*max(v_fogColor.b, v_fogColor.g), 0.0);
-      skyColor += GetAuroraComp(viewDir, ViewPositionAndTime.w, gl_FragCoord.xy)*cmask;
+      if (cmask > 0.001) {
+        skyColor += GetAuroraComp(viewDir, ViewPositionAndTime.w, gl_FragCoord.xy)*cmask;
+      }
     }
     #endif
 
