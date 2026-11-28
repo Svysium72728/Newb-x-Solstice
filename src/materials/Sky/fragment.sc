@@ -394,7 +394,7 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor, v_starRot
       return fract(sin(dot(p, vec3(127.1, 311.7, 74.7)))*43758.5453);
     }
 
-    vec3 CustomStars(vec3 viewDir, nl_environment env, highp float tod, highp float time) {
+    vec3 CustomStars(vec3 viewDir, nl_environment env, highp float tod, highp float time, highp vec2 starRot) {
       float pxAng = max(length(dFdx(viewDir)), length(dFdy(viewDir)));
       float vis = (1.0 - smoothstep(-0.2, 0.05, env.dayFactor))*(1.0 - env.rainFactor)*smoothstep(0.0, 0.12, viewDir.y);
       if (vis < 0.01) {
@@ -403,8 +403,8 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor, v_starRot
       highp vec3 q = viewDir;
       q.xz = mul(rmat2(-degToRad(NL_SUN_PATH_YAW)), q.xz);
       q.yz = mul(rmat2(degToRad(NL_SUN_PATH_TILT)), q.yz);
-      float ca = v_starRot.x;
-      float sa = v_starRot.y;
+      float ca = starRot.x;
+      float sa = starRot.y;
       q = vec3(ca*q.x - sa*q.y, sa*q.x + ca*q.y, q.z);
 
       vec3 aq = abs(q);
@@ -660,7 +660,7 @@ void main() {
 
     #ifdef NL_CUSTOM_STARS
     if (!env.underwater) {
-      skyColor += CustomStars(viewDir, env, TimeOfDay.x, v_underwaterRainTimeDay.z);
+      skyColor += CustomStars(viewDir, env, TimeOfDay.x, v_underwaterRainTimeDay.z, v_starRot);
     }
     #endif
 
