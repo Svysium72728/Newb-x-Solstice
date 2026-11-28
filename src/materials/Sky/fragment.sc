@@ -578,7 +578,7 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor, v_starRot
 
   SAMPLER2D_AUTOREG(s_AuroraNoise);
 
-  vec3 GetAuroraComp(vec3 viewDir, highp float time) {
+  vec3 GetAuroraComp(vec3 viewDir, highp float time, vec2 fragCoord) {
     float VdotU = clamp(viewDir.y, 0.0, 1.0);
     float visibility = sqrt(max(clamp(VdotU*1.5 - 0.225, 0.0, 1.0), 0.0));
     visibility *= 1.0 - VdotU*0.9;
@@ -586,7 +586,7 @@ $input v_worldPos, v_underwaterRainTimeDay, v_fogColor, v_starRot
       return vec3(0.0, 0.0, 0.0);
     }
 
-    float dither = texture2DLod(s_AuroraNoise, gl_FragCoord.xy*0.0078125, 0.0).r;
+    float dither = texture2DLod(s_AuroraNoise, fragCoord*0.0078125, 0.0).r;
 
     highp vec2 wp = viewDir.xz/max(viewDir.y, 0.0001);
     highp vec2 camM = vec2(time*NL_AURORA_COMP_SPEED, 0.0);
@@ -695,7 +695,7 @@ void main() {
     #ifdef NL_SKY_AURORA_COMP
     if (!env.underwater && !env.end && !env.nether) {
       float cmask = (1.0 - env.rainFactor)*max(1.0 - 3.0*max(v_fogColor.b, v_fogColor.g), 0.0);
-      skyColor += GetAuroraComp(viewDir, ViewPositionAndTime.w)*cmask;
+      skyColor += GetAuroraComp(viewDir, ViewPositionAndTime.w, gl_FragCoord.xy)*cmask;
     }
     #endif
 
