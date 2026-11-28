@@ -198,6 +198,14 @@ void main() {
     }
   #endif
 
+  float shaftScale = 0.0;
+  #ifdef NL_SUN_SHAFTS
+    if (!env.underwater && !env.end && !env.nether) {
+      shaftScale = nlSunShaftMask(env)*(1.0 - exp(-length(worldPos)*NL_SUN_SHAFTS_DENSITY))*smoothstep(0.5, 0.95, uv1.y)*NL_SUN_SHAFTS;
+    }
+  #endif
+  v_position = vec3(shaftScale, 0.0, 0.0);
+
   v_extra = vec4(shade, worldPos.y, water, shimmer);
   v_refl = refl;
   v_texcoord0 = uv0;
