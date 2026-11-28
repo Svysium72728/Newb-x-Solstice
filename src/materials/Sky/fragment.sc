@@ -651,7 +651,9 @@ void main() {
     vec3 skyColor = nlRenderSky(skycol, env, -viewDir, v_underwaterRainTimeDay.z, true);
 
     #ifdef NL_SHOOTING_STAR
+    if (viewDir.y > 0.0 && env.dayFactor < 0.05) {
       skyColor += NL_SHOOTING_STAR*nlRenderShootingStar(viewDir, env.fogCol, v_underwaterRainTimeDay.z);
+    }
     #endif
 
     #ifdef NL_GALAXY_STARS
